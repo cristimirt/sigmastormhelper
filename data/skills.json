@@ -1,0 +1,1061 @@
+{
+ "0": {
+  "n": "Strike",
+  "d": "+0.2% Base Attack per point.",
+  "x": [
+   "Energy: 10",
+   "Duration: 60 min(s)"
+  ]
+ },
+ "1": {
+  "n": "Mission Finder",
+  "d": "+0.1% per point chance to obtain a Mission Item on an additional loot roll. (Only if the normal loot roll fails to obtain anything)",
+  "x": [
+   "Energy: 10",
+   "Duration: 60 min(s)"
+  ]
+ },
+ "2": {
+  "n": "Find Item",
+  "d": "+0.1% per point increase of the entities drop rate for items.",
+  "x": [
+   "Energy: 10",
+   "Duration: 60 min(s)"
+  ]
+ },
+ "3": {
+  "n": "Internal Reserves",
+  "d": "+0.2% Base HP per point.",
+  "x": [
+   "Energy: 10",
+   "Duration: 60 min(s)"
+  ]
+ },
+ "4": {
+  "n": "Data Processor",
+  "d": "+0.1% per point increase in XP from entity kills.",
+  "x": [
+   "Energy: 15",
+   "Duration: 60 min(s)"
+  ]
+ },
+ "5": {
+  "n": "Defiance",
+  "d": "+0.25% per point reduction in XP lost when defeated in combat by an entity.",
+  "x": [
+   "Energy: 15",
+   "Duration: 60 min(s)"
+  ]
+ },
+ "6": {
+  "n": "Absorption",
+  "d": "+0.2% chance per point to drain an additional 10% of your opponents current HP per combat turn (only works on a successful hit).",
+  "x": [
+   "Energy: 15",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "7": {
+  "n": "Salvage",
+  "d": "Increases chance of success when attempting to extract a component from a resource.",
+  "x": [
+   "Energy: 15",
+   "Duration: 60 min(s)"
+  ]
+ },
+ "8": {
+  "n": "Researcher",
+  "d": "+0.1% per point chance to gain double XP from entities.",
+  "x": [
+   "Energy: 20",
+   "Duration: 60 min(s)"
+  ]
+ },
+ "9": {
+  "n": "Brinkmanship",
+  "d": "+0.2% per point chance to survive death in combat (once per combat).",
+  "x": [
+   "Energy: 20",
+   "Duration: 60 min(s)"
+  ]
+ },
+ "10": {
+  "n": "Kinetic Reserves",
+  "d": "+0.2% Base Damage per point.",
+  "x": [
+   "Energy: 20",
+   "Duration: 60 min(s)"
+  ]
+ },
+ "11": {
+  "n": "Rad Hunter",
+  "d": "+0.2% extra damage vs. mutant and irradiated entities.",
+  "x": [
+   "Energy: 20",
+   "Duration: 60 min(s)"
+  ]
+ },
+ "12": {
+  "n": "Robot Hunter",
+  "d": "+0.2% extra damage vs. robotic entities.",
+  "x": [
+   "Energy: 20",
+   "Duration: 60 min(s)"
+  ]
+ },
+ "13": {
+  "n": "Haggle",
+  "d": "+0.1% chance per point that the Assembly Plant and Shops will make/sell Items 50% cheaper.",
+  "x": [
+   "Energy: 25",
+   "Duration: 60 min(s)"
+  ]
+ },
+ "14": {
+  "n": "Corrode",
+  "d": "+0.1% per point reduction of opponents armor.",
+  "x": [
+   "Energy: 25",
+   "Duration: 60 min(s)"
+  ]
+ },
+ "15": {
+  "n": "Protection Field",
+  "d": "+0.1% per point Base Defence, Base Armor and Base HP.",
+  "x": [
+   "Energy: 25",
+   "Duration: 60 min(s)"
+  ]
+ },
+ "16": {
+  "n": "Deflect",
+  "d": "+0.25% chance per point that a player attacking you will fail before combat.",
+  "x": [
+   "Energy: 25",
+   "Duration: 60 min(s)"
+  ]
+ },
+ "17": {
+  "n": "Intensifier",
+  "d": "At level 50, 2x Energy usage in return for 2x XP/Class Skill/Credits. (Level 100 = 3x, Level 150 = 4x etc). Note if you use this skill with the Accelerator skill, the highest xp / energy multiplier is used - they are not combined.",
+  "x": [
+   "Energy: 10",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "18": {
+  "n": "Entity Seeker",
+  "d": "+0.3% per point chance to make certain entities respawn at your location.",
+  "x": [
+   "Energy: 25",
+   "Duration: 60 min(s)"
+  ]
+ },
+ "19": {
+  "n": "Traverse",
+  "d": "+0.1% chance to use no Energy when moving",
+  "x": [
+   "Energy: 25",
+   "Duration: 60 min(s)"
+  ]
+ },
+ "20": {
+  "n": "Unique DNA",
+  "d": "Opens Mutant class skills. Locks all other classes apart from Core. Allows Rad items to be used by your character (Higher level items will require more points allocated to this skill). Allocates 'Rad' skill bar.",
+  "x": []
+ },
+ "21": {
+  "n": "Glowing Hands",
+  "d": "+0.1% per point Additional Damage from Blades and Rad Weaponary",
+  "x": [
+   "Rad: 10",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "22": {
+  "n": "Bite Mutation",
+  "d": "Equip 'Bite Mutation' weaponary. 10% chance to reduce targets armor by 0.1% per point.",
+  "x": [
+   "Rad: 10",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "23": {
+  "n": "Recover",
+  "d": "Heals 10 HP (+0.2% of your total HP per point) upon use.",
+  "x": [
+   "Rad: 10",
+   "Duration: Instant Effect"
+  ]
+ },
+ "24": {
+  "n": "Chitinous Skin",
+  "d": "Reduces damage from Blade weapons by 0.15% per point.",
+  "x": [
+   "Rad: 10",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "25": {
+  "n": "Variance",
+  "d": "Increases Rad damage by +0.1% per point.",
+  "x": [
+   "Rad: 15",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "26": {
+  "n": "Claw Mutation",
+  "d": "Equip 'Claw Mutation' weaponary. 10% chance to increase your damage by 0.1% per point.",
+  "x": [
+   "Rad: 15",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "27": {
+  "n": "Reincarnate",
+  "d": "+0.1% chance to respawn at your current location with full health. (Only works when killed by an entity).",
+  "x": [
+   "Rad: 15",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "28": {
+  "n": "Half Life",
+  "d": "+0.3% chance per point that your current Skill Power will be added to your Armor stat.",
+  "x": [
+   "Rad: 10",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "29": {
+  "n": "Prehensile Tail",
+  "d": "10% chance that an opponent will be disarmed. Reduces the attack by 0.1% per point.",
+  "x": [
+   "Rad: 20",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "30": {
+  "n": "Cannibalise",
+  "d": "+0.1% chance to refill your Rad bar by defeating Mutant and Irradiated entities. (Gain between 2 and 5 Rad.).",
+  "x": [
+   "Rad: 20",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "31": {
+  "n": "Toxic",
+  "d": "+0.1% chance that 'Rad' weaponary will half the targets armor at the start of combat.",
+  "x": [
+   "Rad: 25",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "32": {
+  "n": "Tentacle Mutation",
+  "d": "Equip 'Tentacle Mutation' weaponary. +0.05% chance per point that your opponent will miss their next attack.",
+  "x": [
+   "Rad: 25",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "33": {
+  "n": "Rabble Rouser",
+  "d": "Increases Attack by +0.1% per point for every Mutant in the Squad. (Squad Leader only)",
+  "x": [
+   "Rad: 25",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "34": {
+  "n": "Carapace",
+  "d": "Increases resistance to 'Solid' weapons by +0.1% per point.",
+  "x": [
+   "Rad: 25",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "35": {
+  "n": "Rad-Laced",
+  "d": "Increases resistance to Crushing and Slashing damage by +0.1% per point.",
+  "x": [
+   "Rad: 25",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "36": {
+  "n": "Chomp Mutation",
+  "d": "+0.1% per point chance the opponent will start combat with reduced HP.",
+  "x": [
+   "Rad: 25",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "37": {
+  "n": "Rejuvenate",
+  "d": "Heals 25 HP (+ 0.5% of your total HP per point) upon use.",
+  "x": [
+   "Rad: 25",
+   "Duration: Instant Effect"
+  ]
+ },
+ "38": {
+  "n": "Combat Training",
+  "d": "Opens Soldier class skills. Locks all other classes apart from Core. Allows Battlesuit items to be used by your character (Higher level items will require more points allocated to this skill). Allocates 'Adrenaline' skill bar.",
+  "x": []
+ },
+ "39": {
+  "n": "Marksman",
+  "d": "Increases Damage by +0.1% when using 'Rifle' weaponary.",
+  "x": [
+   "Adren: 10",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "40": {
+  "n": "Scope",
+  "d": "Increases Attack by +0.1% when using 'Pistol' weaponary.",
+  "x": [
+   "Adren: 10",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "41": {
+  "n": "Bandage",
+  "d": "Heals 10 HP (+ 0.2% of your total HP per point) upon use.",
+  "x": [
+   "Adren: 10",
+   "Duration: Instant Effect"
+  ]
+ },
+ "42": {
+  "n": "Stim Sensitivity",
+  "d": "Increases Stim duration by +0.2% per point (only affects stims taken after skill is active).",
+  "x": [
+   "Adren: 10",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "43": {
+  "n": "Controlled Bursts",
+  "d": "+0.1% chance to use no ammo in a combat round.",
+  "x": [
+   "Adren: 15",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "44": {
+  "n": "Silencer",
+  "d": "+0.2% chance to double your Adrenaline gain while using 'Pistol' weaponary.",
+  "x": [
+   "Adren: 15",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "45": {
+  "n": "Resuscitation",
+  "d": "+0.1% chance to respawn at your current location with full health. (Only works when killed by an entity).",
+  "x": [
+   "Adren: 15",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "46": {
+  "n": "Armor Proficiency",
+  "d": "Battlesuit items gain +0.15% per point to Armor.",
+  "x": [
+   "Adren: 15",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "47": {
+  "n": "Ordnance",
+  "d": "Battlesuit items gain +0.1% per point to Attack and Damage.",
+  "x": [
+   "Adren: 10",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "48": {
+  "n": "Camouflage",
+  "d": "+0.1% per point increase to your 'Body Armor' Defence when using 'Battlesuit' armor.",
+  "x": [
+   "Adren: 20",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "49": {
+  "n": "Called Shot",
+  "d": "+0.05% chance to do double damage when using 'Rifle' weaponary.",
+  "x": [
+   "Adren: 25",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "50": {
+  "n": "Mag Coupler",
+  "d": "+0.3% chance per point to reload ammo in combat without consuming an ammo clip.",
+  "x": [
+   "Adren: 25",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "51": {
+  "n": "Weapon Specialist",
+  "d": "Increases damage by +0.05% when using 'Pistol', 'Rifle' and 'Heavy' weaponary.",
+  "x": [
+   "Adren: 25",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "52": {
+  "n": "Strike Leader",
+  "d": "Increases Damage by +0.1% per point for each Soldier in the Squad. (Squad Leader only)",
+  "x": [
+   "Adren: 25",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "53": {
+  "n": "Focused",
+  "d": "+0.1% per point Damage increase when using ammo based weaponary.",
+  "x": [
+   "Adren: 25",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "54": {
+  "n": "Interlaced",
+  "d": "+0.1% per point Base Defence, Base Armor and Base HP.",
+  "x": [
+   "Adren: 25",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "55": {
+  "n": "Remedy",
+  "d": "Heals 25 HP (+ 0.5% of your total HP per point) upon use.",
+  "x": [
+   "Adren: 25",
+   "Duration: Instant Effect"
+  ]
+ },
+ "56": {
+  "n": "Psionic Sensitivity",
+  "d": "Opens Purist class skills. Locks all other classes apart from Core. Allows Psi items to be used by your character (Higher level items will require more points allocated to this skill). Allocates Psi skill bar.",
+  "x": []
+ },
+ "57": {
+  "n": "Telekinetic Shield",
+  "d": "+0.15% per point Armor to Psi class armor.",
+  "x": [
+   "Psi: 10",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "58": {
+  "n": "Mind Shard",
+  "d": "+0.5% per point chance to charge a full stack of empty Mind Shards, allowing them to be used as ammo.",
+  "x": [
+   "Psi: 10",
+   "Duration: Instant Effect"
+  ]
+ },
+ "59": {
+  "n": "Psionic Dart",
+  "d": "Allows use of 'Psi Dart' items. Increases non-Psi pistol and rifle weapon damage by 0.05% per point. Increases Psi weapon damage by 0.1% per point.",
+  "x": [
+   "Psi: 10",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "60": {
+  "n": "Regain",
+  "d": "Heals 10 HP (+ 0.2% of your total HP per point) upon use.",
+  "x": [
+   "Psi: 10",
+   "Duration: Instant Effect"
+  ]
+ },
+ "61": {
+  "n": "Attunement",
+  "d": "+0.05% per point to attack and damage providing you are using a Psi weapon that uses ammo",
+  "x": [
+   "Psi: 15",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "62": {
+  "n": "Phase",
+  "d": "+0.25% chance to double your defense when your health drops below 20%.",
+  "x": [
+   "Psi: 15",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "63": {
+  "n": "Echo",
+  "d": "+0.1% chance to respawn at your current location with full health. (Only works when killed by an entity).",
+  "x": [
+   "Psi: 15",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "64": {
+  "n": "Mental Strength",
+  "d": "Create a Psi Shield which can absorb 1 hit + an additional hit for each 50 points. When the Shield is destroyed there is a 0.10% chance per point that an additional 1 - 2 points of Psi Energy is harvested from the Entity. (Note: Can only absorb maximum of 1 hit and 10% damage from Hunter-Killers. Will only activate when using a Psi Weapon. Does not work in PvP)",
+  "x": [
+   "Psi: 20",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "65": {
+  "n": "Mind Stone",
+  "d": "+0.5% per point chance to charge a full stack of empty Mind Stones, allowing them to be used as ammo.",
+  "x": [
+   "Psi: 20",
+   "Duration: Instant Effect"
+  ]
+ },
+ "66": {
+  "n": "Crystal Thought",
+  "d": "+0.1% per point chance that attacks using Psi weapons will not use any Psi Ammo.",
+  "x": [
+   "Psi: 20",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "67": {
+  "n": "Psionic Bolt",
+  "d": "Allows use of 'Psi Bolt' items. +0.3% chance per point that your current Skill Power will be added to your damage stat.",
+  "x": [
+   "Psi: 20",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "68": {
+  "n": "Imbue",
+  "d": "After a Critical when using a melee Weapon, there is a 0.2% chance per point that the weapons Attack is increased by 10% for the rest of the Combat. This effect can only happen once in a combat.",
+  "x": [
+   "Psi: 25",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "69": {
+  "n": "Telepathic Field",
+  "d": "Increase Defence by +0.1% per point for each Purist in the squad. (Squad Leader only)",
+  "x": [
+   "Psi: 25",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "70": {
+  "n": "Sword of Psi",
+  "d": "Allows the use of 'Psi Sword' items.",
+  "x": []
+ },
+ "71": {
+  "n": "Reaper",
+  "d": "+0.5% per point chance to inflict an additional +0.25% damage per ammo unit currently consumed when using Psi ammunition. (Maximum 25% increase.)",
+  "x": [
+   "Psi: 25",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "72": {
+  "n": "Psionic Missile",
+  "d": "Allows use of 'Psi Missile' items. Psi Spears also gain a 0.20% per point chance that +0.1% additional attack per point in Psionic Dart and +0.1% additional damage per point in Psionic Bolt.",
+  "x": [
+   "Psi: 25",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "73": {
+  "n": "Revive",
+  "d": "Heals 25 HP (+ 0.5% of your total HP per point) upon use.",
+  "x": [
+   "Psi: 25",
+   "Duration: Instant Effect"
+  ]
+ },
+ "74": {
+  "n": "Reinforce Skeleton",
+  "d": "Opens Cyborg class skills. Locks all other classes apart from Core. Allows Hardwired items to be used by your character (Higher level items will require more points allocated to this skill). Allocates 'Surge' skill bar.",
+  "x": []
+ },
+ "75": {
+  "n": "Augmentation",
+  "d": "Hardwire items gain an extra +0.15% per point Attack.",
+  "x": [
+   "Surge: 10",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "76": {
+  "n": "Port 1",
+  "d": "Allows use of 'Port 1' Add-Ons. Increase damage of Hardwired add-ons by +0.25% per point.",
+  "x": [
+   "Surge: 10",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "77": {
+  "n": "Patch",
+  "d": "Heals 10 HP (+0.2% of your total HP per point) upon use.",
+  "x": [
+   "Surge: 10",
+   "Duration: Instant Effect"
+  ]
+ },
+ "78": {
+  "n": "Metallic Skin",
+  "d": "Reduce damage from 'Pistol', 'Rifle' and 'Heavy' weapons by 0.1% per point.",
+  "x": [
+   "Surge: 10",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "79": {
+  "n": "Interface",
+  "d": "+0.15% per point Damage from Hardwired items.",
+  "x": [
+   "Surge: 15",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "80": {
+  "n": "Port 2",
+  "d": "Allows use of 'Port 2' Add-Ons. Increase attack of Hardwired add-ons by +0.25% per point.",
+  "x": [
+   "Surge: 15",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "81": {
+  "n": "Feedback",
+  "d": "+0.1% chance to respawn at your current location with full health. (Only works when killed by an entity).",
+  "x": [
+   "Surge: 15",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "82": {
+  "n": "Nano Blood",
+  "d": "+0.2% per point chance that when invoking a Cyborg class skill, the usage cost will be halfed.",
+  "x": [
+   "Surge: 15",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "83": {
+  "n": "Hydraulic Strength",
+  "d": "+0.2% chance to change current weapons Damage Type to Crushing. Also increases damage of Crushing weapons by +0.1% per point.",
+  "x": [
+   "Surge: 20",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "84": {
+  "n": "Port 3",
+  "d": "Allows use of 'Port 3' Add-Ons. Increase attack and damage of Hardwired add-ons by +0.25% per point.",
+  "x": [
+   "Surge: 20",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "85": {
+  "n": "Machine Mind",
+  "d": "+0.05% per point chance that each hit will ignore armor.",
+  "x": [
+   "Surge: 20",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "86": {
+  "n": "Overload",
+  "d": "Each shot uses a full ammo clip, however Damage is increased by +0.3% per point.",
+  "x": [
+   "Surge: 25",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "87": {
+  "n": "Network",
+  "d": "Increase Armor by +0.1% per Cyborg in the Squad. (Squad Leader only)",
+  "x": [
+   "Surge: 25",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "88": {
+  "n": "Syphon",
+  "d": "+0.3% chance per point that Energy damage received is halved.",
+  "x": [
+   "Surge: 25",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "89": {
+  "n": "Target Lock",
+  "d": "+0.2% per point chance that targets Defence will be reduced by 8% when using Hardwired Weaponry.",
+  "x": [
+   "Surge: 25",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "90": {
+  "n": "Socket Mk 1",
+  "d": "Allows use of 'Socket Mk 1' Add-Ons. +0.1% per point chance per shot to increase Hardwired Weaponry damage by 50% (max one activation per combat).",
+  "x": [
+   "Surge: 25",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "91": {
+  "n": "Reconstruct",
+  "d": "Heals 25 HP (+0.5% of your total HP per point) upon use.",
+  "x": [
+   "Surge: 25",
+   "Duration: Instant Effect"
+  ]
+ },
+ "92": {
+  "n": "Scavenger",
+  "d": "Increases chance of success when getting resource items.",
+  "x": [
+   "Duration: 60 min(s)",
+   "Min. Level 16",
+   "Stims: Mk1 = level 100, Mk2 = level 200",
+   "Bonus per level not documented"
+  ]
+ },
+ "96": {
+  "n": "Lightning Reflexes",
+  "d": "+0.2% Base Defence per point.",
+  "x": [
+   "Energy: 10",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "97": {
+  "n": "Hardened",
+  "d": "+0.2% Base Armor per point.",
+  "x": [
+   "Energy: 10",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "98": {
+  "n": "Diagnostic",
+  "d": "+0.5% per point chance that Repair Drone gives an additional 20% durability fix.",
+  "x": [
+   "Energy: 5",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "99": {
+  "n": "Vibroblade",
+  "d": "Attacks that use non-ammo weaponry reduce targets armor by 0.1% per point.",
+  "x": [
+   "Energy: 10",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "100": {
+  "n": "Razordisc",
+  "d": "Slashing weaponry gain 0.25% per point additional damage.",
+  "x": [
+   "Energy: 15",
+   "Duration: 90 min(s)"
+  ]
+ },
+ "101": {
+  "n": "Mutagen",
+  "d": "When a hit is scored on a target using a Rad Weapon, there is a 0.5% per point chance to turn an Opponent into an Irradiated Creature. (Does not work on Mineral and Irradiated targets.)",
+  "x": [
+   "Rad: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "102": {
+  "n": "Poison Blood",
+  "d": "0.15% chance per point to afflict an opponent with a Gamma Dose.",
+  "x": [
+   "Rad: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "103": {
+  "n": "Searing Edge",
+  "d": "Rad Blades gain +0.07% per point to players Blade damage, and -0.08% per point to opponents armor.",
+  "x": [
+   "Rad: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "104": {
+  "n": "Mutant Fury",
+  "d": "If a Piercing Strike is scored on the Mutant, the next Damage dealt on that opponent is increased by 0.25% per point.",
+  "x": [
+   "Rad: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "105": {
+  "n": "Rad Round",
+  "d": "+0.5% chance per point that the Mutant can alter the Damage Type of a Pistol to Rad at the start of combat.",
+  "x": [
+   "Rad: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "106": {
+  "n": "Radioactive Aura",
+  "d": "0.1% per point of every equipped Rad items Attack stat is added to Defence.",
+  "x": [
+   "Rad: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "107": {
+  "n": "Ingest",
+  "d": "If your opponent has a Gamma Dose, you will take 0.2% per point of the opponents current Defence and add this to your Armor for the remainder of the combat. Note: This removes the Gamma Dose effect.",
+  "x": [
+   "Rad: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "108": {
+  "n": "Rad Fire",
+  "d": "+0.2% per point extra damage vs. Irradiated (+0.3% per point if inflicted with Gamma Dose)",
+  "x": [
+   "Rad: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "109": {
+  "n": "Gamma Monster",
+  "d": "For every 15 points in Gamma Monster, it allows another skill to be counted. A 0.25% per point chance that before combat starts, for every Mutant Skill active on the Mutant increases Damage by 1% (The more Mutant Buffs active on the player the more powerful that Mutant becomes. Note: The damage number used by the buff is the overall Mutant damage on the character profile.)",
+  "x": [
+   "Rad: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "110": {
+  "n": "Laser Tagging",
+  "d": "When using Battlesuit Weaponry, there is a 25% chance to Tag an opponent. For each 'Tag' on an opponent, the damage is increased by 0.05% per point.",
+  "x": [
+   "Adren: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "111": {
+  "n": "Heatseeker",
+  "d": "Allows up to 0.1% per point of a targets Defence to be ignored by a Battlesuit weapon.",
+  "x": [
+   "Adren: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "112": {
+  "n": "Pistol Whip",
+  "d": "When a Battlesuit Pistol has spent its magazine the Soldier gets a 0.25% per point chance that they can smash an opponent with the Pistol before re-loading. This attack gains +25% damage for the melee attack. If an Entity is defeated with Pistol Whip, the Soldier gains double Adrenaline from the Combat.",
+  "x": [
+   "Adren: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "113": {
+  "n": "Battlesense",
+  "d": "+0.15% per point to set bonus stats providing the set is a Battlesuit.",
+  "x": [
+   "Adren: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "114": {
+  "n": "Assault Launcher",
+  "d": "Battlesuit Assault Rifles have a 0.4% per point chance of launching a grenade at the target which increases damage by 10% and ignores resistances.",
+  "x": [
+   "Adren: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "115": {
+  "n": "Hollow Point",
+  "d": "Battlesuit Weapons have a 0.15% chance to do a Mortal Wound on a target. Reduces Attack of opponent by 8% for the remainer of the combat.",
+  "x": [
+   "Adren: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "116": {
+  "n": "Combat Field",
+  "d": "If an opponent is inflicted with a Mortal Wound and if using a Battlesuit weapon, gain an 0.1% per point increase to both Attack and Defence for the rest of the combat.",
+  "x": [
+   "Adren: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "117": {
+  "n": "Between the Eyes",
+  "d": "+0.05% chance to cause an additional +0.2% per point extra damage.",
+  "x": [
+   "Adren: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "118": {
+  "n": "Explosive Round",
+  "d": "Changes damage type to Blast. +0.2% per point extra damage vs opponents that have been inflicted with a Mortal Wound.",
+  "x": [
+   "Adren: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "119": {
+  "n": "Suggestion",
+  "d": "A Psionic weapon has a 0.25% chance per point to cast a Distraction at the start of combat. All targets that have a Distraction have their Attack and Defence reduced by 4%.",
+  "x": [
+   "Psi: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "120": {
+  "n": "Phobia",
+  "d": "If Distraction is active on a target, all Damage dealt by the opponent is reduced by 0.1% per point.",
+  "x": [
+   "Psi: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "121": {
+  "n": "Precognition",
+  "d": "Psi Items Defence is increased by 0.1% per point.",
+  "x": [
+   "Psi: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "122": {
+  "n": "Inner Flame",
+  "d": "An Entity killed with a weapon that uses Psi Ammo has 0.5% chance per point of giving 2 – 4 extra Psi Energy.",
+  "x": [
+   "Psi: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "123": {
+  "n": "Centered",
+  "d": "+0.1% per point damage inflicted with Psi based weapons.",
+  "x": [
+   "Psi: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "124": {
+  "n": "Psionic Storm",
+  "d": "Ammo based Psi weapons gain +0.1% per point to their attack and damage stats.",
+  "x": [
+   "Psi: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "125": {
+  "n": "Synthesis",
+  "d": "If Distraction is active on the target, adds an additional 0.2% per point chance to Crystal Thought's chance of success. (Note: Crystal Thought must be active)",
+  "x": [
+   "Psi: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "126": {
+  "n": "Soul Vortex",
+  "d": "Defeating an entity in a single hit gives a +0.25% chance to gain and extra 1 - 5 Psi Energy.",
+  "x": [
+   "Psi: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "127": {
+  "n": "Elemental Circle",
+  "d": "Weapons that do not use Ammo inflict 0.2% per point less damage to the Purist.",
+  "x": [
+   "Psi: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "128": {
+  "n": "Energy Matrix",
+  "d": "If using Hardwired Weapons that use ammo, damage is increased by +0.1% per point.",
+  "x": [
+   "Surge: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "129": {
+  "n": "Dataflow",
+  "d": "Your Hardwired Helmet can access an equipped Hardwired Helmet Add On with an increased efficiency. Hardwired Helmet Add-Ons gain +0.1% per point increased stats.",
+  "x": [
+   "Surge: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "130": {
+  "n": "Thermal Targeting",
+  "d": "If using a Hardwired Weapon, the cyborg gains 0.1% per point chance that no ammo will be spent in each combat round.",
+  "x": [
+   "Surge: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "131": {
+  "n": "Drone Hack",
+  "d": "At the start of combat a Repair Drone which is stored in the Cyborgs Backpack, causing an extra 20% damage. There is a 0.25% per point chance that the drone will survive the combat and return to the Cyborg's Backpack. (Note you must initiate the combat for this skill to take effect.)",
+  "x": [
+   "Surge: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "132": {
+  "n": "Supercharge",
+  "d": "Shots that are enhanced with a Energy Matrix have a 0.5% per point chance to give 3 – 6 extra Surge when the Entity is defeated.",
+  "x": [
+   "Surge: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "133": {
+  "n": "Nanoware",
+  "d": "Hardwired Items gain a coating of Nannites which can redirect Damage into a Static Charge. Damage type changes to Energy and reduced enemies energy resistance by 0.75% per point. (Note this skill will not activate if the Hydraulic Strength skill is active on the player.)",
+  "x": [
+   "Surge: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "134": {
+  "n": "Assimilate",
+  "d": "Cyborg will turn a Core Weapon into a Hardwired item for the rest of the combat. Also adds +0.1% per point stats to weapons that use ammo.",
+  "x": [
+   "Surge: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "135": {
+  "n": "Integration",
+  "d": "The Cyborg's nervous system has fully integrated into the Hardwired Weaponry, 0.1% per point of the items level is added to the Cyborg's Weapon Damage.",
+  "x": [
+   "Surge: 25",
+   "Duration: 120 min(s)"
+  ]
+ },
+ "136": {
+  "n": "Unblinking Optics",
+  "d": "When the Cyborg is in combat with an opponent that is not Cybernetic - the Cyborg gains 0.05% per point additional Armor and Defence.",
+  "x": [
+   "Surge: 25",
+   "Duration: 120 min(s)"
+  ]
+ }
+}

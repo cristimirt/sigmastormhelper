@@ -1,0 +1,35 @@
+{
+ "micro generator": {
+  "n": "Micro Generator",
+  "d": "Adds 1 extra combat stat (attack, defense, armor, damage, HP) to each equipped item, providing the item already has at least 1 increase in the relevant stat, for each level your character is above the item's level. The maximum bonus is determined by the skill level: for each 25 points, one level is added to the maximum limit.",
+  "e": "Maximum bonus at this level: <b>{L/25}</b> per combat stat.",
+  "x": [
+   "Duration: 45 min(s)",
+   "Min. Level 201"
+  ]
+ },
+ "scavenger": {
+  "n": "Scavenger",
+  "d": "Increases chance of success when getting resource items.",
+  "x": [
+   "Duration: 60 min(s)",
+   "Min. Level 16",
+   "Stims: Mk1 = level 100, Mk2 = level 200",
+   "Bonus per level not documented"
+  ]
+ },
+ "mind orb": {
+  "n": "Mind Orb",
+  "d": "50% (+0.25% per point) chance to fill an empty 'Mind Orb', allowing it to be used as ammo.",
+  "x": [
+   "Psi: 30",
+   "Duration: 90 min(s)",
+   "Needs Psionic Sensitivity and Mind Stone"
+  ]
+ },
+ "accelerator": {
+  "n": "Accelerator",
+  "d": "Gives an XP / Energy multiplier. If it is active together with Intensifier, only the highest XP / Energy multiplier is used - they are not combined. (Full description not available.)",
+  "x": []
+ }
+}
