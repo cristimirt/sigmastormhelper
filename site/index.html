@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sigmastorm Helper</title>
+<meta name="description" content="A userscript that adds quality-of-life features to Sigmastorm: a zoomable map you can walk on, a modern profile and backpack, better tooltips.">
+<style>
+  :root { --bg:#0b0e0e; --panel:#141919; --line:#2c3333; --text:#d8cfbf; --dim:#8b8b8b; --accent:#9fe0ff; --ok:#7fe08a; --warn:#e8c36a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.55 system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 40px 20px 60px; }
+  h1 { margin: 0 0 4px; font-size: 2rem; color: #fff; }
+  .tag { margin: 0 0 28px; color: var(--dim); }
+  h2 { margin: 34px 0 10px; font-size: 1.15rem; color: #fff; }
+  a { color: var(--accent); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 18px 20px; margin: 14px 0; }
+  .card.ok { border-color: #2d6a39; }
+  .card h3 { margin: 0 0 6px; font-size: 1rem; color: #fff; }
+  .card p { margin: 6px 0; }
+  .btn { display: inline-block; margin-top: 8px; padding: 10px 20px; border-radius: 6px; background: #1f5f80; color: #fff; font-weight: 600; text-decoration: none; border: 1px solid #3d8fb8; }
+  .btn:hover { background: #2a7aa3; }
+  .btn.alt { background: transparent; color: var(--accent); border-color: var(--line); }
+  .btn.alt:hover { border-color: var(--accent); }
+  .step { display: flex; gap: 14px; align-items: flex-start; }
+  .num { flex: none; width: 28px; height: 28px; border-radius: 50%; background: #1b2a30; color: var(--accent); display: grid; place-items: center; font-weight: 700; }
+  .state { font-weight: 600; }
+  .state.ok { color: var(--ok); }
+  ul.feat { padding-left: 20px; margin: 8px 0; }
+  ul.feat li { margin: 4px 0; }
+  small, .dim { color: var(--dim); }
+  .changes details { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 4px 18px; margin: 10px 0; }
+  .changes summary { cursor: pointer; padding: 10px 0; font-weight: 600; color: #fff; }
+  .changes ul { padding-left: 20px; margin: 4px 0 12px; }
+  .changes li { margin: 6px 0; }
+  .changes code { background: #1b2222; padding: 1px 5px; border-radius: 4px; font-size: .9em; }
+  .demos figure { margin: 18px 0; }
+  .demos img, .demos video { display: block; max-width: 100%; height: auto; border: 1px solid var(--line); border-radius: 8px; }
+  .demos figcaption { margin-top: 6px; color: var(--dim); font-size: .92rem; }
+  footer { margin-top: 40px; color: var(--dim); font-size: .9rem; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Sigmastorm Helper</h1>
+  <p class="tag">Quality of life for <a href="https://www.sigmastorm.com/">Sigmastorm</a>, made by <b>Aurik16</b>. Free and open source.</p>
+
+  <section id="installed" class="card ok" hidden>
+    <h3 class="state ok">&#10003; The helper is installed</h3>
+    <p>It loads itself on <b>sigmastorm.com</b> and keeps itself up to date: nothing more to do. <small id="loaderver"></small></p>
+    <a class="btn alt" href="sigmastormhelper.user.js">Reinstall the loader</a>
+  </section>
+
+  <section id="install">
+    <div class="card step">
+      <div class="num">1</div>
+      <div>
+        <h3>Get a userscript manager</h3>
+        <p>The helper needs <a id="tm" href="https://www.tampermonkey.net/" target="_blank" rel="noopener">Tampermonkey</a> (a free browser extension). If you already have it, skip this step.</p>
+      </div>
+    </div>
+    <div class="card step">
+      <div class="num">2</div>
+      <div>
+        <h3>Install the helper</h3>
+        <p>Click the button. Tampermonkey opens a tab asking you to confirm: press <b>Install</b>. No other action is needed; you do not have to update it again.</p>
+        <a class="btn" href="sigmastormhelper.user.js">Install Sigmastorm Helper</a>
+        <p><small>If clicking only shows text, Tampermonkey is not installed or is turned off (step 1).</small></p>
+      </div>
+    </div>
+    <div class="card step">
+      <div class="num">3</div>
+      <div>
+        <h3>Open the game</h3>
+        <p>Go to <a href="https://www.sigmastorm.com/">sigmastorm.com</a> and reload the page. A small <b>Original | Modern</b> switch appears in the bottom left corner.</p>
+      </div>
+    </div>
+  </section>
+
+  <h2>What it does</h2>
+  <ul class="feat">
+    <li><b>World map</b>: a bigger map that zooms and drags, click a tile to walk there, footprints, quick combat from a floating action list.</li>
+    <li><b>Modern profile</b> (switch at the bottom left): the profile rebuilt with modern CSS, same pictures. Backpack with folders, move / combine / split / destroy and quick use without reloading; equip and unequip without reloading; combat sets in a pop-up.</li>
+    <li><b>Tooltips</b>: no more frozen page when hovering items, buff and skill tooltips show what they do (scaled to the level), a live energy countdown with the time it will be full.</li>
+    <li><b>Banner numbers</b>, repair-all button at the mechanic, blueprint previews and more.</li>
+  </ul>
+
+  <h2>See it working</h2>
+  <div class="demos">
+    <figure>
+      <video src="media/map_combat.mp4" autoplay loop muted playsinline preload="metadata" aria-label="Moving on the world map, path finding and combat"></video>
+      <figcaption><b>Map and combat.</b> Hover a tile to see the route, click to walk it, check a creature and fight it in place. No page reloads.</figcaption>
+    </figure>
+    <figure>
+      <video src="media/bag_gear.mp4" autoplay loop muted playsinline preload="metadata" aria-label="Managing the backpack and gear"></video>
+      <figcaption><b>Backpack and gear.</b> Folders, moving items, using and equipping, all without reloading the page.</figcaption>
+    </figure>
+  </div>
+
+  <h2>Everything the helper changes</h2>
+  <div class="changes">
+<!-- CHANGES -->
+  </div>
+
+  <h2>Good to know</h2>
+  <ul class="feat">
+    <li>It only runs on sigmastorm.com. Settings stay in your browser (localStorage); nothing is sent anywhere except to sigmastorm.com and this site.</li>
+    <li>The script updates itself within minutes of a new version being published. <span id="build" class="dim"></span></li>
+    <li>Not affiliated with the game's owners. Use at your own risk; if the game changes something, the helper may need an update.</li>
+  </ul>
+
+  <footer>
+    Made by Aurik16 &middot; <a href="https://github.com/cristimirt/sigmastormhelper">Source code and bug reports on GitHub</a>
+  </footer>
+</main>
+<script>
+(function () {
+  // the loader (when installed) marks this page at document-start
+  var de = document.documentElement;
+  function sync() {
+    var v = de.getAttribute('data-ssh-loader');
+    document.getElementById('installed').hidden = !v;
+    document.getElementById('install').hidden = !!v;
+    document.getElementById('loaderver').textContent = v ? 'Loader version ' + v + '.' : '';
+  }
+  sync();
+  new MutationObserver(sync).observe(de, { attributes: true, attributeFilter: ['data-ssh-loader'] });
+  // the right store for this browser
+  var ua = navigator.userAgent, tm = document.getElementById('tm');
+  if (/Firefox\//.test(ua)) tm.href = 'https://addons.mozilla.org/firefox/addon/tampermonkey/';
+  else if (/Edg\//.test(ua)) tm.href = 'https://microsoftedge.microsoft.com/addons/detail/tampermonkey/iikmkjmpaadaobahmlepeloendndfphd';
+  else if (/Chrome\//.test(ua) && !/OPR\//.test(ua)) tm.href = 'https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo';
+  // the current build
+  fetch('manifest.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (m) {
+    document.getElementById('build').textContent = 'Current build: ' + m.build + (m.built ? ' (' + m.built.slice(0, 10) + ')' : '') + '.';
+  }).catch(function () {});
+})();
+</script>
+</body>
+</html>

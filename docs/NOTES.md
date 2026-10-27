@@ -1,0 +1,90 @@
+# Project notes
+
+> **Repository layout changed.** The helper used to be one file (an IIFE with `// ---- section` comments). It is now ES modules under `src/`, delivered by a small Tampermonkey loader (see README.md). The section names used below map to modules:
+> storage -> `core/storage`, state/settings -> `core/state`, path-finding data -> `data/tiles.json`, parsing -> `game/parsing`, styles -> `game/styles`, viewer -> `game/viewer`, path finding -> `game/pathfinding`, footprints -> `game/footprints` + `game/map`, floating action list/mechanic -> `game/actionlist`, combat -> `game/combat`, combat evaluation -> `game/evaluation` + `game/entity`, loading pages without a reload -> `game/loading`, events -> `game/events`, modern layout -> `layout/*` (theme, dom, sections, backpack, combatsets, modal, profile), skills / energy / tooltips / blueprints -> `tooltips/*`, banner numbers -> `banner`, Config page -> `settings`, startup -> `main`.
+> Static data (SEED_TILES, SEED_SKILLS, SEED_EXTRA in the old file) is now `data/tiles.json`, `data/skills.json` (id 92 = Scavenger is included), `data/buffs-extra.json`, loaded at start by `core/data.js` into `DATA.tiles / DATA.skills / DATA.extra`.
+> The early hide of the original map / profile (so it never flashes) is done by the loader, before the bundle is fetched; `HIDE_CSS` is duplicated there and the build checks both copies are equal.
+> Testing: `npm run dev`, then `localStorage.setItem('SSH_dev_base', 'http://127.0.0.1:8765/')` in the game tab. Importing the same bundle twice in one page reuses the module (its `init` guards stay set), so reload the page between test runs.
+
+---
+
+# Sigmastorm Helper — how it works
+
+A userscript that gives sigmastorm.com a Fallen Sword-like experience (map viewer, action list, modern layout, tooltips). It runs only on sigmastorm.com and must never break the page: if parsing fails, the game has to keep working.
+
+## Working rules
+- Focused changes, keep the existing style (modules under `src/`, small functions, comments that say why), run `npm run check` before pushing.
+- The live game cannot be run in CI: test changes in a real game tab with `npm run dev` (see the first section). Never test destructive actions (destroying items, components, sets) for real.
+
+## Features by module (old section names)
+storage · state · settings (Config page tab "Sigmastorm Helper") · path-finding data · parsing (`parseLoc`, `LOC_RE`) · styles · viewer (map) · path finding · footprints · floating action list · mechanic (repair bill and repair-all) · combat (quick combat, creature pop-up) · combat evaluation (Monte Carlo) · loading pages without reload · events · start · banner numbers · Config page tabs · blueprints hover tooltip.
+Storage helper: `store.get/set` with `SSH_` localStorage prefix. Keys include `cfg`, `alpos`, `zoom`, `bp:<id>`, `bpi:<itemId>` (cache version `BP_V=1`).
+
+## Game page facts
+- `#mainContentDiv` is a table: row 0 banner, row 1 cells [left menu, centre, right panels]. Banner is `table.sidebars`; credits are its first numeric `font`. Game frames use tables with background `large_content_bg.jpg`; headers use `*_head_bg.gif`.
+- World page: `index.php?cmd=world`. Creature page: `cmd=world&subcmd=viewcreature&creature_id=`. Attack button onclick holds `window.location='index.php?cmd=combat&subcmd=<token>&creature_id=..'`. Attack links have `id="attackLinkN"` only for normal creatures (Elite creatures have none, so we mark combat links lacking `data-atk` with `x`).
+- Quest: POST `cmd=world&subcmd=questaction&quest_id=` returns a page with "INFORMATION ALERT" tables. Blueprint page: `cmd=inventing&subcmd=viewrecipe&recipe_id=`. Mechanic: `cmd=blacksmith` (GET ok); repair-all is `subcmd=repairall`. Item tooltip HTML: `fetchitem.php?item_id&inv_id&t&p&uid`.
+- HTML parser quirk: a `<form>` placed before inputs inside a table owns later inputs via the parser's form pointer; copying markup loses that, so `submitAction` rebuilds the fields.
+- Blueprint listing in shops/backpack shows the resulting item and contains no recipe id, so the hover preview only works on the known-blueprints list page (condition: `!/[?&]subcmd=[^&]/` was needed because page 2 has an empty `subcmd=`).
+
+## Features implemented
+- **Map viewer** `#ssh-map` / `#ssh-world` (TILE=65, zoom 0.35–1.8, wheel zoom over the map, drag with clamp `keep=80`). Always centres on the player (`applyZoom`); drag/zoom allowed, pan resets on move (`show()`), footprints, path finding.
+- **Wall filler**: `<canvas id="ssh-fill">` drawn on every `applyZoom` for all cells in the viewport, using `wallPool(area)` (border-ring tile images ≥25% of the max count, up to 6, per-cell hash choice). World transition is switched off during zoom (`ssh-zooming` class in `setZoom`) so canvas and world stay in sync. Canvas is not DPR-scaled (possible improvement).
+- Zone title + "W" button opening `https://sigmastorm2.fandom.com/wiki/<Zone_Name_(Sub)>` in a new tab.
+- **Action List** floating panel: `position:absolute` (scrolls with the page), z-index 1000, draggable, position saved in `alpos`. Quick combat from the list (including Elite creatures), result written back into the row.
+- Game Stats / Kill Logs panels moved to the left column; trailing `<br>` after the copyright removed.
+- **Creature pop-up** (click the creature image): shows only the `large_content_bg.jpg` table; draggable by the title bar only (so text is selectable); centred by default; attack inside the pop-up fights in the background and shows the result under the picture (left), with a detailed round-by-round log and loot; Action List row updated. Layout is divs, not tables. All pop-ups should be draggable.
+- **Combat Evaluation**: Monte Carlo simulation (`parseCreature`, `playerStats`, `fight`, `simulate`, `evalHtml`). Rules: Attack vs Defense for hit chance, `(Creature Damage − Player Armor) × (1 − Resistance/100)`, turns alternate starting with the player, 20-turn limit, ammo ignored, enhancements triggered by chance (e.g. 2 → 2%), totals taken from the stats including buffs. A real fight predicted 115 damage vs 116 actual. The 20-turn definition and rounding are still guesses.
+- **Quest pop-up** for tiles with a quest (no page refresh).
+- **Blueprint hover tooltip**: loads recipe pages in the background, caches static data, refreshes owned counts and credits on each hover.
+- **Mechanic**: tooltip/row shows the total repair cost with credits owned, repair-all button (heal icon, same size/alignment as the sibling icon) via ajax, durability bar updated.
+
+## Modern layout (section "modern layout" in the script)
+- A fixed switch at the bottom left of every page: `Original | Modern` plus a theme `<select>` (visible in Modern). Stored in `SSH_layout` (`orig`/`modern`) and `SSH_theme`. Default is Original. `html.ssh-modern` turns it on; an early `<style id="ssh-early-m">` hides the original table on profile pages so it never flashes.
+- Plan: 1. Original layout, 2. Modern layout with themes: Original Core (done for the profile), New Core, Mutant, Soldier, Psionic, Cyborg (later). A theme is an entry in `THEMES` (`skin` base url + `img` paths, optional `head(name, url)` hook); CSS is built by `mCss()` from it, so a new theme only supplies pictures. Note the picture folders: frames and heads are in `inventory/`, page chrome in `skin/`, `1x1mini.gif` in `inventory/`.
+- Profile (`cmd=profile`, also other players' profiles): `buildProfile` reads the original `table[background*="large_content_bg"]` (kept in the page, hidden via `data-ssh-orig`, it stays the source of truth) and builds `#ssh-prof` with grid/flex. Sections are found by their head picture (`*_head.jpg`) and rendered by `PF[name]` (`pfStats`, `pfBars`, `pfInv`, `pfBack`, `pfComp`, ...); unknown sections or errors fall back to `pfGeneric` (original contents inside the new frame). If the build fails the original stays visible.
+- Form controls are proxies (`proxify`, `proxyInput`, `proxySelect`): changes are written to the original control and buttons call `original.click()`. Inline tooltip/click handlers are copied with the markup. "Combat Sets" toggles a panel built from `#profileCombatSetDiv`.
+- Section positions and heights were matched to the original (verified with a script comparing both); tidy-ups: the backpack grid fills its container, all 10 component slots are visible, head links are right-aligned.
+- Testing without installing: serve the script from a small node server with CORS, `fetch` it in the page and `(0,eval)` it after clearing `window.__ssh` and the `data-ssh` attribute (the page's CSP allows this for fetch+eval, not for a `<script src>`).
+
+## Backpack (modern layout, `pfBack` and the `bp*` functions)
+- Own small app: `bpParse(rows)` reads folders/items/pages from the page markup (or from a fetched copy of the profile page via `bpFromDoc`), `bpRender` draws them. Everything is sent with fetch, no page reloads: folders/pages/refresh = GET `index.php?cmd=profile&folder_id=N` (or the page link's href); move/combine/split = POST `cmd=profile&subcmd=backpackaction&folderItem[]=<inv id>...&folder_id=<target>&split_amount=<n>&submit=Go|Combine Selected|Split Selected` (the game's own `folderManagement` form); destroy = POST `cmd=profile&subcmd=dodropitems&removeIndex[]=<inv id>` (confirm dialog first). After a POST the backpack is reloaded with a GET. **Destroy must never be tested for real** (the user's instruction); `window.__ssh.bp.bpFields(kind, ids, ...)` builds the bodies without sending.
+- Inventory id: `inventory_id=` in the item link, or the 2nd argument of `ajaxLoadItem(itemId, invId, type, pid, str)` in the img's `onmouseover` (copied onto the new images so the game's tooltips keep working). Folder -1 is Main; the `Folders` / `Delete` header links are the game's own pages.
+- The selection bar (move / combine / split / destroy) only shows when at least one item is selected; checkboxes sit in the item's top-right corner. Header buttons: gear (settings dialog: item size 50/75/100 %, stored in `SSH_bp` as `{size}`) and refresh. Item size uses CSS `zoom` on `.bp-w`; below 100 % the count is drawn over the picture.
+- Using items (`bpUse`): the item link's `subcmd` is `useitem` (consumables, resources, ammo) or `equipitem` (gear); items without a link cannot be used. The link is fetched with GET, the game's message (`gAlerts`: a table whose first `<b>` is "INFORMATION ALERT" / "ERROR ALERT"..., e.g. "You are already at full health.") is shown in a dialog (`alertModal`), the banner is updated with `updateHeader(html)`, then the bag is reloaded; for gear the whole profile content is replaced (`refreshProfile`, also `refreshDur(0)`).
+- Equipped items in the character display (`.inv .slot a`, `subcmd=unequipitem`) go through the same `bpUse` gear path (handled in `onProfClick`).
+- `bpLoad` also refreshes the components section (`secFromDoc(doc, 'components')` -> `compUpdate`). Clicking a component (`subcmd=destroycomponent`, no confirmation, as in the game) and the component page links work in place (`onProfClick`, `compDestroy`, `compLoad`).
+- The open folder is remembered in `SSH_bpFolder` and restored once per page load (the game always loads Main).
+- Form ownership gotcha: the game's `<form>` is an empty tag in front of its controls, and the browser only ties the controls to it while parsing the full page. Copied/moved/re-serialized nodes lose that (`input.form` becomes null), so after replacing the profile table `fixForms` ties them to the empty form again. The combat-set proxies depend on this.
+- Combat sets (`csOpen`, `csCombo`, `csFields`): the "Combat Sets" link in the inventory head opens a dialog with a searchable select (own small combobox: Select2 cannot be used, the game ships jQuery 1.4.4 and Select2 needs 1.7+), Use / Delete (inline confirmation) and "Save set" (name box + Confirm). The game's own form is `#profileCombatSetDiv`: POST `cmd=profile&subcmd=managecombatset&combat_set_id=<id>&submit=Use|X` (X = delete); saving is POST `cmd=profile&subcmd=dosavecombatset&name=<name>`. The list is read from the page's `#profileCombatSetDiv select` (options other than -1) and re-read with a GET after save/delete. Use closes the dialog and runs `refreshProfile`. Not tested against the real server (this account had no sets): the request bodies were checked with a stubbed fetch.
+- `mModal(title, body, buttons)` is the small draggable dialog (Esc / click outside closes).
+- The script file uses CRLF line endings; keep them when splicing with scripts.
+
+## Tooltips (section "tooltips", `initTips`)
+- The game's `wz_tooltip` (`Tip(html)`, `tt_setWidth(w)`, config in `window.config`) left tooltips stuck/off-screen: item data loads slowly (and the game calls `Tip()` a second time when it arrives), so the mouse-out / next-mouse-move it relies on is missed. `initTips` replaces `Tip`/`tt_setWidth` (found by polling, the game's scripts load late via Rocket Loader) with a small tooltip `#ssh-gtip` that uses the game's own settings (width 375, colours, offsets), follows the pointer, hides on mouse-out/mouse-down, and can only be opened by a handler running during a real mouse-over; later `Tip()` calls only refresh an open tooltip.
+
+- Item data (`window.ajaxLoadItem`, replaced inside `initTips`'s `install`): the game's own version fetched `fetchitem.php` with a blocking XHR (about 280 ms of frozen page per uncached item). The replacement shows "Loading Stats..." at once, fetches in the background (in-flight requests are shared) and fills the tooltip in with `refresh(id, html)` only if that same tooltip (`tipId`) is still open. Answers are cached for 60 s and cleared by `bpLoad` / `refreshProfile` (`ajaxLoadItem.clear()`). The page's jQuery is 1.4.4: leave it alone, our script is plain JS.
+
+## Skills / buff tooltips (section "skills", `SEED_SKILLS`, `scaleDesc`, `skillTip` in `initTips`)
+- Buff icons are `.../skills/<id>_small.gif` and their tooltip is `Tip('<center><b>Strike</b> (Level: 10)</b><br>[Click to De-Activate]</center>')`; skill id 0 is Strike. `initTips`' `show` recognises that (level in the text + id from the hovered image) and appends the skill's description scaled to the level, plus its cost and duration lines.
+- `SEED_SKILLS` (133 skills, ids 0-136; 92-95 do not exist) was scraped from `index.php?cmd=skills&tree_id=0&skill_id=<id>` with `parseSkill` (panel `table[width="140"]`: description row, `Label: value` rows; name = first `<b>` of the enclosing table; passives have only a description). Skills not in the list are fetched once with `loadSkill` and kept in `SSH_skills`. The server writes its en dash as a broken character, replaced by an en dash.
+- `scaleDesc(desc, level)`: only text that says "per point" is scaled (the nearest number before it, no digits in between): "+0.2% Base Attack per point." -> "+2% Base Attack."; "0.1% per point of the items level" -> "1% of the items level". Percentages without the words "per point" are left as written.
+- The right-column "Skills" panel (`#skillBoxData`) has `a.skillBox#skill_<id>` links with the picture as a CSS background (`skills/box/<id>_small.gif`) and the tooltip `<b>Name</b><br>(Level: N)<br><br>Active at level: N<br><br>[Click to deactivate | activate at level N]`. `skillTip` handles both that and the buff images (`closest('img, .skillBox')`).
+- `SEED_EXTRA`: buffs that are not in the skill tree (stims), by lower-case name, taken from the Sigma Storm 2 wiki (`sigmastorm2.fandom.com/wiki/Skills:<name>?action=raw`, the Category:Skills page lists 94 pages; only Micro Generator, Mind Orb and Scavenger were missing, plus Cannibalize = our Cannibalise). Their ids are unknown, so `skillFor` matches by the name in the tooltip when the picture is not `skills/<id>_small.gif` (or the id's name disagrees). Accelerator has no description anywhere: the entry only repeats what Intensifier's game text says. `e` is a computed extra line (`{L/25}` = level div 25); `scaleDesc` also handles "50% (+0.25% per point)" as base + bonus x level.
+- Stim buffs use skill ids that have no skill page: 92 is Scavenger (confirmed by the user; `SEED_SKILLS[92]` points at the Scavenger entry), 93-95 probably are other stims (unknown). The wiki's stim pages (`Mk1_Scavenger_Stim`, `Mk2_Scavenger_Stim`) only give the buff level (100 / 200) and 60 min, no percentage; the Scavenger bonus per level is not documented anywhere we found.
+- To refresh the data: run the scrape in a page of the game (loop ids, `parseSkill`) and regenerate the `SEED_SKILLS` literal.
+
+## Energy tooltip (section "energy tooltip", `energyHtml`, hooked in `initTips`' `show`)
+- The banner's energy tooltip is text written at page load: `Energy: N / 500`, `Gain Per Hour: +50`, `Next Gain : 21m 40s`. Observed on the live game: energy rises by exactly +50 once an hour and the countdown restarts at 60 minutes (17 -> 67 with 59m 51s afterwards).
+- `S.hdrT` = when that text was current (script start, reset by `updateHeader` whenever the banner is replaced from a response). `energyHtml` adds the +50 steps since then, shows a live countdown (the tooltip is refreshed every second while open) and a "Full in" row with the clock time (local and server). The server's clock (`Server Time:` panel) was UTC when checked; `serverOffset()` reads it once at start.
+- Limits: the numbers are an estimate from the last server answer; energy spent or gained elsewhere (another tab) is not seen until the page or banner reloads.
+
+## Ideas / pending
+- Modern layout for the other pages (same frame styling), then the other themes.
+- Include buffs in the combat simulation.
+- Themed UI: more themes for the Modern layout (New Core, Mutant, Soldier, Psionic, Cyborg).
+- Compare Combat Evaluation predictions against real fights and tune.
+- Optional: DPR-aware filler canvas.
+
+## Testing notes
+There is no automated test of the game pages. Use `npm run dev` and the game itself; `window.__ssh` exposes the state `S` and a few helpers (`__ssh.bp`, `__ssh.skills`, `__ssh.energy`) for the console.
