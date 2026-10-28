@@ -1,3 +1,4 @@
+import { pageParts } from '../core/page.js';
 import { mel } from '../layout/dom.js';
 import { alertModal, gAlerts, mModal } from '../layout/modal.js';
 
@@ -6,8 +7,8 @@ import { alertModal, gAlerts, mModal } from '../layout/modal.js';
 // (it does not switch to the other one).
 
 const cell = (doc) => {
-  const m = doc.getElementById('mainContentDiv');
-  return m && m.rows.length > 1 && m.rows[1].cells.length > 1 ? m.rows[1].cells[1] : null;
+  const p = pageParts(doc);
+  return p ? p.body : null;
 };
 
 // The folder and page the content shows (the highlighted folder picture and the page list).

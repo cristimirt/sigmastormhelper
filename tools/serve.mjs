@@ -7,7 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const dist = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'dist');
-const types = { '.js': 'text/javascript', '.json': 'application/json', '.html': 'text/html', '.css': 'text/css', '.map': 'application/json', '.gif': 'image/gif', '.mp4': 'video/mp4' };
+const types = { '.js': 'text/javascript', '.json': 'application/json', '.html': 'text/html', '.css': 'text/css', '.map': 'application/json', '.gif': 'image/gif', '.png': 'image/png', '.mp4': 'video/mp4' };
 const port = +process.env.PORT || 8765;
 
 http.createServer((req, res) => {

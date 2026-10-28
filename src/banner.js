@@ -1,20 +1,28 @@
 import { S } from './core/state.js';
 import { store } from './core/storage.js';
 import { fmt, num, txt } from './core/util.js';
-import { modernHeader, modernNumbers } from './layout/header.js';
+import { pageParts } from './core/page.js';
+import { modernHeader, syncModernNumbers } from './layout/header.js';
 
 // Update the top bar (HP, energy, credits, XP) from the combat page right away.
 export function updateHeader(html) {
   try {
-    const nxt = new DOMParser().parseFromString(html, 'text/html').getElementById('mainContentDiv');
-    const cur = document.getElementById('mainContentDiv');
-    if (cur && nxt && cur.rows.length && nxt.rows.length) {
-      cur.rows[0].cells[0].innerHTML = nxt.rows[0].cells[0].innerHTML;
+    const nxt = pageParts(new DOMParser().parseFromString(html, 'text/html'));
+    const cur = pageParts();
+    if (cur && nxt) {
+      setHeaderFrom(cur, nxt);
       S.hdrT = Date.now(); // the energy tooltip's countdown starts again from this response
     }
     grabVars(html);
     decorateHeader();
   } catch (e) { /* the final refresh fixes it */ }
+}
+
+// The banner of a fetched page becomes the banner of this one: the game's own cell is replaced; in the Modern frame the banner is
+// made again from its table (see decorateHeader).
+export function setHeaderFrom(cur, nxt) {
+  if (cur.modern) S.hdrSrc = nxt.header.querySelector('table.sidebars') || S.hdrSrc;
+  else cur.header.innerHTML = nxt.header.innerHTML;
 }
 
 S.surge = null;
@@ -38,8 +46,8 @@ export function grabVars(html) {
 // Skill Power now: the page's variable (the game's skill buttons keep it up to date), else what the last response said.
 const surgeNow = () => (typeof window.currentPlayerSurge === 'number' ? window.currentPlayerSurge : S.surge);
 
-// The numbers the banner writes, read from the game's banner (its tooltips, pictures and the energy number).
-export function bannerTexts(hc) {
+// The numbers the banner writes, read from the game's banner hc (a table or a cell: its tooltips, pictures and the energy number).
+function bannerTexts(hc) {
   const tips = [...hc.querySelectorAll('[onmouseover]')].map((e) => txt(e.getAttribute('onmouseover')));
   const sum = tips.find((t) => /Character Summary/.test(t)) || '';
   const spTip = tips.find((t) => /Skill Power/.test(t)) || '';
@@ -47,7 +55,7 @@ export function bannerTexts(hc) {
   const spImg = hc.querySelector('#surgeImg');
   const bs = [...hc.querySelectorAll('b')].filter((b) => /^[\d,]+(?:\s*\/\s*\d+)?$/.test(txt(b.textContent)));
   const sc = hc.querySelector('#staminaCurrent'); // the number the game's skill buttons change
-  const out = { hp: '', sp: '', flux: bs[0] ? txt(bs[0].textContent) : null, en: sc ? txt(sc.textContent) : bs[1] ? txt(bs[1].textContent) : null };
+  const out = { hp: '', sp: '', spMax: '', flux: bs[0] ? txt(bs[0].textContent) : null, en: sc ? txt(sc.textContent) : bs[1] ? txt(bs[1].textContent) : null, enMax: '' };
   if (S.cfg.bannerNums) {
     if (hp) out.hp = fmt(num(hp[1])) + ' / ' + fmt(num(hp[2]));
     if (spImg) {
@@ -55,40 +63,65 @@ export function bannerTexts(hc) {
       const now = surgeNow();
       const pct = parseFloat(spImg.style.width || spImg.getAttribute('width')) || 0;
       out.sp = (now !== null && now !== undefined ? now : Math.round((pct * max) / 100)) + ' / ' + max;
+      out.spMax = String(max);
     }
-    if (out.en !== null) out.en = num(out.en) + ' / ' + S.staminaMax;
+    if (out.en !== null) { out.en = String(num(out.en)); out.enMax = String(S.staminaMax); }
   }
   return out;
 }
 
-// A skill changes the Skill Power bar's width and the energy number of the game's banner; the helper's numbers follow. (In the
-// Modern layout the bar and numbers are copies, which are updated in place so the orbs do not start their animation again.)
+// A skill changes the Skill Power bar's width and the energy number (by their ids); the helper's numbers follow. In the Modern banner
+// those two are the helper's own pieces with the same ids, so only the Skill Power number and the durability are written again, in
+// place (the orbs do not start their animation again).
 let watch = null;
 let watchT = 0;
 function syncBanner() {
-  const m = document.getElementById('mainContentDiv');
-  const hc = m && m.rows.length ? m.rows[0].cells[0] : null;
-  if (!hc) return;
-  if (S.layout === 'modern' && modernNumbers(hc, bannerTexts(hc))) return;
+  const hdr = document.getElementById('ssh-hdr');
+  if (S.layout === 'modern' && hdr) {
+    const e = hdr.querySelector('[data-n="sp"]');
+    const now = surgeNow();
+    syncModernNumbers(hdr, S.cfg.bannerNums && e && e.dataset.max && now !== null && now !== undefined ? now + ' / ' + e.dataset.max : '');
+    return;
+  }
   decorateHeader();
 }
-function watchBanner(hc) {
+function watchBanner() {
   if (!watch) watch = new MutationObserver(() => { clearTimeout(watchT); watchT = setTimeout(syncBanner, 40); });
   watch.disconnect();
-  const sc = hc.querySelector('#staminaCurrent');
-  const si = hc.querySelector('#surgeImg');
+  const sc = document.getElementById('staminaCurrent');
+  const si = document.getElementById('surgeImg');
   if (sc) watch.observe(sc, { childList: true, characterData: true, subtree: true });
   if (si) watch.observe(si, { attributes: true, attributeFilter: ['style', 'width'] });
 }
 
+// Back to the game's own banner (the Original layout): its table goes into the page again.
+export function restoreHeader() {
+  const p = pageParts();
+  if (!p || !p.modern || !S.hdrSrc) return;
+  p.header.querySelectorAll('#ssh-hdr').forEach((e) => e.remove());
+  if (!S.hdrSrc.isConnected) p.header.append(document.adoptNode(S.hdrSrc));
+  S.hdrSrc = null;
+}
+
 export function decorateHeader(tries) {
   try {
-    const m = document.getElementById('mainContentDiv');
-    const hc = m && m.rows.length ? m.rows[0].cells[0] : null;
+    const p = pageParts();
+    const hc = p && p.header;
     if (!hc) return;
-    watchBanner(hc);
-    // the Modern layout builds the banner again with divs (see layout/header.js); the numbers are written in it
-    if (S.layout === 'modern' && modernHeader(hc, bannerTexts(hc))) return;
+    // the Modern frame: the banner is made again with divs from the game's table (see layout/header.js) and the table leaves the
+    // page; the first time it is the one in the page, later the one of the last page fetched
+    if (p.modern) {
+      const src = S.hdrSrc || hc.querySelector('table.sidebars');
+      if (src) {
+        S.hdrSrc = src;
+        if (src.isConnected) src.remove();
+        hc.querySelectorAll('#ssh-hdr, .ssh-ov').forEach((e) => e.remove()); // (the game's own banner may have had its numbers added before the frame was made)
+        hc.insertBefore(modernHeader(src, bannerTexts(src)), hc.firstChild);
+        watchBanner();
+        return;
+      }
+    }
+    watchBanner();
     hc.querySelectorAll('#ssh-hdr, .ssh-ov').forEach((e) => e.remove()); // the game's own banner: no Modern copy in the way
     const hpImg = hc.querySelector('img[src*="hp_progress"]');
     const spImg = hc.querySelector('#surgeImg');

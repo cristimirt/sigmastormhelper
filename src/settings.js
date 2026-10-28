@@ -1,10 +1,12 @@
 import { VERSION } from './core/constants.js';
+import { pageParts } from './core/page.js';
 import { CFG_DEFAULT, S } from './core/state.js';
 import { store } from './core/storage.js';
 import { esc } from './core/util.js';
 
 export function initSettings() {
-  const t = document.querySelector('#mainContentDiv table[background*="large_content_bg"]');
+  const p = pageParts();
+  const t = p && p.body.querySelector('table[background*="large_content_bg"]');
   if (!t || !t.tBodies.length || t.dataset.sshTabs) return;
   t.dataset.sshTabs = '1';
   const body = t.tBodies[0];

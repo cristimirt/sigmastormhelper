@@ -1,4 +1,4 @@
-import { decorateHeader, refreshDur, updateHeader } from '../banner.js';
+import { decorateHeader, refreshDur, restoreHeader, updateHeader } from '../banner.js';
 import { dropEarlyM } from '../core/constants.js';
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
@@ -6,6 +6,7 @@ import { BP, bpUse, compDestroy, compLoad } from './backpack.js';
 import { csOpen } from './combatsets.js';
 import { mel, proxify } from './dom.js';
 import { pfSection, pfSections } from './sections.js';
+import { buildFrame, unbuildFrame } from './frame.js';
 import { THEMES, mCss, onProfile } from './theme.js';
 
 // Dim the whole profile content while it is being replaced (gear changed: the stats move too).
@@ -114,7 +115,9 @@ function applyLayout() {
   st.textContent = mCss();
   dropEarlyM();
   document.documentElement.classList.toggle('ssh-modern', modern);
-  decorateHeader(); // the banner: rebuilt for the Modern layout, the game's own with numbers otherwise
+  // the page around the content: divs (a banner, two columns of widgets you can rearrange, a footer) in the Modern layout, the game's own
+  // table otherwise
+  if (modern) { buildFrame(); decorateHeader(); } else { restoreHeader(); unbuildFrame(); decorateHeader(); }
   const sel = document.querySelector('#ssh-lay select');
   if (sel) { sel.style.display = modern ? '' : 'none'; sel.value = S.theme; }
   document.querySelectorAll('#ssh-lay button').forEach((b) => b.classList.toggle('on', b.dataset.l === S.layout));

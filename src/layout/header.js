@@ -19,7 +19,7 @@ const SLOT = {
 };
 
 export const bannerCss = () =>
-  '#ssh-hdr{display:none;position:relative;width:1000px;height:150px;margin:0 auto 6px;background:url("' + SKIN + 'top_banner_x4.jpg") no-repeat 0 0;overflow:hidden}' +
+  '#ssh-hdr{display:none;position:relative;width:1000px;height:150px;margin:0;background:url("' + SKIN + 'top_banner_x4.jpg") no-repeat 0 0;overflow:hidden}' +
   'html.ssh-modern #ssh-hdr{display:block}#ssh-hdr img{border:0}' +
   '#ssh-hdr .n{text-align:center;font:bold 9px Verdana,Arial,sans-serif;color:#fff;white-space:nowrap;text-shadow:0 0 2px #000,0 0 2px #000,1px 1px 1px #000;pointer-events:none}';
 
@@ -58,6 +58,7 @@ function bar(img, slot, tipFrom, text, key) {
   if (tipFrom) copyOn(tipFrom, s);
   const f = img.cloneNode(false);
   f.removeAttribute('id');
+  if (key === 'sp') f.id = 'surgeImg'; // the game's skill buttons set this bar's width by its id
   f.style.cssText = 'position:absolute;left:0;top:1px;height:9px;width:' + fillWidth(img);
   f.dataset.b = key;
   s.appendChild(f);
@@ -81,31 +82,18 @@ function drawDur(g) {
   g.lastChild.textContent = dur ? 'Gear ' + dur.cur + ' / ' + dur.max + ' (' + pct.toFixed(1) + '%)' : 'Gear ...';
 }
 
-// The bars and numbers of the banner made by modernHeader(), written again from the game's banner (a skill used, say).
-export function modernNumbers(hc, n) {
-  const hdr = hc.querySelector('#ssh-hdr');
-  const t = hc.querySelector('table.sidebars');
-  if (!hdr || !t) return false;
+// What changes without the game's table: the Skill Power number (the bar and the energy number are the game's own ids, which its
+// skill buttons change) and the durability bar.
+export function syncModernNumbers(hdr, sp) {
   const dg = hdr.querySelector('[data-d]');
   if (dg) drawDur(dg);
-  Object.keys(n).forEach((k) => {
-    const e = hdr.querySelector('[data-n="' + k + '"]');
-    if (e && n[k] !== null && n[k] !== undefined && n[k] !== '') e.textContent = n[k];
-  });
-  [['hp', 'img[src*="hp_progress"]'], ['xp', 'img[src*="xp_progress"]'], ['sp', '#surgeImg']].forEach(([k, sel]) => {
-    const i = t.querySelector(sel);
-    const f = hdr.querySelector('[data-b="' + k + '"]');
-    if (i && f) f.style.width = fillWidth(i);
-  });
-  return true;
+  const e = hdr.querySelector('[data-n="sp"]');
+  if (e && sp) e.textContent = sp;
 }
 
-// n: the texts to write (hp, sp, flux, en); returns false when the game's banner is not there.
-export function modernHeader(hc, n) {
-  const t = hc.querySelector('table.sidebars');
-  if (!t) return false;
-  hc.querySelectorAll('#ssh-hdr').forEach((e) => e.remove());
-  t.setAttribute('data-ssh-orig', '');
+// The banner as divs, made from the game's banner table t (the live one, or one of a fetched page: it is only read). n: the texts to
+// write (hp, sp, spMax, flux, en, enMax).
+export function modernHeader(t, n) {
   const q = (s) => t.querySelector(s);
   const hdr = document.createElement('div');
   hdr.id = 'ssh-hdr';
@@ -145,7 +133,13 @@ export function modernHeader(hc, n) {
     d.className = 'n';
     d.dataset.n = key;
     d.style.fontSize = fs + 'px';
-    d.textContent = text;
+    if (key === 'en') { // the game's skill buttons change #staminaCurrent: the number is theirs, the maximum after it is ours
+      const sc = document.createElement('span');
+      sc.id = 'staminaCurrent';
+      sc.textContent = text;
+      d.append(sc);
+      if (n.enMax) d.append(' / ' + n.enMax);
+    } else d.textContent = text;
     add(d);
   });
 
@@ -155,11 +149,21 @@ export function modernHeader(hc, n) {
   // the news picture, centred in its slot, and the Skill Power bar with its icon
   const news = q('img[src*="instance_tip"]');
   if (news) add(place(news, SLOT.news[0] + Math.round((SLOT.news[2] - 165) / 2), SLOT.news[1] + Math.round((SLOT.news[3] - 50) / 2), 165, 50));
+  else { // no event to announce: the game shows a tip there
+    const tip = [...t.querySelectorAll('font')].find((f) => /^Tip$/i.test(((f.querySelector('b') || {}).textContent || '').trim()));
+    if (tip) {
+      const d = inSlot(SLOT.news, 'box-sizing:border-box;padding:5px;overflow:hidden;font:7pt Verdana,sans-serif;line-height:1.3;color:#fff');
+      d.innerHTML = tip.innerHTML;
+      add(d);
+    }
+  }
   const sp = q('#surgeImg');
-  add(bar(sp, SLOT.surge, sp && sp.closest('[onmouseover]'), n.sp, 'sp'));
+  const spBar = bar(sp, SLOT.surge, sp && sp.closest('[onmouseover]'), n.sp, 'sp');
+  const spn = spBar && spBar.querySelector('[data-n="sp"]');
+  if (spn && n.spMax) spn.dataset.max = n.spMax;
+  add(spBar);
   const ico = [...t.querySelectorAll('img')].filter((i) => /\/4\.gif$/.test(i.getAttribute('src') || '') && !i.getAttribute('onmouseover')).pop(); // the icon row's 4.gif has a tooltip
   if (ico) add(place(ico, SLOT.surgeIcon[0] + 1, SLOT.surgeIcon[1] + 1, 16, 16));
 
-  hc.insertBefore(hdr, hc.firstChild);
-  return true;
+  return hdr;
 }
