@@ -1,4 +1,5 @@
 import { TILE, ZOOM_MAX, ZOOM_MIN } from '../core/constants.js';
+import { DATA } from '../core/data.js';
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
 import { renderTrail } from './footprints.js';
@@ -23,7 +24,7 @@ export function renderWorld() {
     });
     h += '<div id="ssh-fp"></div>';
     h += '<svg id="ssh-path" width="' + area.cols * TILE + '" height="' + area.rows * TILE + '"></svg>';
-    h += '<div id="ssh-me"><img src="http://cdn.sigmastorm.com/skin/player_tile.gif" alt=""></div>';
+    h += '<div id="ssh-me"><img src="https://cdn.sigmastorm.com/skin/player_tile.gif" alt=""></div>';
     w.innerHTML = h;
   }
   renderPad();
@@ -36,9 +37,13 @@ export function renderWorld() {
   // The game's own title bar carries the area's safety colour (green = no PvP, red = PvP)
   if (S.locBg) lc.style.cssText = 'background:#000 url("' + S.locBg + '") no-repeat 0 0;height:22px;line-height:16px;padding:3px 12px 0 14px;box-sizing:border-box;';
   const wk = v.querySelector('#ssh-wiki');
-  if (wk) {
-    wk.href = 'https://sigmastorm2.fandom.com/wiki/' + encodeURI(S.loc.area.replace(/\s+/g, '_'));
-    wk.style.left = (lc.offsetLeft + lc.offsetWidth + 4) + 'px';
+  if (wk) wk.href = 'https://sigmastorm2.fandom.com/wiki/' + encodeURI(S.loc.area.replace(/\s+/g, '_'));
+  // the Guide's page of the area: the game does not say its number, the guide's list of areas does (data/realms.json, by name)
+  const gd = v.querySelector('#ssh-guide');
+  if (gd) {
+    const id = DATA.realms[S.loc.area];
+    gd.hidden = !id;
+    if (id) gd.href = 'https://guide.sigmastorm.com/index.php?cmd=realms&subcmd=view&realm_id=' + id;
   }
   applyZoom();
 }

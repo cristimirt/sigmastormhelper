@@ -100,6 +100,7 @@ for (const o of res.outputFiles) {
 fs.cpSync(p('data'), path.join(dist, 'data'), { recursive: true });
 fs.copyFileSync(p('loader/sigmastormhelper.user.js'), path.join(dist, 'sigmastormhelper.user.js'));
 fs.cpSync(p('site'), dist, { recursive: true, filter: (src) => !src.endsWith('.gif') }); // the GIFs are for the README; the page plays the MP4s
+fs.cpSync(p('src/media'), path.join(dist, 'media'), { recursive: true }); // pictures the helper itself uses (the banner's animations)
 // the full list of changes (docs/changes.md, also pasted into the README) goes into the install page
 const page = path.join(dist, 'index.html');
 const html = fs.readFileSync(page, 'utf8');

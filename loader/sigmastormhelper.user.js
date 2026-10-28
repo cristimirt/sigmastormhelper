@@ -3,7 +3,7 @@
 // @namespace    https://cristimirt.github.io/sigmastormhelper/
 // @description  Quality of life for Sigmastorm: a bigger map you can walk on, a modern profile and backpack, better tooltips.
 // @author       Aurik16
-// @version      1.0.0
+// @version      1.0.1
 // @match        https://www.sigmastorm.com/*
 // @match        https://sigmastorm.com/*
 // @match        https://cristimirt.github.io/sigmastormhelper/*
@@ -26,6 +26,9 @@
     de.setAttribute('data-ssh-loader', (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '1');
     return;
   }
+  // `ssh=off` in the address (index.php?cmd=profile&ssh=off) keeps the helper out of that page: to see the game as it is, or to
+  // work on the helper without this copy of it loading too
+  if (/[?&]ssh=off(&|#|$)/.test(location.search)) return;
   if (de.hasAttribute('data-ssh') || window.__ssh) return; // once per page
   de.setAttribute('data-ssh', '1');
 

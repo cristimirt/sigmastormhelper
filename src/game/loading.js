@@ -1,4 +1,6 @@
-import { decorateHeader, grabVars } from '../banner.js';
+import { decorateHeader, grabVars, setHeaderFrom } from '../banner.js';
+import { pageParts } from '../core/page.js';
+import { buildWorldPage } from '../layout/worldpage.js';
 import { SSH } from '../core/constants.js';
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
@@ -37,13 +39,13 @@ export function read(doc) {
 
 // Copies the parts of a freshly fetched page that change (header stats and the centre column).
 export function swapIn(doc) {
-  const cur = document.getElementById('mainContentDiv');
-  const nxt = doc.getElementById('mainContentDiv');
-  if (!cur || !nxt || cur.rows.length < 2 || nxt.rows.length < 2) return false;
+  const cur = pageParts();
+  const nxt = pageParts(doc);
+  if (!cur || !nxt) return false;
   const keep = S.viewer && S.viewer.parentNode ? S.viewer : null;
   if (keep) keep.parentNode.removeChild(keep);
-  cur.rows[0].cells[0].innerHTML = nxt.rows[0].cells[0].innerHTML;
-  cur.rows[1].cells[1].innerHTML = nxt.rows[1].cells[1].innerHTML;
+  setHeaderFrom(cur, nxt);
+  cur.body.innerHTML = nxt.body.innerHTML;
   decorateHeader();
   return true;
 }
@@ -56,6 +58,7 @@ export async function show(info, prev) {
   if (info.areaUrl) S.areaUrl = info.areaUrl;
   const ok = (await ensureArea()) && attachViewer();
   if (!ok) return false;
+  if (S.layout === 'modern') buildWorldPage(); // the Modern layout: the page content as divs, with the viewer in it
   learnFrom();
   if (prev) {
     // The viewer was re-inserted, which resets CSS transitions: put it back where it was,

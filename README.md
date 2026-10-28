@@ -21,12 +21,15 @@ The helper only changes how pages look and how they are used in your own browser
 ### On every page
 
 - **Layout switch** (bottom left corner, remembered): `Original` keeps the game's own pages; `Modern` rebuilds the pages the helper knows (right now the profile) with modern CSS. A theme list sits next to it (only "Original Core" for now).
+- **Off switch.** Adding `ssh=off` to a game address (`index.php?cmd=profile&ssh=off`) keeps the helper out of that page, to see the game as it is. Needs the loader from version 1.0.1; Tampermonkey updates it by itself, or install it again from the install page.
+- **Modern frame** (Modern layout, every page): everything around the page content is made of divs, no tables: the page background is the HD picture, fixed while you scroll (it comes with the helper, `src/media/`); the banner, the two sidebars, the content frame (its top and bottom pictures and its two borders), the bottom banner and the page grid are divs, and each sidebar ends in its own bottom cap; the content's footer picture is an HD one that comes with the helper (`src/media/`), a 12 px gap separates the frame from the bottom banner, and the game's picture addresses are all https; the banner sits flush with the left edge of the columns, where the game's pictures meet, and the content frame grows down to the bottom of the page on a short page, so the background never shows through between the sidebars (on the world page the lower panels grow and the footer picture sits at the bottom). The page content is rebuilt page by page: the profile and the world page are all divs now (the game's own tables stay in the page, hidden, as the source: the profile's controls and the map data are read from them); the other pages are still the game's own tables, in a div of their own. On the world page the title bar, the map, the Active Buffs strip, the Location Details and Local Comms panels and the footer are divs, and they are built again after every move. The **sidebar widgets** (Main Menu, Questions, Game Stats, Kill Logs, Sigma Box, Skills, Faction Info, Support Us) are divs with a title bar, a body and a bottom, and the menu is a list of divs: drag a widget by its title bar (a ghost follows the pointer and a line shows where it will land) to another place, also to the other sidebar; Esc cancels, the arrangement is kept in your browser, and the menu entries light up under the pointer. The game's own pieces (links, forms, the skills box) are moved into the divs, not copied, so they and the game's scripts keep working, and the Original layout puts the game's tables back. The news / tip panel of the banner shows what the game shows there.
 - **Tooltips replaced.** The game's tooltip library could leave a tooltip stuck to the mouse or stalled off-screen. The new one follows the pointer, opens towards the middle of the window, always closes when you leave the item, and looks like the original (same width, colours and text).
 - **Item tooltips no longer freeze the page.** The game loaded item data with a blocking request (about 0.3 s of frozen page per item). The helper shows "Loading Stats..." at once and fills it in when the data arrives; answers are kept for a minute.
 - **Buff and skill tooltips explain themselves.** Buff icons and the right-hand "Skills" panel now show what the skill does, with every "x% per point" worked out for the skill's level, plus its cost and duration. Built in: all 133 skills of the skill pages and the stim buffs (Scavenger, Micro Generator, Mind Orb; Accelerator only has what the game says about it).
 - **Gear comparison.** The tooltip of an item you are not wearing is shown next to the tooltip of the worn item of the same kind (Weapon, Helmet, Weapon Add-On, ...), the one you hover on the side of the pointer. In the hovered item, every Bonus, Enhancement and Resistance is green when it beats the worn item and red when it does not, with the difference in brackets, e.g. `+16 (+5)`; numbers only the worn item has are added as `0 (-6)`. It works on the profile and in shops (the worn items are read once from your profile page and kept for two minutes), and can be turned off on the Config page.
 - **Energy tooltip.** A live countdown to the next gain, the energy right now (the hourly gains since the page was loaded are added), and a new **Full in** row with the time it will be full, in your time and in server time. The gain per hour is read from the tooltip, not fixed.
-- **Top banner.** Real HP, skill power and the energy maximum written on the bars; a **gear durability bar** under the HP bar (all equipped items added up, re-read in the background when a page loads and after actions, hover for the time of the last check). Updated straight away after fights and actions.
+- **Top banner.** Real HP, skill power and the energy maximum written on the bars; a **gear durability bar** under the HP bar, as long as the bar's slot whatever your HP, with a wrench icon in front (all equipped items added up, re-read in the background when a page loads and after actions, hover for the time of the last check). Updated straight away after fights, actions and skills (the numbers follow the Skill Power bar and the energy when you use a skill). The durability is read again after every fight.
+  - In the **Modern** layout the banner is built again with divs, each piece placed on its slot of the banner picture (the HP, XP and Skill Power bars, the Flux Crystal and Energy counters, the animated orbs and the news picture), instead of the game's table that misses them by a few pixels. Links and tooltips are the game's own.
 - **Side panels.** *Game Stats* and *Kill Logs* move to the left column (option); a stray blank line after the copyright is removed.
 - **Config page: "Sigmastorm Helper" tab.** Settings (route preview and click to walk, stop at creatures, delay between steps, slide animation, banner numbers, durability bar, gear comparison, move side panels), save / defaults, and the learned map data: how many tiles are known, export, import, forget. Shows the helper's version and build.
 
@@ -34,7 +37,7 @@ The helper only changes how pages look and how they are used in your own browser
 
 - **A bigger map in place of the game's 5×5 view**: zooms 35 % to 180 % (the mouse wheel zooms on the pointer, the + / − buttons on the player; remembered), drags with the mouse, always centres on you, and the area outside the map is filled with its own wall tiles.
 - **Moving without a page reload**: arrows, keys and clicks update the map, your position, the banner and the action list in place. Using a stairway (a new zone) works the same way.
-- **Zone bar** with the area name and coordinates, coloured by safe / PvP zone, and a **W** button that opens the zone's page on the Sigma Storm 2 wiki.
+- **Zone bar** with the area name and coordinates, coloured by safe / PvP zone, one row below the direction arrows so nothing covers it, and two buttons in the row above it: **W** opens the zone's page on the Sigma Storm 2 wiki and **G** its page in the game's Guide (the game does not say the Guide's number for an area, so the helper has the Guide's list of 652 areas, `data/realms.json`; the button is hidden for an area that is not in it).
 - **Direction pad** round the map (greyed when the game does not allow a direction) and **hotkeys** Q W E / A D / Z X C for the eight directions.
 - **Tile tooltips**: hover a tile for the game's own tile description. Its picture is loaded from the game's current image server (the game still points at one that is gone, so it shows broken).
 - **Path finding**: hover any tile to see the route as a green dotted line with "Go to (x, y) - N steps"; click to walk it step by step. It plans around blocked tiles, re-plans if a step is refused, and stops when you press any key or click the map (option: also stop when creatures are on a tile). One move request per step, spaced by the delay you set (default 320 ms, minimum 100 ms).
@@ -43,9 +46,10 @@ The helper only changes how pages look and how they are used in your own browser
 
 ### Action list and combat (world page)
 
-- **Floating Action List** instead of the game's action area: drag it anywhere (position remembered), it scrolls with the page, and it lists everything you can do on the tile. Number keys **1–9** attack the creature with that number.
+- **Floating Action List** instead of the game's action area: drag it anywhere (position remembered), it scrolls with the page, and it lists everything you can do on the tile. Number keys **1–9** attack the creature with that number; the numbers count only the creatures that have a key (Elite, Champion and the like do not, as in the game), and the number on the attack button is always the key that works. A fight that is over keeps its place in the list, so the creatures below it keep their numbers. The **refresh icon** in the list's header (or the **R** key) reads the tile again; it replaces the game's R, which repaired at the mechanic (the list has a repair-all button for that).
 - **Quick combat from the list**, including Elite creatures: the fight runs in the background and the result is written into the row (XP, gold and tax, skill power, level up / down, the loot with the game's item tooltips). A button opens the **combat log**, round by round, in a draggable pop-up.
 - **Creature pop-up** (click a creature's picture): its stats in the game's own frame, a **Combat Evaluation** (a simulation of the fight from your stats and its stats: hit chances, hits to kill, extra attack / defense / damage, average hits, win / defeat chance, expected HP left), an attack button that fights in the background and shows the result and loot under the picture. Draggable by the title bar; Esc closes it.
+- **Quick Links** (Modern layout): the game's quick links are small buttons in the map's top row, after the W and G buttons: the **backpack** (with how full it is, e.g. 12/15), **Quick Assault**, **Quick Buff**, **Medipack** and **Repair Kit**; the area map button is left out, since the map can be zoomed out to show all of it. The backpack opens the same backpack as on the profile page in a pop-up (folders and pages, the small checkboxes over the items, move / combine / split / destroy, use and equip, item size) with the components under it (a click destroys one, as in the game; the page links page through them), read from your profile page; messages show on top of it. The count on the button is read again after every fight, and from the world page right after you destroy or use an item in the pop-up. Assault, Medipack and Repair Kit are sent in the background and the game's message is shown in a dialog; the keys B, G, M and F do the same. Quick Buff keeps the game's own dialog.
 - **Quests** open in a pop-up with the game's message, without leaving the page.
 - **Mechanic**: the total repair bill and your credits shown next to the mechanic, and a **repair-all** button that works in place and updates the durability bar.
 - After every fight or action the banner (HP, energy, credits, XP) is refreshed from the answer.
@@ -74,7 +78,7 @@ The profile page rebuilt from its own markup with grid / flex, with the original
 ### Updates and data
 
 - A tiny loader in Tampermonkey fetches the current build from GitHub Pages on every page load, so new versions reach you without updating anything; if the site is down it uses the last build that worked.
-- Walkable tiles, skill descriptions and stim buffs are data files, updated separately from the code.
+- Walkable tiles, skill descriptions, stim buffs and the Guide's area numbers are data files, updated separately from the code.
 
 ## How it is delivered
 
@@ -106,6 +110,8 @@ localStorage.setItem('SSH_dev_base', 'http://127.0.0.1:8765/')   // the installe
 // localStorage.removeItem('SSH_dev_base')                       // back to the published version
 ```
 
+To see a page without the helper (the game as it is, or while another copy of the helper is being tested), add `ssh=off` to its address: `https://www.sigmastorm.com/index.php?cmd=profile&ssh=off`. The installed loader (version 1.0.1 and later) then does nothing on that page.
+
 After a change run `npm run build:dev` (the server reads the files on every request) and reload the game. `npm run check` bundles everything and validates the data files; it also runs on every pull request.
 
 ### Layout
@@ -113,13 +119,14 @@ After a change run `npm run build:dev` (the server reads the files on every requ
 | Path | What |
 | --- | --- |
 | `src/main.js` | Entry point: loads the data, then starts the helper |
-| `src/core/` | Shared base: constants, state `S`, `store` (localStorage), small helpers, data loader |
+| `src/core/` | Shared base: constants, state `S`, `store` (localStorage), small helpers, data loader, `pageParts()` (where the header, sidebars and content are) |
 | `src/game/` | The world page: parsing, map, path finding, action list, combat, creature pop-up, page loading, events |
-| `src/layout/` | The Modern layout: profile sections, backpack, combat sets, dialogs, themes |
+| `src/layout/` | The Modern layout: profile sections, backpack, combat sets, dialogs, themes, the banner, the page frame, the world page and the draggable sidebars |
 | `src/tooltips/` | Tooltip replacement, skill / buff descriptions, energy countdown, gear comparison, blueprint preview |
 | `src/pages/` | Other pages worked in place: the blueprint list (Inventing) |
+| `src/media/` | Pictures the helper itself uses (copied to the site's `media/`): the banner's smoother orb animations, the HD page background and the content footer |
 | `src/banner.js`, `src/settings.js` | Top banner numbers; the Config page tab |
-| `data/` | Walkable tiles, skill descriptions, stim buffs (plain JSON, easy to review) |
+| `data/` | Walkable tiles, skill descriptions, stim buffs, the Guide's area numbers (plain JSON, easy to review) |
 | `loader/` | The Tampermonkey loader |
 | `site/` | The install page |
 | `tools/` | Build, local server, and the wiki tile mapper (development only, not published) |
@@ -127,7 +134,7 @@ After a change run `npm run build:dev` (the server reads the files on every requ
 
 ### Updating the data
 
-Edit the JSON in `data/` and push. `tiles.json` maps a tile picture id to `w` (walkable) or `b` (blocked); `tools/wiki-mapper.user.js` exports it from the wiki's map pages. `skills.json` is keyed by the skill id (the number in `skills/<id>_small.gif`), `buffs-extra.json` by lower-case buff name (stims and the like).
+Edit the JSON in `data/` and push. `realms.json` maps an area's name to its number in the Guide (`guide.sigmastorm.com/index.php?cmd=realms`, 27 pages of areas): add a line when the game gets a new area. `tiles.json` maps a tile picture id to `w` (walkable) or `b` (blocked); `tools/wiki-mapper.user.js` exports it from the wiki's map pages. `skills.json` is keyed by the skill id (the number in `skills/<id>_small.gif`), `buffs-extra.json` by lower-case buff name (stims and the like).
 
 ## Contributing
 

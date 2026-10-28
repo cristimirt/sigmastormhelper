@@ -3,6 +3,7 @@
 import { decorateHeader, grabVars, refreshDur } from './banner.js';
 import { SSH, dropEarly } from './core/constants.js';
 import { loadData } from './core/data.js';
+import { pageParts } from './core/page.js';
 import { S } from './core/state.js';
 import { bind } from './game/events.js';
 import { read, show } from './game/loading.js';
@@ -14,7 +15,7 @@ import { serverOffset } from './tooltips/energy.js';
 import { initTips } from './tooltips/tips.js';
 
 async function init() {
-  if (!document.getElementById('mainContentDiv')) return;
+  if (!pageParts()) return;
   grabVars(document.documentElement.innerHTML);
   decorateHeader();
   movePanels();
@@ -36,6 +37,7 @@ async function init() {
 
 export default async function start(ctx) {
   S.build = (ctx && ctx.build) || 'dev';
+  S.base = (ctx && ctx.base) || ''; // the site the bundle comes from: its media/ folder has pictures of the helper's own
   await loadData(ctx);
   SSH.init = init;
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

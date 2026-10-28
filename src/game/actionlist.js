@@ -10,7 +10,7 @@ function ensurePanel() {
   if (p) return p;
   p = document.createElement('div');
   p.id = 'ssh-al';
-  p.innerHTML = '<div class="hd">Action List</div><div class="bd"></div>';
+  p.innerHTML = '<div class="hd">Action List<span class="rf" title="Refresh the list [R]">&#8635;</span></div><div class="bd"></div>';
   document.body.appendChild(p);
   const pos = store.get('alpos', null);
   if (pos) {
@@ -24,6 +24,7 @@ function ensurePanel() {
   clampPanel();
   let drag = null;
   p.querySelector('.hd').addEventListener('pointerdown', (e) => {
+    if (e.target.closest('.rf')) return; // the refresh button is a button, not a handle
     drag = { dx: e.pageX - p.offsetLeft, dy: e.pageY - p.offsetTop };
     e.currentTarget.setPointerCapture(e.pointerId);
     e.preventDefault();
@@ -153,7 +154,7 @@ function parseMech(html) {
   return { total: t ? parseInt(t.replace(/,/g, ''), 10) : null, items: doc.querySelectorAll('a[href*="repairitem"]').length, mine: cf ? parseInt(cf.textContent.replace(/,/g, ''), 10) : null, can: !!btn };
 }
 
-const HEAL_ICON = 'http://cdn.sigmastorm.com/skin/icon_action_heal.gif';
+const HEAL_ICON = 'https://cdn.sigmastorm.com/skin/icon_action_heal.gif';
 
 // The repair button (same icon as the healer's) sits next to the "Use Mechanic" icon; the cost goes in a line under it.
 function mechRow(bd) {
@@ -235,6 +236,17 @@ export async function doRepair(btn) {
   } catch (e) {
     if (box.isConnected) { box.innerHTML = '<span style="color:#ff6b6b">Repair failed.</span>'; btn.dataset.state = 'ok'; }
   }
+}
+
+// Read the world page again and show what is on the tile now (the refresh icon, and the R key). The finished fights in the list go.
+export async function refreshActions() {
+  if (S.busy || S.pending) return;
+  const rf = document.querySelector('#ssh-al .rf');
+  if (rf) rf.classList.add('spin');
+  S.results = [];
+  try { await refreshWorld(); } catch (e) { /* the next move reads it again */ }
+  const rf2 = document.querySelector('#ssh-al .rf');
+  if (rf2) rf2.classList.remove('spin');
 }
 
 export function renderActions(text) {

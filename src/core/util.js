@@ -1,3 +1,6 @@
+// The game still writes some of its picture addresses with http://; the same files are served over https.
+export const https = (u) => String(u || '').replace(/^http:\/\//i, 'https://');
+
 export const esc = (x) => String(x).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 // The banner keeps its look; we only write the real values on its bars and add a gear durability bar.
