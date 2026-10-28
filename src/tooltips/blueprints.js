@@ -151,7 +151,7 @@ export function initRecipes() {
   // the tooltip, or the pair of tooltips (the result and the worn item) twice as wide
   const setTip = (r) => {
     tip.style.width = (r.worn ? BP_W * 2 + 17 : BP_W) + 'px';
-    tip.innerHTML = r.worn ? '<div class="cw"><div class="cm">' + r.html + '</div><div class="ce"><div class="eqh">Worn</div>' + r.worn + '</div></div>' : r.html;
+    tip.innerHTML = r.worn ? '<div class="cw"><div class="cm">' + r.html + '</div><div class="ce"><div class="eqh">Equipped</div>' + r.worn + '</div></div>' : r.html;
   };
   document.addEventListener('mouseover', async (e) => {
     const img = e.target && typeof e.target.closest === 'function' ? e.target.closest('img[src*="/recipes/"]') : null;

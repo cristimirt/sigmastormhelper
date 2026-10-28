@@ -114,7 +114,7 @@ export function initTips() {
   const refreshPair = (id, main, worn) => {
     if (id !== tipId || !trig) return;
     box.style.width = curW * 2 + 17 + 'px';
-    box.innerHTML = '<div class="cw"><div class="cm">' + main + '</div><div class="ce"><div class="eqh">Worn</div>' + worn + '</div></div>';
+    box.innerHTML = '<div class="cw"><div class="cm">' + main + '</div><div class="ce"><div class="eqh">Equipped</div>' + worn + '</div></div>';
     place();
   };
   document.addEventListener('mouseover', (e) => {
