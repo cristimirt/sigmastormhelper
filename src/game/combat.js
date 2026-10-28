@@ -17,6 +17,7 @@ export function placeResults(bd) {
     const slots = [...tb.children].filter((tr) => !isSep(tr));
     const tr = document.createElement('tr');
     tr.className = 'ssh-resrow';
+    if (r.quick) tr.dataset.q = '1'; // it was a numbered creature: its slot keeps its number
     tr.innerHTML = '<td colspan="3">' + r.html.replace('data-r="#"', 'data-r="' + S.results.indexOf(r) + '"') + '</td>';
     const sep = document.createElement('tr');
     sep.innerHTML = '<td colspan="3" height="1" bgcolor="#212323"></td>';
@@ -26,14 +27,22 @@ export function placeResults(bd) {
   numberSlots(bd);
 }
 
-// Attack hotkeys follow the position in the list (1 = first row, 2 = second ...), and a finished fight keeps its row,
-// so the creatures below it never change their number.
+// Attack hotkeys count the creatures that can be attacked with a key (Elite and Champion creatures and the like have none, as in the
+// game), in the order of the list, and a finished fight keeps its row, so the creatures below it never change their number. The
+// picture on the attack button says the same number as the key does (the game's own pictures go up to 8).
+const ICON = (n) => 'icon_action_attack' + (n <= 8 ? '1_' + n : '3') + '.gif';
 function numberSlots(bd) {
   const tb = bd.querySelector('tbody');
   if (!tb) return;
-  [...tb.children].filter((tr) => !isSep(tr)).forEach((tr, i) => {
+  let n = 0;
+  [...tb.children].filter((tr) => !isSep(tr)).forEach((tr) => {
+    if (tr.classList.contains('ssh-resrow')) { if (tr.dataset.q) n++; return; }
     const a = tr.querySelector('a[data-atk]');
-    if (a && a.getAttribute('data-atk') !== 'x') a.setAttribute('data-atk', String(i + 1));
+    if (!a || a.getAttribute('data-atk') === 'x') return;
+    n++;
+    a.setAttribute('data-atk', String(n));
+    const im = a.querySelector('img');
+    if (im) im.setAttribute('src', im.getAttribute('src').replace(/[^/]*$/, '') + ICON(n));
   });
 }
 

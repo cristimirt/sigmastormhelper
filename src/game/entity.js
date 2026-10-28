@@ -120,7 +120,8 @@ export async function entityAttack(btn) {
     const row = link && link.closest('tr');
     if (row && !row.classList.contains('ssh-resrow')) {
       const pos = [...row.parentNode.children].filter((x) => !isSep(x)).indexOf(row);
-      const rr = { pos, html: resultHtml(c), log: c };
+      const la = row.querySelector('a[data-atk]');
+      const rr = { pos, quick: !!la && la.getAttribute('data-atk') !== 'x', html: resultHtml(c), log: c };
       S.results.push(rr);
       row.className = 'ssh-resrow';
       row.innerHTML = '<td colspan="3">' + rr.html.replace('data-r="#"', 'data-r="' + (S.results.length - 1) + '"') + '</td>';
@@ -152,6 +153,7 @@ export async function doAttack(a) {
   const img = a.querySelector('img');
   const saved = img ? img.outerHTML : '';
   const pos = [...tr.parentNode.children].filter((r) => !isSep(r)).indexOf(tr);
+  const quick = a.getAttribute('data-atk') !== 'x'; // a numbered creature
   tr.classList.add('ssh-fight');
   S.pending++;
   if (img) img.outerHTML = '<span class="ssh-spin" title="Fighting..."></span>';
@@ -160,7 +162,7 @@ export async function doAttack(a) {
     const html = await (await fetch(new URL(href, location.href).href, { credentials: 'same-origin' })).text();
     const c = parseCombat(html);
     if (!c || c.type !== 0) { leave = true; location.href = href; return; }
-    const r = { pos, html: resultHtml(c), log: c };
+    const r = { pos, quick, html: resultHtml(c), log: c };
     S.results.push(r);
     if (tr.isConnected) {
       tr.className = 'ssh-resrow';

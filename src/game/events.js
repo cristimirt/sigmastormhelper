@@ -1,6 +1,6 @@
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
-import { doRepair, submitAction } from './actionlist.js';
+import { doRepair, refreshActions, submitAction } from './actionlist.js';
 import { closeLog, openLog } from './combat.js';
 import { closeEntity, doAttack, entityAttack, openEntity } from './entity.js';
 import { renderTrail } from './footprints.js';
@@ -22,6 +22,7 @@ export function bind() {
       if (m && m.enabled) go(m.href);
       return;
     }
+    if (t.closest('#ssh-al .rf')) { e.preventDefault(); e.stopPropagation(); refreshActions(); return; }
     const atk = t.closest('#ssh-al a[data-atk]');
     if (atk) { e.preventDefault(); e.stopPropagation(); doAttack(atk); return; }
     const ev = t.closest('#ssh-al a[href*="subcmd=viewcreature"]');
@@ -204,6 +205,12 @@ export function bind() {
       e.stopImmediatePropagation();
       const link = document.querySelector('#ssh-al a[data-atk="' + e.key + '"]');
       if (link) doAttack(link);
+      return;
+    }
+    if ((e.key || '').toLowerCase() === 'r') { // refresh the Action List (the game's R repairs at the mechanic: that is a button of the list)
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      refreshActions();
       return;
     }
     const d = DIRS[(e.key || '').toLowerCase()];

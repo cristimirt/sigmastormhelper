@@ -41,6 +41,7 @@ export function addStyle() {
     'border:1px solid #5a5f5f;color:#d8cfbf;font:11px Arial,sans-serif;box-shadow:0 3px 10px rgba(0,0,0,.6);}' +
     '#ssh-al .hd{padding:4px 8px;background:#1b1f1f;border-bottom:1px solid #3a3d3d;font-weight:bold;color:#fff;cursor:move;' +
     'user-select:none;-webkit-user-select:none;touch-action:none;}' +
+    '#ssh-al .rf{float:right;margin-left:8px;cursor:pointer;color:#d8cfbf;font-size:14px;line-height:12px;user-select:none}#ssh-al .rf:hover{color:#fff}#ssh-al .rf.spin{display:inline-block;animation:ssh-rot .7s linear infinite}' +
     '#ssh-al .bd{padding:4px 6px;}#ssh-al .bd table{width:100%;}#ssh-al .bd td{font:11px Arial,sans-serif;color:#d8cfbf;}' +
     '@keyframes ssh-rot{to{transform:rotate(360deg)}}' +
     '.ssh-spin{display:inline-block;width:16px;height:16px;box-sizing:border-box;border:2px solid #4a5a5a;border-top-color:#9fe0ff;border-radius:50%;animation:ssh-rot .7s linear infinite;vertical-align:middle;}' +
