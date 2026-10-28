@@ -12,7 +12,7 @@ import { quickCss } from '../game/quicklinks.js';
 export const THEMES = {
   core: {
     name: 'Original Core',
-    skin: 'http://cdn.sigmastorm.com/',
+    skin: 'https://cdn.sigmastorm.com/',
     img: { page: 'skin/large_content_bg.jpg', title: 'skin/yourprofile.jpg', foot: 'skin/large_content_footer.jpg', infoTop: 'skin/general_info.gif', infoBg: 'skin/general_info_bg.gif', infoBot: 'skin/long_bottom.gif', frameBg: 'inventory/profile_sub_bg.jpg', frameBot: 'inventory/profile_sub_bottom.jpg', slot: 'inventory/1x1mini.gif', fill: 'skin/skill_progress.gif' },
   },
 };
@@ -31,7 +31,7 @@ export function mCss() {
   return 'html.ssh-modern [data-ssh-orig]{display:none!important}' + bannerCss() + frameCss(u('page')) + sidebarCss() + worldCss(u('page')) + quickCss() +
     P.trim() + '{display:none;width:640px;margin:0 auto;box-sizing:border-box;background:' + u('page') + ';font:8pt tahoma,sans-serif;color:#fff;}html.ssh-modern ' + P.trim() + '{display:block}' +
     P + '.pf-title{height:48px;background:' + u('title') + ' no-repeat center top}' +
-    P + '.pf-foot{height:54px;background:' + u('foot') + ' no-repeat center top}' +
+    P + '.pf-foot{height:58px;background:' + (S.base ? 'url("' + S.base + 'media/large_content_footer.png")' : u('foot')) + ' no-repeat center top / 640px auto}' +
     P + '.pf-info{width:595px;margin:0 auto;background:' + u('infoBg') + '}' +
     P + '.pf-info .t{height:19px;background:' + u('infoTop') + ' no-repeat}' +
     P + '.pf-info .f{height:13px;background:' + u('infoBot') + ' no-repeat}' +

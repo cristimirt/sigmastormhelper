@@ -1,5 +1,6 @@
 import { pageParts } from '../core/page.js';
 import { S } from '../core/state.js';
+import { https } from '../core/util.js';
 import { buildQuickBar, bindQuickLinks } from '../game/quicklinks.js';
 import { attachViewer } from '../game/viewer.js';
 import { mel, proxify } from './dom.js';
@@ -12,7 +13,7 @@ import { mel, proxify } from './dom.js';
 
 // the picture on a title / bar cell: a style (background: url(...)) or the background attribute
 const bgOf = (el) => ((el.getAttribute('style') || '').match(/url\(["']?([^)"']*)["']?\)/) || [])[1] || el.getAttribute('background') || '';
-const url = (u) => (u ? 'url("' + u + '")' : 'none');
+const url = (u) => (u ? 'url("' + https(u) + '")' : 'none');
 
 const gameTable = (body) => [...body.querySelectorAll('table[background*="large_content_bg"]')].find((t) => t.querySelector('#mapDiv'));
 
@@ -33,7 +34,8 @@ export function buildWorldPage() {
   const map = mel('div', 'wp-m');
   const lowBox = mel('div', 'wp-low');
   const foot = mel('div', 'wp-f');
-  foot.style.backgroundImage = url(bgOf(table.rows[table.rows.length - 1].cells[0]));
+  // the footer picture is the HD one that comes with the helper (the game's own when the helper's site is not known)
+  foot.style.backgroundImage = S.base ? url(S.base + 'media/large_content_footer.png') : url(bgOf(table.rows[table.rows.length - 1].cells[0]));
 
   // anything else the game puts above the map (a message, say) comes along
   const extra = mel('div', 'wp-x');
@@ -126,5 +128,5 @@ export const worldCss = (contentBg) => {
     W + '.wp-bar{width:218px;height:19px;background-repeat:no-repeat}.wp-bar.loc{margin-bottom:10px}' +
     W + '.wp-chat{padding-top:7px;font:8pt tahoma,sans-serif;color:#fff}.wp-chat small{display:block}' +
     W + '.wp-frame{margin-top:17px;text-align:center}' + W + '.wp-frame iframe{border:0}' +
-    W + '.wp-f{flex:none;height:54px;background-repeat:no-repeat}';
+    W + '.wp-f{flex:none;height:58px;background-repeat:no-repeat;background-position:center top;background-size:640px auto}';
 };

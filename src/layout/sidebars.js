@@ -1,5 +1,6 @@
 import { pageParts } from '../core/page.js';
 import { store } from '../core/storage.js';
+import { https } from '../core/util.js';
 import { mel } from './dom.js';
 
 // The sidebars of the Modern layout, made of divs: every widget (Main Menu, Questions, Game Stats, Skills, ...) is a div with a
@@ -12,7 +13,7 @@ import { mel } from './dom.js';
 const HEAD = /(infobox_(?!bg)\w+|subhead_(?!bottom)\w+|\w+_header)\.gif/i;
 const headId = (t) => ((t.getAttribute('style') || '').match(HEAD) || [])[1] || '';
 const isHead = (t) => t.tagName === 'TABLE' && !!headId(t);
-const bgUrl = (el) => ((el.getAttribute('style') || '').match(/background-image:\s*(url\([^)]*\))/i) || [])[1] || '';
+const bgUrl = (el) => https(((el.getAttribute('style') || '').match(/background-image:\s*(url\([^)]*\))/i) || [])[1] || '');
 
 // The widgets in a holder: a title table followed by its body and bottom tables (the spacers and scripts between are left).
 function groups(holder) {
@@ -339,7 +340,7 @@ export const sidebarCss = () =>
   '.ssh-w .wm{width:133px;display:flex;flex-direction:column;align-items:flex-start}' +
   '.ssh-w .wm>a{display:block;margin:0}.ssh-w .wm>a img{display:block;border:0}' +
   '.ssh-w .wm>div{width:128px}' +
-  '.ssh-w .mm{background:url("http://cdn.sigmastorm.com/skin/menu_open_bg.gif") repeat-y}' +
+  '.ssh-w .mm{background:url("https://cdn.sigmastorm.com/skin/menu_open_bg.gif") repeat-y}' +
   '.ssh-w .mm{font:8.2pt tahoma,sans-serif;color:#fff;text-align:left}.ssh-w .mm-l{height:20px;line-height:20px;padding-left:20px}.ssh-w .mm-l a{color:#a7ffff}' +
   // a heading is a 20 px row with a 13 px bar in it, 11 px in from the left and 113 px wide, as in the game's own menu
   '.ssh-w .mm-h{box-sizing:border-box;height:20px;padding:4px 0 3px 11px;color:#fff;font-weight:bold}.ssh-w .mm-h span{display:block;box-sizing:border-box;width:113px;height:13px;line-height:13px;padding-left:7px;background:#222;white-space:nowrap;overflow:hidden}' +

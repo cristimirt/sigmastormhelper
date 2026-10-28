@@ -1,5 +1,6 @@
 import { refreshDur, updateHeader } from '../banner.js';
 import { S } from '../core/state.js';
+import { https } from '../core/util.js';
 import { BP, bpPopup } from '../layout/backpack.js';
 import { mel } from '../layout/dom.js';
 import { alertModal, gAlerts, mModal } from '../layout/modal.js';
@@ -29,7 +30,7 @@ export function buildQuickBar(src) {
     else { b.setAttribute('href', '#'); b.dataset.href = href; }
     b.title = (img.getAttribute('title') || '').replace(/\s+/g, ' ').trim();
     const im = mel('img');
-    im.src = img.getAttribute('src');
+    im.src = https(img.getAttribute('src'));
     im.alt = '';
     b.append(im);
     if (kind === 'bag') {

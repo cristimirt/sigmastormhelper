@@ -1,5 +1,6 @@
 import { isContentFrame } from '../core/page.js';
 import { S } from '../core/state.js';
+import { https } from '../core/util.js';
 import { mel } from './dom.js';
 
 // The page around the content for the Modern layout: a fixed background and the page as divs. The game's table (header, the
@@ -15,7 +16,7 @@ function frameContent(center) {
   const table = [...center.children].find(isContentFrame);
   if (!table) return null;
   const [r0, r1, r2] = table.rows;
-  const url = (u) => (u ? 'url("' + new URL(u, location.href).href + '")' : 'none');
+  const url = (u) => (u ? 'url("' + https(new URL(u, location.href).href) + '")' : 'none');
   const imgOf = (cell) => { const i = cell && cell.querySelector('img'); return i ? i.getAttribute('src') : ''; };
   const cf = mel('div', 'ssh-cf');
   const top = mel('div', 'cf-top');
@@ -56,7 +57,7 @@ export function buildFrame() {
   right.append(rb);
   const content = frameContent(center);
   // the pictures the game puts on the cells of the bottom rows
-  const bgOf = (c) => (c.style.backgroundImage && c.style.backgroundImage !== 'none' ? c.style.backgroundImage : c.getAttribute('background') ? 'url("' + c.getAttribute('background') + '")' : '');
+  const bgOf = (c) => https(c.style.backgroundImage && c.style.backgroundImage !== 'none' ? c.style.backgroundImage : c.getAttribute('background') ? 'url("' + c.getAttribute('background') + '")' : '');
   lb.style.backgroundImage = bgOf(r2.cells[0]);
   rb.style.backgroundImage = bgOf(r2.cells[r2.cells.length - 1]);
   banner.style.backgroundImage = bgOf(r3.cells[0]);
@@ -81,19 +82,19 @@ export function unbuildFrame() {
 
 export function frameCss(contentBg) {
   // the HD picture comes with the helper; without its site (no loader) the game's own background stays
-  const bg = S.base ? S.base + 'media/bgalt2_hd.png' : 'http://cdn.sigmastorm.com/skin/bgalt2.jpg';
+  const bg = S.base ? S.base + 'media/bgalt2_hd.png' : 'https://cdn.sigmastorm.com/skin/bgalt2.jpg';
   const P = '#ssh-page';
   return 'html.ssh-modern,html.ssh-modern body{background:#000 url("' + bg + '") no-repeat center top / cover fixed}' +
     P + '{display:grid;grid-template-columns:140px 723px 140px;width:1003px;margin:0 auto;align-items:stretch}' +
     P + ' .ssh-hd{grid-column:1/-1;height:150px;position:relative}' +
     // a sidebar is a column: its widgets, then its bottom cap (42 px) at its foot
-    P + ' .ssh-left,' + P + ' .ssh-right{display:flex;flex-direction:column;background:url("http://cdn.sigmastorm.com/skin/sidebar_bg.gif") repeat-y;min-width:0}' +
+    P + ' .ssh-left,' + P + ' .ssh-right{display:flex;flex-direction:column;background:url("https://cdn.sigmastorm.com/skin/sidebar_bg.gif") repeat-y;min-width:0}' +
     // the middle column is as dark as the content, also where a short page leaves it empty (the background must not show
     // through between the sidebars)
     P + ' .ssh-center{background:#080a0a ' + contentBg + ';min-width:0}' +
     // the content frame: 14 px top picture, 27 px borders around the content, 5 px bottom picture (723 px wide, like the column)
     // it grows down to the bottom of the page, so the frame (its borders and its background) never ends above the sidebars' end
-    P + ' .ssh-center{display:flex;flex-direction:column}' +
+    P + ' .ssh-center{display:flex;flex-direction:column;margin-bottom:12px}' + // a small gap above the banner
     P + ' .ssh-cf{width:723px;flex:1;display:flex;flex-direction:column}' +
     P + ' .cf-top{height:14px;background-repeat:no-repeat;background-position:0 0}' +
     P + ' .cf-mid{display:grid;grid-template-columns:27px 669px 27px;flex:1}' +

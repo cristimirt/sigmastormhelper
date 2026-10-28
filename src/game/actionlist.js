@@ -154,7 +154,7 @@ function parseMech(html) {
   return { total: t ? parseInt(t.replace(/,/g, ''), 10) : null, items: doc.querySelectorAll('a[href*="repairitem"]').length, mine: cf ? parseInt(cf.textContent.replace(/,/g, ''), 10) : null, can: !!btn };
 }
 
-const HEAL_ICON = 'http://cdn.sigmastorm.com/skin/icon_action_heal.gif';
+const HEAL_ICON = 'https://cdn.sigmastorm.com/skin/icon_action_heal.gif';
 
 // The repair button (same icon as the healer's) sits next to the "Use Mechanic" icon; the cost goes in a line under it.
 function mechRow(bd) {

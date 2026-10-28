@@ -24,7 +24,7 @@ export function renderWorld() {
     });
     h += '<div id="ssh-fp"></div>';
     h += '<svg id="ssh-path" width="' + area.cols * TILE + '" height="' + area.rows * TILE + '"></svg>';
-    h += '<div id="ssh-me"><img src="http://cdn.sigmastorm.com/skin/player_tile.gif" alt=""></div>';
+    h += '<div id="ssh-me"><img src="https://cdn.sigmastorm.com/skin/player_tile.gif" alt=""></div>';
     w.innerHTML = h;
   }
   renderPad();
