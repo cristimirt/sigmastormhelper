@@ -34,7 +34,8 @@ function bpParse(rows) {
   });
   const on = d.folders.find((f) => f.on);
   if (on) d.cur = on.id;
-  const itab = mq(rows, 'table').find((t) => t.querySelector('input[type="checkbox"]') && !t.querySelector('table'));
+  // the slots table: its cells are 45 wide (a folder with nothing in it has no checkboxes, only empty cells)
+  const itab = mq(rows, 'table').find((t) => (t.querySelector('input[type="checkbox"]') || t.querySelector('td[width="45"]')) && !t.querySelector('table'));
   let prev = null;
   for (const tr of itab ? itab.rows : []) {
     if (tr.querySelector('input[type="checkbox"]')) {
@@ -43,7 +44,7 @@ function bpParse(rows) {
     } else {
       prev = [...tr.cells].map((td) => {
         const im = td.querySelector('img');
-        if (!im) { d.slots.push(null); return null; } // an empty slot: kept, so the free space shows
+        if (!im) { if (td.getAttribute('width') === '45') d.slots.push(null); return null; } // an empty slot: kept, so the free space shows (spacer cells are not slots)
         const a = td.querySelector('a');
         const it = { inv: '', src: im.getAttribute('src'), tip: im.getAttribute('onmouseover') || '', href: a ? a.getAttribute('href') : '', count: ((td.querySelector('font') || {}).textContent || '').replace(/ /g, ' ').trim() };
         const m = ((it.href || '') + ' ' + it.tip).match(/inventory_id=(\d+)|ajaxLoadItem\(\s*\d+\s*,\s*(\d+)/);
