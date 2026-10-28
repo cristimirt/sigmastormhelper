@@ -32,10 +32,11 @@ export function addStyle() {
     'color:#d8cfbf;border:1px solid #5a5f5f;font:bold 12px/20px Arial,sans-serif;text-align:center;cursor:pointer;}' +
     '#ssh-zoom span{cursor:default;min-width:44px;}' +
     '#ssh-zoom button:hover{border-color:#9fe0ff;color:#fff;}' +
-    '#ssh-wiki{position:absolute;top:6px;z-index:5;width:22px;height:22px;box-sizing:border-box;background:rgba(0,0,0,.75);color:#d8cfbf;border:1px solid #5a5f5f;font:bold 12px/20px Arial,sans-serif;text-align:center;text-decoration:none;cursor:pointer;}' +
-    '#ssh-wiki:hover{border-color:#9fe0ff;color:#fff;}' +
-    '#ssh-loc{position:absolute;left:38px;top:6px;z-index:5;padding:3px 8px;background:rgba(0,0,0,.75);color:#e8e8e8;' +
-    'border:1px solid #5a5f5f;font:bold 12px Arial,sans-serif;}' +
+    // the Wiki and Guide buttons sit in the top row, next to the up-left arrow; the area name is one row lower, clear of every arrow
+    '.ssh-lk{position:absolute;top:6px;z-index:5;width:22px;height:22px;box-sizing:border-box;background:rgba(0,0,0,.75);color:#d8cfbf;border:1px solid #5a5f5f;font:bold 12px/20px Arial,sans-serif;text-align:center;text-decoration:none;cursor:pointer;}' +
+    '.ssh-lk:hover{border-color:#9fe0ff;color:#fff;}#ssh-wiki{left:38px}#ssh-guide{left:66px}#ssh-guide[hidden]{display:none}' +
+    '#ssh-loc{position:absolute;left:38px;top:38px;z-index:5;padding:3px 8px;background:rgba(0,0,0,.75);color:#e8e8e8;' +
+    'border:1px solid #5a5f5f;font:bold 12px Arial,sans-serif;white-space:nowrap;}' +
     '#ssh-al{position:absolute;z-index:1000;width:270px;max-height:340px;overflow:auto;background:rgba(8,10,10,.92);' +
     'border:1px solid #5a5f5f;color:#d8cfbf;font:11px Arial,sans-serif;box-shadow:0 3px 10px rgba(0,0,0,.6);}' +
     '#ssh-al .hd{padding:4px 8px;background:#1b1f1f;border-bottom:1px solid #3a3d3d;font-weight:bold;color:#fff;cursor:move;' +

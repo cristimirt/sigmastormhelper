@@ -21,7 +21,7 @@ The helper only changes how pages look and how they are used in your own browser
 
 - **A bigger map in place of the game's 5×5 view**: zooms 35 % to 180 % (the mouse wheel zooms on the pointer, the + / − buttons on the player; remembered), drags with the mouse, always centres on you, and the area outside the map is filled with its own wall tiles.
 - **Moving without a page reload**: arrows, keys and clicks update the map, your position, the banner and the action list in place. Using a stairway (a new zone) works the same way.
-- **Zone bar** with the area name and coordinates, coloured by safe / PvP zone, and a **W** button that opens the zone's page on the Sigma Storm 2 wiki.
+- **Zone bar** with the area name and coordinates, coloured by safe / PvP zone, one row below the direction arrows so nothing covers it, and two buttons in the row above it: **W** opens the zone's page on the Sigma Storm 2 wiki and **G** its page in the game's Guide (the game does not say the Guide's number for an area, so the helper has the Guide's list of 652 areas, `data/realms.json`; the button is hidden for an area that is not in it).
 - **Direction pad** round the map (greyed when the game does not allow a direction) and **hotkeys** Q W E / A D / Z X C for the eight directions.
 - **Tile tooltips**: hover a tile for the game's own tile description. Its picture is loaded from the game's current image server (the game still points at one that is gone, so it shows broken).
 - **Path finding**: hover any tile to see the route as a green dotted line with "Go to (x, y) - N steps"; click to walk it step by step. It plans around blocked tiles, re-plans if a step is refused, and stops when you press any key or click the map (option: also stop when creatures are on a tile). One move request per step, spaced by the delay you set (default 320 ms, minimum 100 ms).
@@ -61,4 +61,4 @@ The profile page rebuilt from its own markup with grid / flex, with the original
 ### How it is delivered
 
 - A tiny loader in Tampermonkey fetches the current build from GitHub Pages on every page load, so new versions reach you without updating anything; if the site is down it uses the last build that worked.
-- Walkable tiles, skill descriptions and stim buffs are data files, updated separately from the code.
+- Walkable tiles, skill descriptions, stim buffs and the Guide's area numbers are data files, updated separately from the code.

@@ -3,10 +3,10 @@
 // kept in localStorage, so a data fix reaches the players without a new build of the script.
 import { PREFIX } from './constants.js';
 
-export const DATA = { tiles: {}, skills: {}, extra: {} };
+export const DATA = { tiles: {}, skills: {}, extra: {}, realms: {} };
 
 // key in DATA -> file name in data/
-const FILES = { tiles: 'tiles', skills: 'skills', extra: 'buffs-extra' };
+const FILES = { tiles: 'tiles', skills: 'skills', extra: 'buffs-extra', realms: 'realms' };
 
 export async function loadData(ctx) {
   const manifest = (ctx && ctx.manifest) || {};
