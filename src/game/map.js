@@ -121,12 +121,20 @@ export function applyZoom() {
   v.querySelector('#ssh-zoom span').textContent = Math.round(z * 100) + '%';
 }
 
-export function setZoom(z) {
-  S.zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z));
-  store.set('zoom', S.zoom);
-  // The canvas filler redraws instantly, so the world must not animate while zooming
-  // (otherwise the two disagree for the length of the transition).
+// `at` ({x, y} in the viewer): the point that stays under the pointer while zooming (without it the view stays centred on the
+// player). The view is the player's centred position plus the pan, so zooming at a point only changes the pan.
+export function setZoom(z, at) {
+  const nz = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z));
   const v = S.viewer;
+  if (at && v && S.loc && S.zoom) {
+    const wx = (at.x - S.tx) / S.zoom; // the map position (in unscaled px) under the pointer
+    const wy = (at.y - S.ty) / S.zoom;
+    S.pan.x = at.x - wx * nz - (v.clientWidth / 2 - (S.loc.x + 0.5) * TILE * nz);
+    S.pan.y = at.y - wy * nz - (v.clientHeight / 2 - (S.loc.y + 0.5) * TILE * nz);
+  }
+  S.zoom = nz;
+  store.set('zoom', S.zoom);
+  // zooming is immediate: the slide of a step must not play while the zoom changes
   if (v) { v.classList.add('ssh-zooming'); void v.offsetWidth; }
   applyZoom();
   if (v) { void v.offsetWidth; clearTimeout(setZoom.t); setZoom.t = setTimeout(() => v.classList.remove('ssh-zooming'), 60); }
