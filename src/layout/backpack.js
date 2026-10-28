@@ -25,7 +25,7 @@ const BP_ICON = {
 };
 
 // The backpack section of a page (the live one or a fetched copy) as plain data.
-function bpParse(rows) {
+export function bpParse(rows) {
   const d = { folders: [], items: [], slots: [], pages: [], opts: [], help: [], cur: '-1' };
   mq(rows, 'img').filter((i) => /\/folder(_on)?\.gif/.test(i.getAttribute('src') || '')).forEach((i) => {
     const a = i.closest('a');
@@ -83,7 +83,7 @@ function bpFromDoc(doc) {
 // Dim the bag and the components under it while either is being (re)loaded.
 function bpBusy(on) {
   if (BP.box) BP.box.classList.toggle('busy', on);
-  const c = document.querySelector('#ssh-prof .s-components .bd');
+  const c = document.querySelector(':is(#ssh-prof,#ssh-mm) .s-components .bd');
   if (c) c.classList.toggle('busy', on);
 }
 
@@ -214,6 +214,7 @@ async function bpLoad(url, note) {
     if (cs) compUpdate(cs.rows);
     if (note) bpMsg(note);
     ok = true;
+    if (BP.onChange) BP.onChange(); // whoever shows the bag outside the profile (the world page) can update its count
   } catch (e) {
     console.error('[SSH] backpack load failed', e);
     if (my === BP.req) bpMsg('Could not load the backpack.', true);
@@ -255,7 +256,7 @@ export async function bpUse(a) {
 
 // Components: the picture under the bag. A click destroys one (as in the game); paging works in place.
 function compUpdate(rows) {
-  const sec = document.querySelector('#ssh-prof .s-components');
+  const sec = document.querySelector(':is(#ssh-prof,#ssh-mm) .s-components');
   const old = sec && sec.querySelector('.bd');
   const nb = old && pfComp(rows);
   if (!nb) return;
@@ -368,6 +369,41 @@ export function bpHeadBtns() {
     if (b.dataset.hb === 'settings') bpSettings(); else bpLoad(BP.url);
   });
   return d;
+}
+
+// The backpack in a dialog (the world page's backpack button): the profile page is read, and the same app as on the profile is built
+// from its backpack section: folders, pages, selecting, move / combine / split / destroy, use and equip. It opens on the folder last used.
+export async function bpPopup(host, onChange) {
+  let box = null;
+  let doc = null;
+  try {
+    doc = new DOMParser().parseFromString(await (await fetch('index.php?cmd=profile', { credentials: 'same-origin' })).text(), 'text/html');
+    const s = secFromDoc(doc, 'backpack');
+    BP.restored = false;
+    box = s ? pfBack(s.rows) : null;
+  } catch (e) { box = null; }
+  host.textContent = '';
+  if (!box) { host.textContent = 'Could not load the backpack.'; return false; }
+  const top = mel('div', 'bp-top');
+  top.append(bpHeadBtns());
+  host.append(top, box);
+  // the components under the bag, as on the profile page (a click destroys one, the page links page through them)
+  const cs = secFromDoc(doc, 'components');
+  const comp = cs && pfComp(cs.rows);
+  if (comp) {
+    comp.classList.add('bd');
+    const sec = mel('div', 'sec s-components');
+    sec.append(mel('div', 'qb-sh', 'Components'), comp);
+    host.append(sec);
+  }
+  host.addEventListener('click', (e) => {
+    const ca = e.target && typeof e.target.closest === 'function' ? e.target.closest('.comp a[href]') : null;
+    if (!ca || e.button || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    const h = ca.getAttribute('href') || '';
+    if (/subcmd=destroycomponent/.test(h)) { e.preventDefault(); compDestroy(h); } else if (/component_page=/.test(h)) { e.preventDefault(); compLoad(h); }
+  });
+  BP.onChange = onChange || null;
+  return true;
 }
 
 export function pfBack(rows) {

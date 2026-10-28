@@ -13,16 +13,22 @@ export function alertModal(alerts) {
 }
 
 // A small draggable dialog (title bar, body, buttons). Esc or a click outside closes it.
-export function mModal(title, body, buttons) {
-  const old = document.getElementById('ssh-mm');
-  if (old) old.remove();
+// opts: { keep: true } leaves this dialog open when another one is shown on top of it; { onClose } runs when it closes.
+export function mModal(title, body, buttons, opts) {
+  document.querySelectorAll('#ssh-mm:not(.keep)').forEach((e) => e.remove());
   const o = mel('div');
   o.id = 'ssh-mm';
+  if (opts && opts.keep) o.classList.add('keep');
   o.innerHTML = '<div class="box"><div class="ph"><span class="t"></span><span class="x" title="Close">&#10006;</span></div><div class="pb"></div><div class="pf"></div></div>';
   o.querySelector('.t').textContent = title;
   o.querySelector('.pb').append(body);
-  const onKey = (e) => { if (e.key === 'Escape') close(); };
-  const close = () => { o.remove(); document.removeEventListener('keydown', onKey); };
+  const onKey = (e) => { if (e.key === 'Escape' && [...document.querySelectorAll('#ssh-mm')].pop() === o) close(); };
+  const close = () => {
+    if (!o.isConnected) return;
+    o.remove();
+    document.removeEventListener('keydown', onKey);
+    if (opts && opts.onClose) opts.onClose();
+  };
   const pf = o.querySelector('.pf');
   buttons.forEach((b) => {
     const x = mel('input', 'custombutton ' + (b.cls || ''));

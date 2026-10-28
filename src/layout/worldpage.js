@@ -1,5 +1,6 @@
 import { pageParts } from '../core/page.js';
 import { S } from '../core/state.js';
+import { buildQuickBar, bindQuickLinks } from '../game/quicklinks.js';
 import { attachViewer } from '../game/viewer.js';
 import { mel, proxify } from './dom.js';
 
@@ -43,7 +44,7 @@ export function buildWorldPage() {
 
   // the strips: a row of items (a link with its picture, with a number or a time under it)
   const left = mel('div', 'wp-left');
-  ['quicklinks_bg', 'activebuffs_bg'].forEach((k) => {
+  ['activebuffs_bg'].forEach((k) => {
     const src = lc.querySelector('table[style*="' + k + '"]');
     if (!src) return;
     const strip = mel('div', 'wp-strip ' + (k === 'quicklinks_bg' ? 'ql' : 'ab'));
@@ -80,13 +81,20 @@ export function buildWorldPage() {
   }
 
   lowBox.append(left, right);
+  // the Quick Links (see quicklinks.js), put in the map's top row below
+  const qsrc = lc.querySelector('table[style*="quicklinks_bg"]');
+  const qbar = qsrc && buildQuickBar(qsrc);
   root.append(title);
   if (extra.childNodes.length) root.append(extra);
   root.append(map, lowBox, foot);
+  bindQuickLinks();
   table.setAttribute('data-ssh-orig', '1');
   table.parentNode.insertBefore(root, table);
   if (S.viewer) {
     map.append(S.viewer);
+    // the Quick Links are a row of small buttons in the map's top row, after the W and G buttons
+    S.viewer.querySelectorAll('.wp-q').forEach((e) => e.remove());
+    if (qbar) S.viewer.append(qbar);
   }
   return root;
 }
@@ -97,6 +105,7 @@ export function unbuildWorldPage() {
   if (!r) return;
   const t = r.nextElementSibling;
   r.remove();
+  if (S.viewer) S.viewer.querySelectorAll('.wp-q').forEach((e) => e.remove());
   if (t && t.hasAttribute('data-ssh-orig')) t.removeAttribute('data-ssh-orig');
   if (S.viewer) attachViewer();
 }
