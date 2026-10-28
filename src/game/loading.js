@@ -76,7 +76,9 @@ export async function show(info, prev) {
   return true;
 }
 
-export async function go(href) {
+// Loads a world page in the background and swaps the map in place. `init` is extra fetch options (a POST for stairways) and
+// `fallback` what to do when the answer is not a normal world page (default: let the browser open the address).
+export async function go(href, init, fallback) {
   if (S.busy || S.pending) return;
   S.busy = true;
   S.viewer && S.viewer.classList.add('ssh-busy');
@@ -84,7 +86,7 @@ export async function go(href) {
   renderActions('Moving...');
   try {
     const url = new URL(href, location.href).href;
-    const res = await fetch(url, { credentials: 'same-origin' });
+    const res = await fetch(url, Object.assign({ credentials: 'same-origin' }, init));
     const html = await res.text();
     grabVars(html);
     const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -93,11 +95,11 @@ export async function go(href) {
     const pm = S.viewer && S.viewer.querySelector('#ssh-me');
     const prev = pw && pm ? { t: pw.style.transform, l: pm.style.left, tp: pm.style.top, sy: window.scrollY } : null;
     if (!info.loc || !doc.getElementById('mapDiv') || !swapIn(doc) || !(await show(info, prev))) {
-      location.href = url; // not a normal world page: let the browser handle it
+      if (fallback) fallback(); else location.href = url; // not a normal world page: let the browser handle it
       return;
     }
   } catch (e) {
-    location.href = href;
+    if (fallback) fallback(); else location.href = href;
   } finally {
     S.busy = false;
     S.viewer && S.viewer.classList.remove('ssh-busy');
