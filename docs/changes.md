@@ -36,7 +36,8 @@ The helper only changes how pages look and how they are used in your own browser
 
 ### Other pages
 
-- **Blueprints**: hover a blueprint's picture on the known-blueprints list to see what it makes (the item, its stats and the ingredients with how many you own and your credits). Static data is cached; owned counts are re-read on every hover.
+- **Blueprints**: hover a blueprint's picture on the known-blueprints list to see what it makes (the item, its stats and the ingredients with how many you own and your credits). Static data is cached; owned counts are re-read on every hover. The tooltip looks like the game's other tooltips (a slightly see-through background), and when the result is gear it is shown next to the worn item of its kind, with the numbers coloured and the differences in brackets, as in gear comparison.
+- **Blueprint list without reloads** (Inventing): clicking a folder shows it in place; **Add New Folder** asks for the name in a small prompt and then refreshes the folder you are in (it does not switch to the new, empty one); **Move Blueprints** sends the ticked blueprints to the chosen folder and refreshes the folder you are in. Deleting a folder (the `x` under it) asks in a dialog, sends the request in the background and shows the game's own message box when it is done. The page list works in place too.
 
 ### Modern profile (switch at the bottom left)
 

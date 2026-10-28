@@ -2,6 +2,51 @@
 // (Weapon, Helmet, Weapon Add-On, ...), and its numbers are coloured and followed by the difference, e.g. "+27 (+13)".
 // Item data is the game's own fetchitem.php answer.
 const GROUPS = ['Bonuses', 'Enhancements', 'Resistances'];
+
+// An item's answer from fetchitem.php, kept for a minute (cleared whenever the bag or profile is reloaded) and shared by every
+// tooltip that shows an item.
+const cache = new Map();
+const pending = new Map();
+export const peekItem = (itemId, invId) => {
+  const hit = cache.get(itemId + '_' + invId);
+  return hit && Date.now() - hit.t < 60000 ? hit.html : null;
+};
+export const clearItems = () => cache.clear();
+export function loadItem(itemId, invId, type, pid) {
+  const key = itemId + '_' + invId;
+  const hit = peekItem(itemId, invId);
+  if (hit !== null) return Promise.resolve(hit);
+  let p = pending.get(key);
+  if (!p) {
+    p = fetch('fetchitem.php?item_id=' + itemId + '&inv_id=' + invId + '&t=' + type + '&p=' + pid + '&uid=' + Date.now(), { credentials: 'same-origin' })
+      .then((r) => r.text())
+      .then((html) => { cache.set(key, { t: Date.now(), html }); return html; });
+    pending.set(key, p);
+    const done = () => pending.delete(key);
+    p.then(done, done);
+  }
+  return p;
+}
+
+// CSS for the pair of tooltips side by side (.cw holds .cm, the hovered item, and .ce, the worn one). `root` is the tooltip's
+// selector; it gets the class `flip` when it opens to the left of the pointer, which puts the hovered item on the pointer's side.
+export const pairCss = (root) =>
+  root + ' .cw{display:flex;align-items:flex-start}' + root + '.flip .cw{flex-direction:row-reverse}' + root + ' .cm,' + root + ' .ce{flex:1 1 0;min-width:0}' +
+  root + ' .ce{padding-left:8px;margin-left:8px;border-left:1px solid #555}' + root + '.flip .ce{padding:0 8px 0 0;margin:0 8px 0 0;border:0;border-right:1px solid #555}' +
+  root + ' .eqh{margin-bottom:3px;color:#9a9488;text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:1px}';
+
+// The game's own tooltip settings: the look every tooltip of the helper shares.
+export function tipLook() {
+  const cfg = (typeof window.config === 'object' && window.config) || {};
+  return {
+    box: 'padding:' + (cfg.Padding || 3) + 'px;background:' + (cfg.BgColor && cfg.BgColor !== '#000000' ? cfg.BgColor : 'rgba(0,0,0,.95)') +
+      ';border:' + (cfg.BorderWidth || 1) + 'px solid ' + (cfg.BorderColor || '#666') + ';color:' + (cfg.FontColor || '#fff') +
+      ';font:' + (cfg.FontSize || '8pt') + ' ' + (cfg.FontFace || 'Helvetica') + ',Arial,sans-serif;text-align:left;',
+    title: cfg.TitleBgColor || '#333',
+    offX: cfg.OffsetX || 14,
+    offY: cfg.OffsetY || 8,
+  };
+}
 const UP = '#7fe08a';
 const DOWN = '#ff6b5a';
 

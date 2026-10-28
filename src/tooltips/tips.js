@@ -1,5 +1,5 @@
 import { S } from '../core/state.js';
-import { compareParts } from './compare.js';
+import { clearItems, compareParts, loadItem, pairCss, peekItem, tipLook } from './compare.js';
 import { energyHtml, energyOn } from './energy.js';
 import { loadSkill, scaleDesc, skillByName, skillInfo } from './skills.js';
 
@@ -11,16 +11,13 @@ export function initTips() {
   if (initTips.on) return;
   initTips.on = true;
   const cfg = (typeof window.config === 'object' && window.config) || {};
+  const look = tipLook();
   const st = document.createElement('style');
-  st.textContent = '#ssh-gtip{position:fixed;left:0;top:0;z-index:10000;display:none;box-sizing:content-box;padding:' + (cfg.Padding || 3) + 'px;' +
-    'background:' + (cfg.BgColor && cfg.BgColor !== '#000000' ? cfg.BgColor : 'rgba(0,0,0,.95)') + ';border:' + (cfg.BorderWidth || 1) + 'px solid ' + (cfg.BorderColor || '#666') + ';' +
-    'color:' + (cfg.FontColor || '#fff') + ';font:' + (cfg.FontSize || '8pt') + ' ' + (cfg.FontFace || 'Helvetica') + ',Arial,sans-serif;text-align:left;pointer-events:none;}' +
-    '#ssh-gtip .tt{margin:-1px -1px 3px;padding:2px 3px;font-weight:bold;background:' + (cfg.TitleBgColor || '#333') + '}' +
+  st.textContent = '#ssh-gtip{position:fixed;left:0;top:0;z-index:10000;display:none;box-sizing:content-box;' + look.box + 'pointer-events:none;}' +
+    '#ssh-gtip .tt{margin:-1px -1px 3px;padding:2px 3px;font-weight:bold;background:' + look.title + '}' +
     '#ssh-gtip .sk{margin-top:5px;padding-top:4px;border-top:1px solid #3a3d3d;text-align:left;line-height:1.35}#ssh-gtip .sk b{color:#7fe08a}#ssh-gtip .sx{margin-top:4px;color:#9a9488;font-size:11px}' +
     // gear comparing: the hovered item and the worn one side by side, the hovered one on the side of the pointer
-    '#ssh-gtip .cw{display:flex;align-items:flex-start}#ssh-gtip.flip .cw{flex-direction:row-reverse}#ssh-gtip .cm,#ssh-gtip .ce{flex:1 1 0;min-width:0}' +
-    '#ssh-gtip .ce{padding-left:8px;margin-left:8px;border-left:1px solid #555}#ssh-gtip.flip .ce{padding:0 8px 0 0;margin:0 8px 0 0;border:0;border-right:1px solid #555}' +
-    '#ssh-gtip .eqh{margin-bottom:3px;color:#9a9488;text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:1px}';
+    pairCss('#ssh-gtip');
   document.head.appendChild(st);
   const box = document.createElement('div');
   box.id = 'ssh-gtip';
@@ -117,7 +114,7 @@ export function initTips() {
   const refreshPair = (id, main, worn) => {
     if (id !== tipId || !trig) return;
     box.style.width = curW * 2 + 17 + 'px';
-    box.innerHTML = '<div class="cw"><div class="cm">' + main + '</div><div class="ce"><div class="eqh">Worn</div>' + worn + '</div></div>';
+    box.innerHTML = '<div class="cw"><div class="cm">' + main + '</div><div class="ce"><div class="eqh">Equipped</div>' + worn + '</div></div>';
     place();
   };
   document.addEventListener('mouseover', (e) => {
@@ -155,23 +152,6 @@ export function initTips() {
     // Same call, but in the background: "Loading Stats..." shows at once and the tooltip fills in when the data arrives.
     // Answers are kept for a minute (cleared whenever the bag or profile is reloaded).
     if (typeof window.ajaxLoadItem === 'function' && !window.ajaxLoadItem.ssh) {
-      const cache = new Map();
-      const pending = new Map();
-      const loadItem = (itemId, invId, type, pid) => {
-        const key = itemId + '_' + invId;
-        const hit = cache.get(key);
-        if (hit && Date.now() - hit.t < 60000) return Promise.resolve(hit.html);
-        let p = pending.get(key);
-        if (!p) {
-          p = fetch('fetchitem.php?item_id=' + itemId + '&inv_id=' + invId + '&t=' + type + '&p=' + pid + '&uid=' + Date.now(), { credentials: 'same-origin' })
-            .then((r) => r.text())
-            .then((html) => { cache.set(key, { t: Date.now(), html }); return html; });
-          pending.set(key, p);
-          const done = () => pending.delete(key);
-          p.then(done, done);
-        }
-        return p;
-      };
       // an item that is not worn gets how it differs from the worn item of its kind, added once the answers are in
       const compare = (id, html, fin) => {
         if (!S.cfg.gearCompare || /Unequip/.test(fin)) return;
@@ -179,15 +159,14 @@ export function initTips() {
       };
       window.ajaxLoadItem = function (itemId, invId, type, pid, finalStr) {
         const fin = finalStr || '';
-        const key = itemId + '_' + invId;
-        const hit = cache.get(key);
-        if (hit && Date.now() - hit.t < 60000) { show([hit.html + fin]); compare(tipId, hit.html, fin); return; }
+        const hit = peekItem(itemId, invId);
+        if (hit !== null) { show([hit + fin]); compare(tipId, hit, fin); return; }
         show(['<center><br>&nbsp;&nbsp;Loading Stats...</center><br>']);
         const id = tipId;
         loadItem(itemId, invId, type, pid).then((html) => { refresh(id, html + fin); compare(id, html, fin); }, () => refresh(id, 'Could not load this item.'));
       };
       window.ajaxLoadItem.ssh = true;
-      window.ajaxLoadItem.clear = () => cache.clear();
+      window.ajaxLoadItem.clear = clearItems;
     }
   };
   install();
