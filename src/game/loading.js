@@ -77,7 +77,8 @@ export async function show(info, prev) {
 }
 
 // Loads a world page in the background and swaps the map in place. `init` is extra fetch options (a POST for stairways) and
-// `fallback` what to do when the answer is not a normal world page (default: let the browser open the address).
+// `fallback(html)` what to do when the answer is not a normal world page (default: let the browser open the address); html is
+// the answer, empty when the request itself failed.
 export async function go(href, init, fallback) {
   if (S.busy || S.pending) return;
   S.busy = true;
@@ -95,7 +96,7 @@ export async function go(href, init, fallback) {
     const pm = S.viewer && S.viewer.querySelector('#ssh-me');
     const prev = pw && pm ? { t: pw.style.transform, l: pm.style.left, tp: pm.style.top, sy: window.scrollY } : null;
     if (!info.loc || !doc.getElementById('mapDiv') || !swapIn(doc) || !(await show(info, prev))) {
-      if (fallback) fallback(); else location.href = url; // not a normal world page: let the browser handle it
+      if (fallback) fallback(html); else location.href = url; // not a normal world page: let the browser handle it
       return;
     }
   } catch (e) {
