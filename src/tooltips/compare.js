@@ -35,15 +35,30 @@ export function parseItem(html) {
   return it;
 }
 
-// The items worn right now, read from the page (the pictures whose tooltip says "[Click to Unequip]").
-function wornIds() {
+// The items worn, read from a page (the pictures whose tooltip says "[Click to Unequip]").
+function wornFrom(root) {
   const seen = new Set();
   const out = [];
-  document.querySelectorAll('img[onmouseover*="Unequip"]').forEach((im) => {
+  root.querySelectorAll('img[onmouseover*="Unequip"]').forEach((im) => {
     const m = (im.getAttribute('onmouseover') || '').match(/ajaxLoadItem\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
     if (m && !seen.has(m[2])) { seen.add(m[2]); out.push(m.slice(1)); }
   });
   return out;
+}
+
+// The worn items: from the page when it shows the character (the profile), otherwise (a shop, the loot of a fight) from the
+// profile page, read once and kept for two minutes.
+let wornCache = null;
+async function wornIds() {
+  const here = wornFrom(document);
+  if (here.length) return here;
+  if (!wornCache || Date.now() - wornCache.t > 120000) {
+    const p = fetch('index.php?cmd=profile', { credentials: 'same-origin' }).then((r) => r.text())
+      .then((h) => wornFrom(new DOMParser().parseFromString(h, 'text/html')));
+    wornCache = { t: Date.now(), p };
+    p.catch(() => { wornCache = null; });
+  }
+  return wornCache.p;
 }
 
 const fmt = (n) => (n > 0 ? '+' : '') + (Math.round(n * 100) / 100);
@@ -80,7 +95,7 @@ function annotate(it, w) {
 export async function compareParts(html, load) {
   const it = parseItem(html);
   if (!it.type || !Object.keys(it.stats).length) return null;
-  const all = await Promise.all(wornIds().map((a) => load(...a).then((h) => ({ h, p: parseItem(h) }), () => null)));
+  const all = await Promise.all((await wornIds()).map((a) => load(...a).then((h) => ({ h, p: parseItem(h) }), () => null)));
   const w = all.find((o) => o && o.p.type === it.type && o.p.name);
   return w ? { html: annotate(it, w.p), worn: w.h } : null;
 }
