@@ -82,7 +82,13 @@ export function decorateHeader(tries) {
     const pct = dur && dur.max ? (dur.cur / dur.max) * 100 : 0;
     const col = pct < 30 ? '#b32a22,#6e1510' : pct < 60 ? '#c98f1d,#7b560c' : '#4fbf63,#256f35';
     g.title = 'Durability of the equipped items' + (dur && dur.t ? ' (checked ' + new Date(dur.t).toLocaleTimeString() + ')' : '');
-    g.style.cssText = 'position:absolute;left:' + (hb.left - r0.left) + 'px;top:' + (hb.top - r0.top + 19) + 'px;width:' + hb.width + 'px;height:11px;box-sizing:border-box;background:#0b0b0b;border:1px solid #4a4a4a;';
+    // as long as the HP bar's slot (not its picture: that one is only as wide as the HP you have), with a wrench in front
+    const top = hb.top - r0.top + 19;
+    g.style.cssText = 'position:absolute;left:' + (hpTd.left - r0.left) + 'px;top:' + top + 'px;width:' + hpTd.width + 'px;height:11px;box-sizing:border-box;background:#0b0b0b;border:1px solid #4a4a4a;';
+    const ic = document.createElement('div');
+    ic.className = 'ssh-ov';
+    ic.style.cssText = 'position:absolute;pointer-events:none;left:' + (hpTd.left - r0.left - 22) + 'px;top:' + (top - 2) + 'px;width:16px;height:16px;box-sizing:border-box;border:1px solid #4a4a4a;background:#000 url(https://cdn.sigmastorm.com/skin/quicklinks/8.gif) center / 14px 14px no-repeat;';
+    hc.appendChild(ic);
     g.innerHTML = '<div style="width:' + pct + '%;height:100%;background:linear-gradient(' + col + ');"></div>' +
       '<div style="position:absolute;left:0;right:0;top:0;line-height:9px;text-align:center;font:bold 8px Verdana,Arial,sans-serif;color:#fff;text-shadow:0 0 2px #000,0 0 2px #000;white-space:nowrap;">' +
       (dur ? 'Gear ' + dur.cur + ' / ' + dur.max + ' (' + pct.toFixed(1) + '%)' : 'Gear ...') + '</div>';
