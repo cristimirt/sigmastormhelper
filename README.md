@@ -32,7 +32,7 @@ The helper only changes how pages look and how they are used in your own browser
 
 ### World map
 
-- **A bigger map in place of the game's 5×5 view**: zooms 35 % to 180 % (mouse wheel or the + / − buttons, remembered), drags with the mouse, always centres on you, and the area outside the map is filled with its own wall tiles.
+- **A bigger map in place of the game's 5×5 view**: zooms 35 % to 180 % (the mouse wheel zooms on the pointer, the + / − buttons on the player; remembered), drags with the mouse, always centres on you, and the area outside the map is filled with its own wall tiles.
 - **Moving without a page reload**: arrows, keys and clicks update the map, your position, the banner and the action list in place. Using a stairway (a new zone) works the same way.
 - **Zone bar** with the area name and coordinates, coloured by safe / PvP zone, and a **W** button that opens the zone's page on the Sigma Storm 2 wiki.
 - **Direction pad** round the map (greyed when the game does not allow a direction) and **hotkeys** Q W E / A D / Z X C for the eight directions.

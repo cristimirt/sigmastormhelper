@@ -61,7 +61,9 @@ export function bind() {
     if (!e.target || typeof e.target.closest !== 'function' || !e.target.closest('#ssh-map')) return;
     if (e.target.closest('#ssh-al')) return;
     e.preventDefault();
-    setZoom(S.zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1));
+    const v = S.viewer;
+    const r = v.getBoundingClientRect();
+    setZoom(S.zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1), { x: e.clientX - r.left - v.clientLeft, y: e.clientY - r.top - v.clientTop }); // zoom on the pointer
   }, { passive: false, capture: true });
 
   window.addEventListener('resize', applyZoom);
