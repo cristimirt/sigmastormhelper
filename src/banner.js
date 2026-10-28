@@ -1,7 +1,7 @@
 import { S } from './core/state.js';
 import { store } from './core/storage.js';
 import { fmt, num, txt } from './core/util.js';
-import { modernHeader } from './layout/header.js';
+import { modernHeader, modernNumbers } from './layout/header.js';
 
 // Update the top bar (HP, energy, credits, XP) from the combat page right away.
 export function updateHeader(html) {
@@ -23,33 +23,62 @@ S.staminaMax = 500;
 
 S.dur = store.get('dur', null); // { cur, max, t }: durability of all equipped items added up
 
+// The page's own variables hold the Skill Power and energy now; a response page we read (a fight) has newer ones, so they are
+// written back (the game's Skill Power tooltip reads them too).
 export function grabVars(html) {
   const t = String(html || '');
   const m = t.match(/currentPlayerSurge\s*=\s*(\d+)/);
-  if (m) S.surge = +m[1];
+  if (m) { S.surge = +m[1]; window.currentPlayerSurge = S.surge; }
+  const st = t.match(/currentPlayerStamina\s*=\s*(\d+)/);
+  if (st) window.currentPlayerStamina = +st[1];
   const mx = t.match(/currentPlayerStamina\s*\+\s*'(?:&nbsp;|\s)*\/(?:&nbsp;|\s)*(\d+)/);
   if (mx) S.staminaMax = +mx[1];
 }
 
-// The numbers the Modern banner writes, read from the game's banner (its tooltips and the pictures' widths).
-function bannerTexts(hc) {
+// Skill Power now: the page's variable (the game's skill buttons keep it up to date), else what the last response said.
+const surgeNow = () => (typeof window.currentPlayerSurge === 'number' ? window.currentPlayerSurge : S.surge);
+
+// The numbers the banner writes, read from the game's banner (its tooltips, pictures and the energy number).
+export function bannerTexts(hc) {
   const tips = [...hc.querySelectorAll('[onmouseover]')].map((e) => txt(e.getAttribute('onmouseover')));
   const sum = tips.find((t) => /Character Summary/.test(t)) || '';
   const spTip = tips.find((t) => /Skill Power/.test(t)) || '';
   const hp = sum.match(/HP:\s*([\d,]+)\s*\/\s*([\d,]+)/);
   const spImg = hc.querySelector('#surgeImg');
   const bs = [...hc.querySelectorAll('b')].filter((b) => /^[\d,]+(?:\s*\/\s*\d+)?$/.test(txt(b.textContent)));
-  const out = { hp: '', sp: '', flux: bs[0] ? txt(bs[0].textContent) : null, en: bs[1] ? txt(bs[1].textContent) : null };
+  const sc = hc.querySelector('#staminaCurrent'); // the number the game's skill buttons change
+  const out = { hp: '', sp: '', flux: bs[0] ? txt(bs[0].textContent) : null, en: sc ? txt(sc.textContent) : bs[1] ? txt(bs[1].textContent) : null };
   if (S.cfg.bannerNums) {
     if (hp) out.hp = fmt(num(hp[1])) + ' / ' + fmt(num(hp[2]));
     if (spImg) {
       const max = num((spTip.match(/currentPlayerSurge\s*\+\s*'\s*\/\s*(\d+)/) || [])[1]) || 50;
-      const pct = parseFloat(spImg.getAttribute('width')) || 0;
-      out.sp = (S.surge !== null ? S.surge : Math.round((pct * max) / 100)) + ' / ' + max;
+      const now = surgeNow();
+      const pct = parseFloat(spImg.style.width || spImg.getAttribute('width')) || 0;
+      out.sp = (now !== null && now !== undefined ? now : Math.round((pct * max) / 100)) + ' / ' + max;
     }
     if (out.en !== null) out.en = num(out.en) + ' / ' + S.staminaMax;
   }
   return out;
+}
+
+// A skill changes the Skill Power bar's width and the energy number of the game's banner; the helper's numbers follow. (In the
+// Modern layout the bar and numbers are copies, which are updated in place so the orbs do not start their animation again.)
+let watch = null;
+let watchT = 0;
+function syncBanner() {
+  const m = document.getElementById('mainContentDiv');
+  const hc = m && m.rows.length ? m.rows[0].cells[0] : null;
+  if (!hc) return;
+  if (S.layout === 'modern' && modernNumbers(hc, bannerTexts(hc))) return;
+  decorateHeader();
+}
+function watchBanner(hc) {
+  if (!watch) watch = new MutationObserver(() => { clearTimeout(watchT); watchT = setTimeout(syncBanner, 40); });
+  watch.disconnect();
+  const sc = hc.querySelector('#staminaCurrent');
+  const si = hc.querySelector('#surgeImg');
+  if (sc) watch.observe(sc, { childList: true, characterData: true, subtree: true });
+  if (si) watch.observe(si, { attributes: true, attributeFilter: ['style', 'width'] });
 }
 
 export function decorateHeader(tries) {
@@ -57,6 +86,7 @@ export function decorateHeader(tries) {
     const m = document.getElementById('mainContentDiv');
     const hc = m && m.rows.length ? m.rows[0].cells[0] : null;
     if (!hc) return;
+    watchBanner(hc);
     // the Modern layout builds the banner again with divs (see layout/header.js); the numbers are written in it
     if (S.layout === 'modern' && modernHeader(hc, bannerTexts(hc))) return;
     hc.querySelectorAll('#ssh-hdr, .ssh-ov').forEach((e) => e.remove()); // the game's own banner: no Modern copy in the way
@@ -86,15 +116,21 @@ export function decorateHeader(tries) {
     if (S.cfg.bannerNums && hp) over(hpTd, fmt(num(hp[1])) + ' / ' + fmt(num(hp[2])), -2, 13);
     if (S.cfg.bannerNums && spImg) {
       const max = num((sp.match(/currentPlayerSurge\s*\+\s*'\s*\/\s*(\d+)/) || [])[1]) || 50;
-      const pct = parseFloat(spImg.getAttribute('width')) || 0;
-      const val = S.surge !== null ? S.surge : Math.round((pct * max) / 100);
+      const pct = parseFloat(spImg.style.width || spImg.getAttribute('width')) || 0;
+      const now = surgeNow();
+      const val = now !== null && now !== undefined ? now : Math.round((pct * max) / 100);
       over(spImg.closest('td').getBoundingClientRect(), val + ' / ' + max, -1, 13);
     }
-    // energy: the number under the reactor gets its maximum
+    // energy: the number under the reactor gets its maximum, after it (the number itself stays the game's, which its skill
+    // buttons change)
     const bs = [...hc.querySelectorAll('b')].filter((b) => /^[\d,]+(?:\s*\/\s*\d+)?$/.test(txt(b.textContent)));
     if (S.cfg.bannerNums && bs.length > 1) {
       const en = bs[1];
-      en.textContent = num(en.textContent) + ' / ' + S.staminaMax;
+      en.querySelectorAll('.ssh-emax').forEach((e) => e.remove());
+      const mx = document.createElement('span');
+      mx.className = 'ssh-emax';
+      mx.textContent = ' / ' + S.staminaMax;
+      en.appendChild(mx);
       en.style.fontSize = '9px';
       en.style.whiteSpace = 'nowrap';
     }
@@ -122,8 +158,9 @@ export function decorateHeader(tries) {
 
 // Gear durability: the equipped items are listed on the character page; each item's tooltip data has "Durability: x / y".
 export async function refreshDur(maxAge) {
-  if (S.durBusy || !S.cfg.durBar) return;
+  if (!S.cfg.durBar) return;
   if (S.dur && S.dur.t && Date.now() - S.dur.t < maxAge) return;
+  if (S.durBusy) { S.durAgain = true; return; } // a check is running (maybe from before this fight): read once more when it is done
   S.durBusy = true;
   try {
     const html = await (await fetch('index.php?cmd=profile', { credentials: 'same-origin' })).text();
@@ -144,5 +181,6 @@ export async function refreshDur(maxAge) {
     if (max) { S.dur = { cur, max, t: Date.now() }; store.set('dur', S.dur); }
   } catch (e) { /* keep the old value */ }
   S.durBusy = false;
-  decorateHeader();
+  syncBanner();
+  if (S.durAgain) { S.durAgain = false; refreshDur(0); }
 }

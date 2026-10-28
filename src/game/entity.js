@@ -139,7 +139,7 @@ export async function entityAttack(btn) {
       let ok = false;
       try { ok = await refreshWorld(); } catch (e) { ok = false; }
       if (!ok && !S.pending) renderActions();
-      refreshDur(8000);
+      refreshDur(0);
     }
   }
 }
@@ -178,7 +178,7 @@ export async function doAttack(a) {
       let ok = false;
       try { ok = await refreshWorld(); } catch (e) { ok = false; }
       if (!ok && !S.pending) renderActions();
-      refreshDur(8000);
+      refreshDur(0);
     }
   }
 }

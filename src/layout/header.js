@@ -44,23 +44,60 @@ function place(src, x, y, w, h, own) {
   return el;
 }
 
-// The fill of a bar (a picture whose width says how full it is) in its slot, with the tooltip of the game's cell.
-function bar(img, slot, tipFrom, text) {
+// How full a bar's picture says it is: its style (which the game's skill buttons set) or its width attribute.
+const fillWidth = (img) => {
+  const w = img.style.width || img.getAttribute('width') || '0';
+  return /%/.test(w) ? w : parseFloat(w) + 'px';
+};
+
+// The fill of a bar (a picture whose width says how full it is) in its slot, with the tooltip of the game's cell. `key` names
+// the bar and its number so modernNumbers() can update them.
+function bar(img, slot, tipFrom, text, key) {
   if (!img) return null;
   const s = inSlot(slot, 'overflow:hidden');
   if (tipFrom) copyOn(tipFrom, s);
-  const w = img.getAttribute('width') || '0';
   const f = img.cloneNode(false);
   f.removeAttribute('id');
-  f.style.cssText = 'position:absolute;left:0;top:1px;height:9px;width:' + (/%/.test(w) ? w : w + 'px');
+  f.style.cssText = 'position:absolute;left:0;top:1px;height:9px;width:' + fillWidth(img);
+  f.dataset.b = key;
   s.appendChild(f);
   if (text) {
     const n = box(0, 0, slot[2], slot[3], 'line-height:' + slot[3] + 'px');
     n.className = 'n';
+    n.dataset.n = key;
     n.textContent = text;
     s.appendChild(n);
   }
   return s;
+}
+
+// The durability bar (S.dur: the equipped items added up): its fill, colour, text and the time of the last check.
+function drawDur(g) {
+  const dur = S.dur;
+  const pct = dur && dur.max ? (dur.cur / dur.max) * 100 : 0;
+  const col = pct < 30 ? '#b32a22,#6e1510' : pct < 60 ? '#c98f1d,#7b560c' : '#4fbf63,#256f35';
+  g.title = 'Durability of the equipped items' + (dur && dur.t ? ' (checked ' + new Date(dur.t).toLocaleTimeString() + ')' : '');
+  g.firstChild.style.cssText = 'height:100%;width:' + pct + '%;background:linear-gradient(' + col + ')';
+  g.lastChild.textContent = dur ? 'Gear ' + dur.cur + ' / ' + dur.max + ' (' + pct.toFixed(1) + '%)' : 'Gear ...';
+}
+
+// The bars and numbers of the banner made by modernHeader(), written again from the game's banner (a skill used, say).
+export function modernNumbers(hc, n) {
+  const hdr = hc.querySelector('#ssh-hdr');
+  const t = hc.querySelector('table.sidebars');
+  if (!hdr || !t) return false;
+  const dg = hdr.querySelector('[data-d]');
+  if (dg) drawDur(dg);
+  Object.keys(n).forEach((k) => {
+    const e = hdr.querySelector('[data-n="' + k + '"]');
+    if (e && n[k] !== null && n[k] !== undefined && n[k] !== '') e.textContent = n[k];
+  });
+  [['hp', 'img[src*="hp_progress"]'], ['xp', 'img[src*="xp_progress"]'], ['sp', '#surgeImg']].forEach(([k, sel]) => {
+    const i = t.querySelector(sel);
+    const f = hdr.querySelector('[data-b="' + k + '"]');
+    if (i && f) f.style.width = fillWidth(i);
+  });
+  return true;
 }
 
 // n: the texts to write (hp, sp, flux, en); returns false when the game's banner is not there.
@@ -88,16 +125,13 @@ export function modernHeader(hc, n) {
 
   // HP, with the gear durability bar and its wrench under it
   const hpImg = q('img[src*="hp_progress"]');
-  add(bar(hpImg, SLOT.hp, hpImg && hpImg.closest('td'), n.hp));
+  add(bar(hpImg, SLOT.hp, hpImg && hpImg.closest('td'), n.hp, 'hp'));
   if (S.cfg.durBar) {
-    const dur = S.dur;
-    const pct = dur && dur.max ? (dur.cur / dur.max) * 100 : 0;
-    const col = pct < 30 ? '#b32a22,#6e1510' : pct < 60 ? '#c98f1d,#7b560c' : '#4fbf63,#256f35';
     const top = 112;
     const g = box(SLOT.hp[0], top, SLOT.hp[2], 11, 'box-sizing:border-box;background:#0b0b0b;border:1px solid #4a4a4a');
-    g.title = 'Durability of the equipped items' + (dur && dur.t ? ' (checked ' + new Date(dur.t).toLocaleTimeString() + ')' : '');
-    g.innerHTML = '<div style="width:' + pct + '%;height:100%;background:linear-gradient(' + col + ')"></div>' +
-      '<div class="n" style="position:absolute;left:0;right:0;top:0;line-height:9px;font-size:8px">' + (dur ? 'Gear ' + dur.cur + ' / ' + dur.max + ' (' + pct.toFixed(1) + '%)' : 'Gear ...') + '</div>';
+    g.dataset.d = '1';
+    g.innerHTML = '<div style="height:100%"></div><div class="n" style="position:absolute;left:0;right:0;top:0;line-height:9px;font-size:8px"></div>';
+    drawDur(g);
     add(g);
     add(box(SLOT.hp[0] - 22, top - 2, 16, 16, 'box-sizing:border-box;border:1px solid #4a4a4a;background:#000 url(' + SKIN + 'quicklinks/8.gif) center / 14px 14px no-repeat'));
   }
@@ -105,23 +139,24 @@ export function modernHeader(hc, n) {
   // Flux Crystals and Energy: the animations sit where the picture has its orbs, the numbers in their slots
   add(place(q('img[src*="animation_gem"]'), 220, 0, 97, 88, 'animation_gem_hd.gif'));
   add(place(q('img[src*="animation_cell"]'), 686, 0, 97, 88, 'animation_cell_hd.gif'));
-  [[SLOT.flux, n.flux, 11], [SLOT.energy, n.en, 9]].forEach(([s, text, fs]) => {
+  [['flux', SLOT.flux, n.flux, 11], ['en', SLOT.energy, n.en, 9]].forEach(([key, s, text, fs]) => {
     if (text === undefined || text === null) return;
     const d = inSlot(s, 'display:flex;align-items:center;justify-content:center');
     d.className = 'n';
+    d.dataset.n = key;
     d.style.fontSize = fs + 'px';
     d.textContent = text;
     add(d);
   });
 
   // XP
-  add(bar(q('img[src*="xp_progress"]'), SLOT.xp));
+  add(bar(q('img[src*="xp_progress"]'), SLOT.xp, null, '', 'xp'));
 
   // the news picture, centred in its slot, and the Skill Power bar with its icon
   const news = q('img[src*="instance_tip"]');
   if (news) add(place(news, SLOT.news[0] + Math.round((SLOT.news[2] - 165) / 2), SLOT.news[1] + Math.round((SLOT.news[3] - 50) / 2), 165, 50));
   const sp = q('#surgeImg');
-  add(bar(sp, SLOT.surge, sp && sp.closest('[onmouseover]'), n.sp));
+  add(bar(sp, SLOT.surge, sp && sp.closest('[onmouseover]'), n.sp, 'sp'));
   const ico = [...t.querySelectorAll('img')].filter((i) => /\/4\.gif$/.test(i.getAttribute('src') || '') && !i.getAttribute('onmouseover')).pop(); // the icon row's 4.gif has a tooltip
   if (ico) add(place(ico, SLOT.surgeIcon[0] + 1, SLOT.surgeIcon[1] + 1, 16, 16));
 
