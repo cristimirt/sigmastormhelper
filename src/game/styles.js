@@ -11,10 +11,9 @@ export function addStyle() {
     '#ssh-map.ssh-dragging,#ssh-map.ssh-dragging *{cursor:grabbing;}#ssh-tip{position:fixed;z-index:9500;display:none;padding:5px 8px;background:#101414;color:#e8e8e8;border:1px solid #5a5f5f;font:11px Arial,sans-serif;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.6);}#ssh-tip img{display:block;margin-top:4px;max-width:100%;}' +
     '#ssh-map.ssh-dragging #ssh-world,#ssh-map.ssh-dragging #ssh-me,#ssh-map.ssh-zooming #ssh-world,#ssh-map.ssh-zooming #ssh-me{transition:none;}' +
     '#ssh-map.ssh-busy::after{content:"";position:absolute;left:0;top:0;right:0;bottom:0;z-index:4;}' +
-    '#ssh-fill{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;}' +
     '#ssh-world{position:absolute;left:0;top:0;transform-origin:0 0;transition:transform .28s ease-out;}' +
-    // 1px bigger than the tile step, so zoomed tiles never leave hairline gaps
-    '#ssh-world .t{position:absolute;width:' + (TILE + 1) + 'px;height:' + (TILE + 1) + 'px;display:block;}' +
+    // 1px bigger than the tile step, so zoomed tiles never leave hairline gaps; .f are the filler tiles outside the map
+    '#ssh-world .t,#ssh-world .f{position:absolute;width:' + (TILE + 1) + 'px;height:' + (TILE + 1) + 'px;display:block;}#ssh-world .f{pointer-events:none;}' +
     // direction pad around the map frame (greyed out when the game does not allow that direction)
     '#ssh-pad button{position:absolute;z-index:5;width:26px;height:26px;padding:0;box-sizing:border-box;cursor:pointer;' +
     'background:rgba(0,0,0,.72);color:#d6f4ff;border:1px solid #5a5f5f;font:bold 15px/22px Arial,sans-serif;}' +

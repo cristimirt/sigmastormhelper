@@ -3,6 +3,8 @@ import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
 import { renderTrail } from './footprints.js';
 
+const KEEP = 80; // px of the map that always stay in the window when it is dragged
+
 export function renderWorld() {
   const v = S.viewer;
   const area = S.areas.get(S.loc.area);
@@ -12,7 +14,7 @@ export function renderWorld() {
     w.setAttribute('data-area', S.loc.area);
     w.style.width = area.cols * TILE + 'px';
     w.style.height = area.rows * TILE + 'px';
-    let h = '';
+    let h = fillerTiles(v, area);
     area.cells.forEach((c, i) => {
       const x = i % area.cols;
       const y = Math.floor(i / area.cols);
@@ -64,8 +66,6 @@ function renderPad() {
 }
 
 // Outside the map the view is filled with the map's own wall/edge tiles (the most common ones on its border).
-const fillImgs = new Map();
-
 function wallPool(area) {
   if (area.wall) return area.wall;
   const cnt = new Map();
@@ -77,29 +77,22 @@ function wallPool(area) {
   return area.wall;
 }
 
-function drawFill(v, area, tx, ty, z) {
-  const cv = v.querySelector('#ssh-fill');
-  if (!cv || !area) return;
-  const cw = v.clientWidth;
-  const ch = v.clientHeight;
-  if (cv.width !== cw) cv.width = cw;
-  if (cv.height !== ch) cv.height = ch;
-  const g = cv.getContext('2d');
-  g.clearRect(0, 0, cw, ch);
+// The filler is made of ordinary tiles in the same layer as the map, so the whole thing moves and zooms as one. A ring of
+// tiles around the map is enough for the furthest the view can reach beyond an edge (the map can be dragged until 80px of
+// it are left in the window, at the smallest zoom).
+function fillerTiles(v, area) {
   const pool = wallPool(area);
-  if (!pool.length) return;
-  const t = TILE * z;
-  const imgs = pool.map((u) => {
-    let im = fillImgs.get(u);
-    if (!im) { im = new Image(); im.onload = () => { if (S.viewer) applyZoom(); }; im.src = u; fillImgs.set(u, im); }
-    return im;
-  });
-  for (let j = Math.floor(-ty / t); j * t + ty < ch; j++) {
-    for (let i = Math.floor(-tx / t); i * t + tx < cw; i++) {
-      const im = imgs[(((i * 73856093) ^ (j * 19349663)) >>> 0) % imgs.length];
-      if (im.complete && im.naturalWidth) g.drawImage(im, Math.floor(i * t + tx), Math.floor(j * t + ty), Math.ceil(t) + 1, Math.ceil(t) + 1);
+  if (!pool.length) return '';
+  const pad = Math.ceil((Math.max(v.clientWidth, v.clientHeight, 500) - KEEP) / (TILE * ZOOM_MIN));
+  let h = '';
+  for (let j = -pad; j < area.rows + pad; j++) {
+    for (let i = -pad; i < area.cols + pad; i++) {
+      if (i >= 0 && i < area.cols && j >= 0 && j < area.rows) continue;
+      const u = pool[(((i * 73856093) ^ (j * 19349663)) >>> 0) % pool.length];
+      h += '<img class="f" draggable="false" style="left:' + i * TILE + 'px;top:' + j * TILE + 'px" src="' + u + '">';
     }
   }
+  return h;
 }
 
 export function applyZoom() {
@@ -117,15 +110,13 @@ export function applyZoom() {
   const bx = tx;
   const by = ty;
   // The player stays in the middle; dragging moves the view, but never so far that the map leaves the window.
-  const keep = 80;
-  tx = Math.min(cw - keep, Math.max(keep - ww, tx + S.pan.x));
+  tx = Math.min(cw - KEEP, Math.max(KEEP - ww, tx + S.pan.x));
   S.pan.x = tx - bx;
-  ty = Math.min(ch - keep, Math.max(keep - wh, ty + S.pan.y));
+  ty = Math.min(ch - KEEP, Math.max(KEEP - wh, ty + S.pan.y));
   S.pan.y = ty - by;
   v.classList.add('ssh-pannable');
   S.tx = tx;
   S.ty = ty;
-  drawFill(v, area, tx, ty, z);
   w.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + z + ')';
   v.querySelector('#ssh-zoom span').textContent = Math.round(z * 100) + '%';
 }

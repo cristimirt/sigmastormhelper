@@ -12,7 +12,6 @@ function buildViewer() {
   const v = document.createElement('div');
   v.id = 'ssh-map';
   v.innerHTML =
-    '<canvas id="ssh-fill"></canvas>' +
     '<div id="ssh-world"></div>' +
     '<div id="ssh-loc"></div>' +
     '<a id="ssh-wiki" target="_blank" rel="noopener" title="Open map in Wiki">W</a>' +
