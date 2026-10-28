@@ -100,10 +100,12 @@ export function submitAction(clone) {
   };
   if (form.method === 'post' && fields.some((f) => f[0] === 'subcmd' && f[1] === 'questaction')) { doQuest(form.action, fields, submitForm); return; }
   if (form.method === 'post' && fields.some((f) => f[0] === 'subcmd' && f[1] === 'usestairs')) {
-    // a stairway changes the zone: send it in the background and swap the map in, like a step
+    // a stairway changes the zone: send it in the background and swap the map in, like a step. Some stairways lead to a page
+    // without a map (a hub): the move is done by then, so reload the page to show it. If the game answered with a message
+    // (the stairway was refused) or the request failed, send the form the old way so the message shows / it is tried again.
     const body = new URLSearchParams();
     fields.forEach(([n, v]) => body.append(n, v));
-    SSH.go(form.action, { method: 'POST', body }, submitForm);
+    SSH.go(form.action, { method: 'POST', body }, (html) => { if (html && !/INFORMATION ALERT/i.test(html)) location.reload(); else submitForm(); });
     return;
   }
   submitForm();
