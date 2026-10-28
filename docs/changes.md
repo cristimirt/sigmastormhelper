@@ -36,7 +36,7 @@ The helper only changes how pages look and how they are used in your own browser
 
 ### Other pages
 
-- **Blueprints**: hover a blueprint's picture on the known-blueprints list to see what it makes (the item, its stats and the ingredients with how many you own and your credits). Static data is cached; owned counts are re-read on every hover.
+- **Blueprints**: hover a blueprint's picture on the known-blueprints list to see what it makes (the item, its stats and the ingredients with how many you own and your credits). Static data is cached; owned counts are re-read on every hover. The tooltip looks like the game's other tooltips (a slightly see-through background), and when the result is gear it is shown next to the worn item of its kind, with the numbers coloured and the differences in brackets, as in gear comparison.
 
 ### Modern profile (switch at the bottom left)
 

@@ -1,5 +1,7 @@
+import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
 import { esc } from '../core/util.js';
+import { compareParts, loadItem, pairCss, tipLook } from './compare.js';
 
 const BP_V = 1;
 
@@ -106,14 +108,25 @@ async function bpHtml(id) {
   h += '<div class="bp-s">Items required</div>' + (d.items.length ? d.items.map((e) => row(e, k++)).join('') : '<div class="bp-t">None</div>');
   h += '<div class="bp-s">Components required</div>' + (d.comps.length ? d.comps.map((e) => row(e, k++)).join('') : '<div class="bp-t">None</div>');
   const ti = all[k];
-  h += '<div class="bp-s">Resulting item</div><div class="bp-res"><img src="' + esc(d.target.src) + '"><div class="bp-blk">' + ti.html + '</div></div>';
-  return h;
+  // an equippable result is shown next to the worn item of its kind, its numbers coloured against the worn one's
+  let target = ti.html;
+  let worn = null;
+  if (S.cfg.gearCompare) {
+    const c = await compareParts(ti.html, loadItem).catch(() => null);
+    if (c) { target = c.html; worn = c.worn; }
+  }
+  h += '<div class="bp-s">Resulting item</div><div class="bp-res"><img src="' + esc(d.target.src) + '"><div class="bp-blk">' + target + '</div></div>';
+  return { html: h, worn };
 }
 
+const BP_W = 410;
+
 export function initRecipes() {
+  const look = tipLook(); // the same look as the game's other tooltips (a slightly see-through background)
   const st = document.createElement('style');
-  st.textContent = '#ssh-bp{position:fixed;z-index:9400;width:410px;display:none;padding:8px 10px;background:#0b0e0e;border:1px solid #6a6f6f;color:#d8cfbf;font:12px Arial,sans-serif;box-shadow:0 4px 18px rgba(0,0,0,.8);pointer-events:none;}' +
-    '#ssh-bp .bp-s{margin:8px 0 4px;padding:2px 6px;background:#1b1f1f;color:#fff;font-weight:bold;}#ssh-bp .bp-s:first-child{margin-top:0;}' +
+  st.textContent = '#ssh-bp{position:fixed;z-index:9400;width:' + BP_W + 'px;display:none;box-sizing:content-box;' + look.box + 'pointer-events:none;}' +
+    pairCss('#ssh-bp') + '#ssh-bp .ce table{max-width:100%}' +
+    '#ssh-bp .bp-s{margin:8px 0 4px;padding:2px 6px;background:' + look.title + ';color:#fff;font-weight:bold;}#ssh-bp .bp-s:first-child{margin-top:0;}' +
     '#ssh-bp .bp-r{display:flex;align-items:center;gap:8px;margin:3px 0;}#ssh-bp .bp-r img{width:36px;height:36px;flex:none;background:#0D0905;border:1px solid #202122;object-fit:contain;}' +
     '#ssh-bp .bp-i{flex:1;min-width:0;}#ssh-bp .bp-n{font-weight:bold;color:#fff;}#ssh-bp .bp-t{color:#9a9488;font-size:11px;}#ssh-bp .bp-q{font-weight:bold;color:#e8c36a;}' +
     '#ssh-bp .bp-res{display:flex;gap:8px;align-items:flex-start;}#ssh-bp .bp-res>img{width:45px;height:45px;flex:none;background:#0D0905;border:1px solid #202122;}#ssh-bp .bp-blk{flex:1;min-width:0;overflow:hidden;}#ssh-bp .bp-blk table{max-width:100%;}';
@@ -123,11 +136,22 @@ export function initRecipes() {
   document.body.appendChild(tip);
   let cur = null;
   let seq = 0;
+  // opens towards the middle of the window, like the other tooltips: left of the pointer on the right half, above it on the lower half
   const place = (e) => {
     const w = tip.offsetWidth;
     const h = tip.offsetHeight;
-    tip.style.left = Math.max(4, Math.min(window.innerWidth - w - 4, e.clientX + 16)) + 'px';
-    tip.style.top = Math.max(4, Math.min(window.innerHeight - h - 4, e.clientY + 12)) + 'px';
+    const vw = document.documentElement.clientWidth;
+    const vh = document.documentElement.clientHeight;
+    tip.classList.toggle('flip', e.clientX > vw / 2);
+    const x = e.clientX > vw / 2 ? e.clientX - look.offX - w : e.clientX + look.offX;
+    const y = e.clientY > vh / 2 ? e.clientY - look.offY - h : e.clientY + look.offY;
+    tip.style.left = Math.min(Math.max(4, x), Math.max(4, vw - w - 4)) + 'px';
+    tip.style.top = Math.min(Math.max(4, y), Math.max(4, vh - h - 4)) + 'px';
+  };
+  // the tooltip, or the pair of tooltips (the result and the worn item) twice as wide
+  const setTip = (r) => {
+    tip.style.width = (r.worn ? BP_W * 2 + 17 : BP_W) + 'px';
+    tip.innerHTML = r.worn ? '<div class="cw"><div class="cm">' + r.html + '</div><div class="ce"><div class="eqh">Worn</div>' + r.worn + '</div></div>' : r.html;
   };
   document.addEventListener('mouseover', async (e) => {
     const img = e.target && typeof e.target.closest === 'function' ? e.target.closest('img[src*="/recipes/"]') : null;
@@ -137,23 +161,23 @@ export function initRecipes() {
     if (!id || cur === img) return;
     cur = img;
     const my = ++seq;
-    tip.innerHTML = '<span class="ssh-spin"></span> Loading blueprint...';
+    setTip({ html: '<span class="ssh-spin"></span> Loading blueprint...' });
     tip.style.display = 'block';
     place(e);
     try {
-      const h = await bpHtml(id);
+      const r = await bpHtml(id);
       if (my !== seq) return;
-      tip.innerHTML = h;
+      setTip(r);
       place(e);
       const hv = bpHave.get(id);
       if (!hv || Date.now() - hv.t > 8000) { // the owned counts are always re-read; everything else comes from the cache
         await bpRefresh(id);
         if (my !== seq) return;
-        tip.innerHTML = await bpHtml(id);
+        setTip(await bpHtml(id));
         place(e);
       }
     } catch (x) {
-      if (my === seq) tip.innerHTML = 'Could not load this blueprint.';
+      if (my === seq) setTip({ html: 'Could not load this blueprint.' });
     }
   });
   document.addEventListener('mouseout', (e) => {
