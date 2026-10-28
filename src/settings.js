@@ -36,6 +36,8 @@ export function initSettings() {
     ['h', 'Top banner'],
     ['bannerNums', 'check', 'Write HP, skill power and the energy maximum on the banner'],
     ['durBar', 'check', 'Show the gear durability bar'],
+    ['h', 'Items'],
+    ['gearCompare', 'check', 'Compare gear in item tooltips', 'An item you are not wearing is shown next to the worn item of the same kind, with the differences coloured.'],
     ['h', 'Side panels'],
     ['movePanels', 'check', 'Move Game Stats and Kill Logs to the left column', 'Takes effect after reloading the page.'],
   ];

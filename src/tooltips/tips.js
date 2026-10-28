@@ -1,3 +1,5 @@
+import { S } from '../core/state.js';
+import { compareParts } from './compare.js';
 import { energyHtml, energyOn } from './energy.js';
 import { loadSkill, scaleDesc, skillByName, skillInfo } from './skills.js';
 
@@ -14,7 +16,11 @@ export function initTips() {
     'background:' + (cfg.BgColor && cfg.BgColor !== '#000000' ? cfg.BgColor : 'rgba(0,0,0,.95)') + ';border:' + (cfg.BorderWidth || 1) + 'px solid ' + (cfg.BorderColor || '#666') + ';' +
     'color:' + (cfg.FontColor || '#fff') + ';font:' + (cfg.FontSize || '8pt') + ' ' + (cfg.FontFace || 'Helvetica') + ',Arial,sans-serif;text-align:left;pointer-events:none;}' +
     '#ssh-gtip .tt{margin:-1px -1px 3px;padding:2px 3px;font-weight:bold;background:' + (cfg.TitleBgColor || '#333') + '}' +
-    '#ssh-gtip .sk{margin-top:5px;padding-top:4px;border-top:1px solid #3a3d3d;text-align:left;line-height:1.35}#ssh-gtip .sk b{color:#7fe08a}#ssh-gtip .sx{margin-top:4px;color:#9a9488;font-size:11px}';
+    '#ssh-gtip .sk{margin-top:5px;padding-top:4px;border-top:1px solid #3a3d3d;text-align:left;line-height:1.35}#ssh-gtip .sk b{color:#7fe08a}#ssh-gtip .sx{margin-top:4px;color:#9a9488;font-size:11px}' +
+    // gear comparing: the hovered item and the worn one side by side, the hovered one on the side of the pointer
+    '#ssh-gtip .cw{display:flex;align-items:flex-start}#ssh-gtip.flip .cw{flex-direction:row-reverse}#ssh-gtip .cm,#ssh-gtip .ce{flex:1 1 0;min-width:0}' +
+    '#ssh-gtip .ce{padding-left:8px;margin-left:8px;border-left:1px solid #555}#ssh-gtip.flip .ce{padding:0 8px 0 0;margin:0 8px 0 0;border:0;border-right:1px solid #555}' +
+    '#ssh-gtip .eqh{margin-bottom:3px;color:#9a9488;text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:1px}';
   document.head.appendChild(st);
   const box = document.createElement('div');
   box.id = 'ssh-gtip';
@@ -23,6 +29,7 @@ export function initTips() {
   let my = 0;
   let hov = null; // the element the pointer entered last: the one whose handler calls Tip()
   let trig = null; // the element the shown tooltip belongs to
+  let curW = 0; // width of the tooltip shown now
   let pw = 0; // width set by tt_setWidth for the next tooltip
   let tipId = 0; // changes whenever a tooltip opens or closes: a late answer only fills the tooltip it was asked for
   const hide = () => { trig = null; tipId++; box.style.display = 'none'; };
@@ -36,6 +43,7 @@ export function initTips() {
     const oy = cfg.OffsetY || 8;
     const x = mx > vw / 2 ? mx - ox - w : mx + ox;
     const y = my > vh / 2 ? my - oy - h : my + oy;
+    box.classList.toggle('flip', mx > vw / 2);
     box.style.left = Math.min(Math.max(4, x), Math.max(4, vw - w - 4)) + 'px';
     box.style.top = Math.min(Math.max(4, y), Math.max(4, vh - h - 4)) + 'px';
   };
@@ -62,6 +70,7 @@ export function initTips() {
     // the banner's energy tooltip: a live countdown and when the energy will be full
     const en = inOver && energyOn(html) ? html : null;
     if (en) { html = energyHtml(en); width = Math.max(width, 260); }
+    curW = width;
     box.style.width = width + 'px';
     box.innerHTML = (title ? '<div class="tt">' + title + '</div>' : '') + html + (sk ? skillBlock(info, sk.level) : '');
     if (inOver) { trig = hov; tipId++; }
@@ -104,6 +113,13 @@ export function initTips() {
     box.innerHTML = html;
     place();
   };
+  // the hovered item next to the worn one: two tooltips as wide as the one it replaces
+  const refreshPair = (id, main, worn) => {
+    if (id !== tipId || !trig) return;
+    box.style.width = curW * 2 + 17 + 'px';
+    box.innerHTML = '<div class="cw"><div class="cm">' + main + '</div><div class="ce"><div class="eqh">Worn</div>' + worn + '</div></div>';
+    place();
+  };
   document.addEventListener('mouseover', (e) => {
     if (!e.isTrusted) return;
     hov = e.target;
@@ -141,13 +157,10 @@ export function initTips() {
     if (typeof window.ajaxLoadItem === 'function' && !window.ajaxLoadItem.ssh) {
       const cache = new Map();
       const pending = new Map();
-      window.ajaxLoadItem = function (itemId, invId, type, pid, finalStr) {
+      const loadItem = (itemId, invId, type, pid) => {
         const key = itemId + '_' + invId;
-        const fin = finalStr || '';
         const hit = cache.get(key);
-        if (hit && Date.now() - hit.t < 60000) { show([hit.html + fin]); return; }
-        show(['<center><br>&nbsp;&nbsp;Loading Stats...</center><br>']);
-        const id = tipId;
+        if (hit && Date.now() - hit.t < 60000) return Promise.resolve(hit.html);
         let p = pending.get(key);
         if (!p) {
           p = fetch('fetchitem.php?item_id=' + itemId + '&inv_id=' + invId + '&t=' + type + '&p=' + pid + '&uid=' + Date.now(), { credentials: 'same-origin' })
@@ -157,7 +170,21 @@ export function initTips() {
           const done = () => pending.delete(key);
           p.then(done, done);
         }
-        p.then((html) => refresh(id, html + fin), () => refresh(id, 'Could not load this item.'));
+        return p;
+      };
+      // an item that is not worn gets how it differs from the worn item of its kind, added once the answers are in
+      const compare = (id, html, fin) => {
+        if (!S.cfg.gearCompare || /Unequip/.test(fin)) return;
+        compareParts(html, loadItem).then((c) => { if (c) refreshPair(id, c.html + fin, c.worn); }, () => {});
+      };
+      window.ajaxLoadItem = function (itemId, invId, type, pid, finalStr) {
+        const fin = finalStr || '';
+        const key = itemId + '_' + invId;
+        const hit = cache.get(key);
+        if (hit && Date.now() - hit.t < 60000) { show([hit.html + fin]); compare(tipId, hit.html, fin); return; }
+        show(['<center><br>&nbsp;&nbsp;Loading Stats...</center><br>']);
+        const id = tipId;
+        loadItem(itemId, invId, type, pid).then((html) => { refresh(id, html + fin); compare(id, html, fin); }, () => refresh(id, 'Could not load this item.'));
       };
       window.ajaxLoadItem.ssh = true;
       window.ajaxLoadItem.clear = () => cache.clear();
