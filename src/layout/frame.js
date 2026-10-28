@@ -47,12 +47,13 @@ export function buildFrame() {
   const left = part('ssh-left');
   const center = part('ssh-center');
   const right = part('ssh-right');
-  const lb = part('ssh-lb');
-  part('ssh-cb');
-  const rb = part('ssh-rb');
+  const lb = mel('div', 'ssh-lb'); // the bottom caps belong to the sidebars: they end in them
+  const rb = mel('div', 'ssh-rb');
   const banner = part('ssh-banner');
   const cells = [r0.cells[0], r1.cells[0], r1.cells[1], r1.cells[2]];
   [hd, left, center, right].forEach((d, i) => d.append(...cells[i].childNodes));
+  left.append(lb);
+  right.append(rb);
   const content = frameContent(center);
   // the pictures the game puts on the cells of the bottom rows
   const bgOf = (c) => (c.style.backgroundImage && c.style.backgroundImage !== 'none' ? c.style.backgroundImage : c.getAttribute('background') ? 'url("' + c.getAttribute('background') + '")' : '');
@@ -68,6 +69,7 @@ export function buildFrame() {
 export function unbuildFrame() {
   if (!built) return;
   const { table, page, cells, content } = built;
+  page.querySelectorAll('.ssh-lb, .ssh-rb').forEach((e) => e.remove());
   if (content) {
     content.cell.append(...content.body.childNodes);
     content.cf.replaceWith(content.table);
@@ -84,18 +86,24 @@ export function frameCss(contentBg) {
   return 'html.ssh-modern,html.ssh-modern body{background:#000 url("' + bg + '") no-repeat center top / cover fixed}' +
     P + '{display:grid;grid-template-columns:140px 723px 140px;width:1003px;margin:0 auto;align-items:stretch}' +
     P + ' .ssh-hd{grid-column:1/-1;height:150px;position:relative}' +
-    P + ' .ssh-left,' + P + ' .ssh-right{background:url("http://cdn.sigmastorm.com/skin/sidebar_bg.gif") repeat-y;min-width:0}' +
+    // a sidebar is a column: its widgets, then its bottom cap (42 px) at its foot
+    P + ' .ssh-left,' + P + ' .ssh-right{display:flex;flex-direction:column;background:url("http://cdn.sigmastorm.com/skin/sidebar_bg.gif") repeat-y;min-width:0}' +
     // the middle column is as dark as the content, also where a short page leaves it empty (the background must not show
     // through between the sidebars)
-    P + ' .ssh-center,' + P + ' .ssh-cb{background:#080a0a ' + contentBg + ';min-width:0}' +
+    P + ' .ssh-center{background:#080a0a ' + contentBg + ';min-width:0}' +
     // the content frame: 14 px top picture, 27 px borders around the content, 5 px bottom picture (723 px wide, like the column)
-    P + ' .ssh-cf{width:723px}' +
+    // it grows down to the bottom of the page, so the frame (its borders and its background) never ends above the sidebars' end
+    P + ' .ssh-center{display:flex;flex-direction:column}' +
+    P + ' .ssh-cf{width:723px;flex:1;display:flex;flex-direction:column}' +
     P + ' .cf-top{height:14px;background-repeat:no-repeat;background-position:0 0}' +
-    P + ' .cf-mid{display:grid;grid-template-columns:27px 669px 27px}' +
+    P + ' .cf-mid{display:grid;grid-template-columns:27px 669px 27px;flex:1}' +
     P + ' .cf-l{background-repeat:no-repeat,repeat-y;background-position:right top,0 0}' +
     P + ' .cf-r{background-repeat:no-repeat,repeat-y;background-position:left top,0 0}' +
     P + ' .cf-body{min-width:0;background-repeat:repeat}' +
+    // the world page fills it: its lower panels grow and its footer picture sits at the bottom
+    P + ' .cf-body:has(>#ssh-wp){display:flex;flex-direction:column}' +
+    P + ' .cf-body>#ssh-wp~br{display:none}' + // the game's line break under its content
     P + ' .cf-bot{height:5px;background-repeat:no-repeat;background-position:0 0}' +
-    P + ' .ssh-lb,' + P + ' .ssh-cb,' + P + ' .ssh-rb{height:42px;background-repeat:no-repeat}' +
+    P + ' .ssh-lb,' + P + ' .ssh-rb{flex:none;order:2;height:42px;background-repeat:no-repeat}' +
     P + ' .ssh-banner{grid-column:1/-1;height:85px;background-repeat:no-repeat}';
 }
