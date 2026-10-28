@@ -36,7 +36,7 @@ The helper only changes how pages look and how they are used in your own browser
 - **Moving without a page reload**: arrows, keys and clicks update the map, your position, the banner and the action list in place. Using a stairway (a new zone) works the same way.
 - **Zone bar** with the area name and coordinates, coloured by safe / PvP zone, and a **W** button that opens the zone's page on the Sigma Storm 2 wiki.
 - **Direction pad** round the map (greyed when the game does not allow a direction) and **hotkeys** Q W E / A D / Z X C for the eight directions.
-- **Tile tooltips**: hover a tile for the game's own tile description.
+- **Tile tooltips**: hover a tile for the game's own tile description. Its picture is loaded from the game's current image server (the game still points at one that is gone, so it shows broken).
 - **Path finding**: hover any tile to see the route as a green dotted line with "Go to (x, y) - N steps"; click to walk it step by step. It plans around blocked tiles, re-plans if a step is refused, and stops when you press any key or click the map (option: also stop when creatures are on a tile). One move request per step, spaced by the delay you set (default 320 ms, minimum 100 ms).
 - **Walkable-tile data**: built in for the known areas (`data/tiles.json`) and learned from the game's own arrows while you play; exportable and importable on the Config page.
 - **Footprints**: a button that marks the tiles you have walked on (per area).

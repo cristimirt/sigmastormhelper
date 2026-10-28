@@ -1,4 +1,8 @@
-const LOC_RE = /([A-Za-z][\w' ]*(?:\([^)]*\))?)\s*-\s*\((\d+),\s*(\d+)\)/;
+// The game's tile tooltips still point their pictures at hosts that are gone (an old IP address, fileserver.huntedcow.com):
+// the same files are on the CDN. Also applied when a tooltip is shown, because areas are kept in the browser.
+export const fixImgHosts = (html) => html.replace(/https?:\/\/(?:72\.29\.91\.222|fileserver\.huntedcow\.com)\/sigma2\//g, 'https://cdn.sigmastorm.com/');
+
+const LOC_RE =/([A-Za-z][\w' ]*(?:\([^)]*\))?)\s*-\s*\((\d+),\s*(\d+)\)/;
 
 export function parseLoc(doc) {
   const cb = doc.querySelector('td[background*="coord_bg"]');
@@ -52,7 +56,7 @@ export function parseAreaMap(html) {
       const wm = on.match(/tt_setWidth\((\d+)\)/);
       cells.push({
         bg: c.getAttribute('background') || '',
-        tip: tm ? tm[1].replace(/\\'/g, "'").replace(/https?:\/\/72\.29\.91\.222\/sigma2\//g, 'https://cdn.sigmastorm.com/') : '',
+        tip: tm ? fixImgHosts(tm[1].replace(/\\'/g, "'")) : '',
         tipW: wm ? parseInt(wm[1], 10) : 200,
       });
     });
