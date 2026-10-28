@@ -36,6 +36,7 @@ async function init() {
 
 export default async function start(ctx) {
   S.build = (ctx && ctx.build) || 'dev';
+  S.base = (ctx && ctx.base) || ''; // the site the bundle comes from: its media/ folder has pictures of the helper's own
   await loadData(ctx);
   SSH.init = init;
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

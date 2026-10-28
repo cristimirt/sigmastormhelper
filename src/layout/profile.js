@@ -1,4 +1,4 @@
-import { refreshDur, updateHeader } from '../banner.js';
+import { decorateHeader, refreshDur, updateHeader } from '../banner.js';
 import { dropEarlyM } from '../core/constants.js';
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
@@ -114,6 +114,7 @@ function applyLayout() {
   st.textContent = mCss();
   dropEarlyM();
   document.documentElement.classList.toggle('ssh-modern', modern);
+  decorateHeader(); // the banner: rebuilt for the Modern layout, the game's own with numbers otherwise
   const sel = document.querySelector('#ssh-lay select');
   if (sel) { sel.style.display = modern ? '' : 'none'; sel.value = S.theme; }
   document.querySelectorAll('#ssh-lay button').forEach((b) => b.classList.toggle('on', b.dataset.l === S.layout));

@@ -27,6 +27,7 @@ The helper only changes how pages look and how they are used in your own browser
 - **Gear comparison.** The tooltip of an item you are not wearing is shown next to the tooltip of the worn item of the same kind (Weapon, Helmet, Weapon Add-On, ...), the one you hover on the side of the pointer. In the hovered item, every Bonus, Enhancement and Resistance is green when it beats the worn item and red when it does not, with the difference in brackets, e.g. `+16 (+5)`; numbers only the worn item has are added as `0 (-6)`. It works on the profile and in shops (the worn items are read once from your profile page and kept for two minutes), and can be turned off on the Config page.
 - **Energy tooltip.** A live countdown to the next gain, the energy right now (the hourly gains since the page was loaded are added), and a new **Full in** row with the time it will be full, in your time and in server time. The gain per hour is read from the tooltip, not fixed.
 - **Top banner.** Real HP, skill power and the energy maximum written on the bars; a **gear durability bar** under the HP bar, as long as the bar's slot whatever your HP, with a wrench icon in front (all equipped items added up, re-read in the background when a page loads and after actions, hover for the time of the last check). Updated straight away after fights and actions.
+  - In the **Modern** layout the banner is built again with divs, each piece placed on its slot of the banner picture (the HP, XP and Skill Power bars, the Flux Crystal and Energy counters, the animated orbs and the news picture), instead of the game's table that misses them by a few pixels. Links and tooltips are the game's own.
 - **Side panels.** *Game Stats* and *Kill Logs* move to the left column (option); a stray blank line after the copyright is removed.
 - **Config page: "Sigmastorm Helper" tab.** Settings (route preview and click to walk, stop at creatures, delay between steps, slide animation, banner numbers, durability bar, gear comparison, move side panels), save / defaults, and the learned map data: how many tiles are known, export, import, forget. Shows the helper's version and build.
 
@@ -118,6 +119,7 @@ After a change run `npm run build:dev` (the server reads the files on every requ
 | `src/layout/` | The Modern layout: profile sections, backpack, combat sets, dialogs, themes |
 | `src/tooltips/` | Tooltip replacement, skill / buff descriptions, energy countdown, gear comparison, blueprint preview |
 | `src/pages/` | Other pages worked in place: the blueprint list (Inventing) |
+| `src/media/` | Pictures the helper itself uses (copied to the site's `media/`): the banner's smoother orb animations |
 | `src/banner.js`, `src/settings.js` | Top banner numbers; the Config page tab |
 | `data/` | Walkable tiles, skill descriptions, stim buffs (plain JSON, easy to review) |
 | `loader/` | The Tampermonkey loader |

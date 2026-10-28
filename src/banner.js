@@ -1,6 +1,7 @@
 import { S } from './core/state.js';
 import { store } from './core/storage.js';
 import { fmt, num, txt } from './core/util.js';
+import { modernHeader } from './layout/header.js';
 
 // Update the top bar (HP, energy, credits, XP) from the combat page right away.
 export function updateHeader(html) {
@@ -30,12 +31,35 @@ export function grabVars(html) {
   if (mx) S.staminaMax = +mx[1];
 }
 
+// The numbers the Modern banner writes, read from the game's banner (its tooltips and the pictures' widths).
+function bannerTexts(hc) {
+  const tips = [...hc.querySelectorAll('[onmouseover]')].map((e) => txt(e.getAttribute('onmouseover')));
+  const sum = tips.find((t) => /Character Summary/.test(t)) || '';
+  const spTip = tips.find((t) => /Skill Power/.test(t)) || '';
+  const hp = sum.match(/HP:\s*([\d,]+)\s*\/\s*([\d,]+)/);
+  const spImg = hc.querySelector('#surgeImg');
+  const bs = [...hc.querySelectorAll('b')].filter((b) => /^[\d,]+(?:\s*\/\s*\d+)?$/.test(txt(b.textContent)));
+  const out = { hp: '', sp: '', flux: bs[0] ? txt(bs[0].textContent) : null, en: bs[1] ? txt(bs[1].textContent) : null };
+  if (S.cfg.bannerNums) {
+    if (hp) out.hp = fmt(num(hp[1])) + ' / ' + fmt(num(hp[2]));
+    if (spImg) {
+      const max = num((spTip.match(/currentPlayerSurge\s*\+\s*'\s*\/\s*(\d+)/) || [])[1]) || 50;
+      const pct = parseFloat(spImg.getAttribute('width')) || 0;
+      out.sp = (S.surge !== null ? S.surge : Math.round((pct * max) / 100)) + ' / ' + max;
+    }
+    if (out.en !== null) out.en = num(out.en) + ' / ' + S.staminaMax;
+  }
+  return out;
+}
+
 export function decorateHeader(tries) {
   try {
     const m = document.getElementById('mainContentDiv');
     const hc = m && m.rows.length ? m.rows[0].cells[0] : null;
     if (!hc) return;
-    hc.querySelectorAll('.ssh-ov').forEach((e) => e.remove());
+    // the Modern layout builds the banner again with divs (see layout/header.js); the numbers are written in it
+    if (S.layout === 'modern' && modernHeader(hc, bannerTexts(hc))) return;
+    hc.querySelectorAll('#ssh-hdr, .ssh-ov').forEach((e) => e.remove()); // the game's own banner: no Modern copy in the way
     const hpImg = hc.querySelector('img[src*="hp_progress"]');
     const spImg = hc.querySelector('#surgeImg');
     const r0 = hc.getBoundingClientRect();
