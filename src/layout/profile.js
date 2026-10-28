@@ -8,6 +8,7 @@ import { mel, proxify } from './dom.js';
 import { pfSection, pfSections } from './sections.js';
 import { buildFrame, unbuildFrame } from './frame.js';
 import { buildSidebars, unbuildSidebars } from './sidebars.js';
+import { buildWorldPage, unbuildWorldPage } from './worldpage.js';
 import { THEMES, mCss, onProfile } from './theme.js';
 
 // Dim the whole profile content while it is being replaced (gear changed: the stats move too).
@@ -118,7 +119,7 @@ function applyLayout() {
   document.documentElement.classList.toggle('ssh-modern', modern);
   // the page around the content: divs (a banner, two columns of widgets you can rearrange, a footer) in the Modern layout, the game's own
   // table otherwise
-  if (modern) { buildFrame(); decorateHeader(); buildSidebars(); } else { unbuildSidebars(); restoreHeader(); unbuildFrame(); decorateHeader(); }
+  if (modern) { buildFrame(); decorateHeader(); buildSidebars(); buildWorldPage(); } else { unbuildWorldPage(); unbuildSidebars(); restoreHeader(); unbuildFrame(); decorateHeader(); }
   const sel = document.querySelector('#ssh-lay select');
   if (sel) { sel.style.display = modern ? '' : 'none'; sel.value = S.theme; }
   document.querySelectorAll('#ssh-lay button').forEach((b) => b.classList.toggle('on', b.dataset.l === S.layout));

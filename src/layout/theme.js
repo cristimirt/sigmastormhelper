@@ -3,6 +3,7 @@ import { store } from '../core/storage.js';
 import { bannerCss } from './header.js';
 import { frameCss } from './frame.js';
 import { sidebarCss } from './sidebars.js';
+import { worldCss } from './worldpage.js';
 
 // Layout "orig" leaves the page alone. Layout "modern" builds the page again from the original markup with grid/flex.
 // The original stays in the page, hidden, and is the source of truth: form controls in the new layout are proxies that
@@ -25,7 +26,7 @@ export function mCss() {
   const T = THEMES[S.theme];
   const u = (k) => 'url("' + T.skin + T.img[k] + '")';
   const P = '#ssh-prof ';
-  return 'html.ssh-modern [data-ssh-orig]{display:none!important}' + bannerCss() + frameCss(u('page')) + sidebarCss() +
+  return 'html.ssh-modern [data-ssh-orig]{display:none!important}' + bannerCss() + frameCss(u('page')) + sidebarCss() + worldCss(u('page')) +
     P.trim() + '{display:none;width:640px;margin:0 auto;box-sizing:border-box;background:' + u('page') + ';font:8pt tahoma,sans-serif;color:#fff;}html.ssh-modern ' + P.trim() + '{display:block}' +
     P + '.pf-title{height:48px;background:' + u('title') + ' no-repeat center top}' +
     P + '.pf-foot{height:54px;background:' + u('foot') + ' no-repeat center top}' +

@@ -1,5 +1,6 @@
 import { decorateHeader, grabVars, setHeaderFrom } from '../banner.js';
 import { pageParts } from '../core/page.js';
+import { buildWorldPage } from '../layout/worldpage.js';
 import { SSH } from '../core/constants.js';
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
@@ -57,6 +58,7 @@ export async function show(info, prev) {
   if (info.areaUrl) S.areaUrl = info.areaUrl;
   const ok = (await ensureArea()) && attachViewer();
   if (!ok) return false;
+  if (S.layout === 'modern') buildWorldPage(); // the Modern layout: the page content as divs, with the viewer in it
   learnFrom();
   if (prev) {
     // The viewer was re-inserted, which resets CSS transitions: put it back where it was,
