@@ -1,4 +1,5 @@
 import { refreshDur, updateHeader } from '../banner.js';
+import { SSH } from '../core/constants.js';
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
 import { closeLog, placeResults, refreshWorld } from './combat.js';
@@ -98,6 +99,13 @@ export function submitAction(clone) {
   f.submit();
   };
   if (form.method === 'post' && fields.some((f) => f[0] === 'subcmd' && f[1] === 'questaction')) { doQuest(form.action, fields, submitForm); return; }
+  if (form.method === 'post' && fields.some((f) => f[0] === 'subcmd' && f[1] === 'usestairs')) {
+    // a stairway changes the zone: send it in the background and swap the map in, like a step
+    const body = new URLSearchParams();
+    fields.forEach(([n, v]) => body.append(n, v));
+    SSH.go(form.action, { method: 'POST', body }, submitForm);
+    return;
+  }
   submitForm();
 }
 
