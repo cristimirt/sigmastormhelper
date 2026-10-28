@@ -6,6 +6,7 @@ import { closeEntity, doAttack, entityAttack, openEntity } from './entity.js';
 import { renderTrail } from './footprints.js';
 import { go } from './loading.js';
 import { applyZoom, moveFor, setZoom } from './map.js';
+import { fixImgHosts } from './parsing.js';
 import { drawPath, findPath, stopWalk, tileUnderMouse, walkTo } from './pathfinding.js';
 
 export function bind() {
@@ -77,7 +78,7 @@ export function bind() {
     if (!el || !area) { hideTip(); return; }
     const c = area.cells[+el.getAttribute('data-tip')];
     if (!c) return;
-    tip.innerHTML = c.tip;
+    tip.innerHTML = fixImgHosts(c.tip);
     tip.style.width = c.tipW + 'px';
     tip.style.display = 'block';
   });
