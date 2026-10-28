@@ -21,6 +21,7 @@ The helper only changes how pages look and how they are used in your own browser
 ### On every page
 
 - **Layout switch** (bottom left corner, remembered): `Original` keeps the game's own pages; `Modern` rebuilds the pages the helper knows (right now the profile) with modern CSS. A theme list sits next to it (only "Original Core" for now).
+- **Off switch.** Adding `ssh=off` to a game address (`index.php?cmd=profile&ssh=off`) keeps the helper out of that page, to see the game as it is. Needs the loader from version 1.0.1; Tampermonkey updates it by itself, or install it again from the install page.
 - **Tooltips replaced.** The game's tooltip library could leave a tooltip stuck to the mouse or stalled off-screen. The new one follows the pointer, opens towards the middle of the window, always closes when you leave the item, and looks like the original (same width, colours and text).
 - **Item tooltips no longer freeze the page.** The game loaded item data with a blocking request (about 0.3 s of frozen page per item). The helper shows "Loading Stats..." at once and fills it in when the data arrives; answers are kept for a minute.
 - **Buff and skill tooltips explain themselves.** Buff icons and the right-hand "Skills" panel now show what the skill does, with every "x% per point" worked out for the skill's level, plus its cost and duration. Built in: all 133 skills of the skill pages and the stim buffs (Scavenger, Micro Generator, Mind Orb; Accelerator only has what the game says about it).
@@ -106,6 +107,8 @@ Then, in the game's tab (browser console):
 localStorage.setItem('SSH_dev_base', 'http://127.0.0.1:8765/')   // the installed loader now uses your local build
 // localStorage.removeItem('SSH_dev_base')                       // back to the published version
 ```
+
+To see a page without the helper (the game as it is, or while another copy of the helper is being tested), add `ssh=off` to its address: `https://www.sigmastorm.com/index.php?cmd=profile&ssh=off`. The installed loader (version 1.0.1 and later) then does nothing on that page.
 
 After a change run `npm run build:dev` (the server reads the files on every request) and reload the game. `npm run check` bundles everything and validates the data files; it also runs on every pull request.
 
