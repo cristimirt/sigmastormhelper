@@ -39,6 +39,10 @@ export function addStyle() {
     'border:1px solid #5a5f5f;font:bold 12px Arial,sans-serif;white-space:nowrap;}' +
     '#ssh-al{position:absolute;z-index:1000;width:270px;max-height:340px;overflow:auto;background:rgba(8,10,10,.92);' +
     'border:1px solid #5a5f5f;color:#d8cfbf;font:11px Arial,sans-serif;box-shadow:0 3px 10px rgba(0,0,0,.6);}' +
+    // a slim dark scroll bar without arrows (Firefox: the thin standard one)
+    '#ssh-al::-webkit-scrollbar{width:5px}#ssh-al::-webkit-scrollbar-track{background:transparent}#ssh-al::-webkit-scrollbar-button{display:none;width:0;height:0}' +
+    '#ssh-al::-webkit-scrollbar-thumb{background:#2c3232;border-radius:3px}#ssh-al::-webkit-scrollbar-thumb:hover{background:#454c4c}' +
+    '@supports(-moz-appearance:none){#ssh-al{scrollbar-width:thin;scrollbar-color:#2c3232 transparent}}' +
     '#ssh-al .hd{padding:4px 8px;background:#1b1f1f;border-bottom:1px solid #3a3d3d;font-weight:bold;color:#fff;cursor:move;' +
     'user-select:none;-webkit-user-select:none;touch-action:none;}' +
     '#ssh-al .rf{float:right;margin-left:8px;cursor:pointer;color:#d8cfbf;font-size:14px;line-height:12px;user-select:none}#ssh-al .rf:hover{color:#fff}#ssh-al .rf.spin{display:inline-block;animation:ssh-rot .7s linear infinite}' +
