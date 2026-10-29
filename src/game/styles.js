@@ -22,7 +22,7 @@ export function addStyle() {
     '#ssh-me{position:absolute;width:' + TILE + 'px;height:' + TILE + 'px;transition:left .28s ease-out,top .28s ease-out;' +
     'pointer-events:none;display:flex;align-items:center;justify-content:center;}' +
     '#ssh-me img{width:23px;height:23px;filter:drop-shadow(0 0 4px #fff);}' +
-    '#ssh-pinfo{position:absolute;left:38px;top:34px;z-index:5;display:none;padding:2px 8px;background:rgba(0,0,0,.75);color:#7dff7d;border:1px solid #1d6a1d;font:bold 11px Arial,sans-serif;}' +
+    '#ssh-pinfo{position:absolute;left:38px;top:62px;z-index:5;display:none;padding:2px 8px;background:rgba(0,0,0,.75);color:#7dff7d;border:1px solid #1d6a1d;font:bold 11px Arial,sans-serif;}' +
     '#ssh-path{position:absolute;left:0;top:0;pointer-events:none;overflow:visible;}' +
     '#ssh-fpbtn{position:absolute;right:38px;bottom:6px;z-index:5;height:22px;padding:0 8px;box-sizing:border-box;background:rgba(0,0,0,.75);color:#d8cfbf;border:1px solid #5a5f5f;font:bold 12px/20px Arial,sans-serif;cursor:pointer;}' +
     '#ssh-fpbtn:hover{border-color:#9fe0ff;color:#fff;}#ssh-fpbtn.on{border-color:#e8872a;color:#ffb36b;}' +
