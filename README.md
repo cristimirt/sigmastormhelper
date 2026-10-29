@@ -69,6 +69,7 @@ The profile page rebuilt from its own markup with grid / flex, with the original
   - folder icons switch folders and page links change pages in place; the **last folder you used is remembered** and opens again after a page reload;
   - **refresh** button, **settings** button (item size 50 / 75 / 100 %, remembered);
   - a small see-through **checkbox in the corner of each item**; the actions **Move selected to folder**, **Combine**, **Split**, **Destroy** (asks for confirmation in a pop-up) appear only while something is selected;
+  - **Ctrl+Click** on an item selects it instead of using or equipping it; **Shift+Click** selects every item from the last selected one to the clicked one (left to right, top to bottom), also in the pop-up bag of the world page;
   - clicking an item **uses** it (consumables, ammo, resources) with the game's message shown in a pop-up; clicking gear **equips** it and refreshes the whole page content (stats, equipment, bag, buffs);
   - the bag and the components under it dim while they load; messages in a small line above the bag; the game's item tooltips on every item.
 - **Components**: clicking a component destroys it (as in the game) and the page links page through them, all in place.

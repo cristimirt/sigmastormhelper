@@ -413,17 +413,38 @@ export function pfBack(rows) {
   BP.box = box;
   BP.data = d;
   BP.sel = new Set();
+  BP.last = '';
   const pm = location.search.match(/backpack_page=(\d+)/);
   BP.url = 'index.php?cmd=profile&folder_id=' + d.cur + (pm ? '&backpack_page=' + pm[1] : '');
   box.addEventListener('change', (e) => {
     const ck = e.target.closest && e.target.closest('.bp-ck');
     if (!ck) return;
-    if (ck.checked) BP.sel.add(ck.dataset.inv); else BP.sel.delete(ck.dataset.inv);
+    if (ck.checked) { BP.sel.add(ck.dataset.inv); BP.last = ck.dataset.inv; } else BP.sel.delete(ck.dataset.inv);
     bpSync();
   });
+  // no text selection or link drag while Shift / Ctrl select
+  box.addEventListener('mousedown', (e) => { if ((e.shiftKey || e.ctrlKey || e.metaKey) && e.target.closest && e.target.closest('.bp-c')) e.preventDefault(); });
   box.addEventListener('click', (e) => {
     const t = e.target;
     if (!t || typeof t.closest !== 'function') return;
+    // Ctrl+Click selects the item instead of using it; Shift+Click selects everything from the last selected item to this one
+    const cell = t.closest('.bp-c:not(.empty)');
+    if (cell && !t.closest('.bp-ck') && !e.button && (e.ctrlKey || e.metaKey || e.shiftKey)) {
+      e.preventDefault();
+      const cks = [...box.querySelectorAll('.bp-c:not(.empty) .bp-ck')];
+      const me = cell.querySelector('.bp-ck');
+      const from = e.shiftKey ? cks.findIndex((c) => c.dataset.inv === BP.last) : -1;
+      if (from >= 0) {
+        const to = cks.indexOf(me);
+        cks.slice(Math.min(from, to), Math.max(from, to) + 1).forEach((c) => { c.checked = true; BP.sel.add(c.dataset.inv); });
+      } else {
+        me.checked = !me.checked;
+        if (me.checked) BP.sel.add(me.dataset.inv); else BP.sel.delete(me.dataset.inv);
+      }
+      if (me.checked) BP.last = me.dataset.inv;
+      bpSync();
+      return;
+    }
     const ua = t.closest('.bp-c a[href]');
     if (ua && /subcmd=(use|equip)item/.test(ua.getAttribute('href') || '')) {
       if (!e.button && !e.ctrlKey && !e.metaKey && !e.shiftKey) { e.preventDefault(); bpUse(ua); }
@@ -437,7 +458,7 @@ export function pfBack(rows) {
     if (!ac) return;
     e.preventDefault();
     const a = ac.dataset.a;
-    if (a === 'clear') { BP.sel.clear(); box.querySelectorAll('.bp-ck').forEach((c) => { c.checked = false; }); bpSync(); } else if (a === 'destroy') bpDestroyAsk(); else bpAct(a);
+    if (a === 'clear') { BP.sel.clear(); BP.last = ''; box.querySelectorAll('.bp-ck').forEach((c) => { c.checked = false; }); bpSync(); } else if (a === 'destroy') bpDestroyAsk(); else bpAct(a);
   });
   bpRender();
   // The page always loads with the Main folder; open the one that was open last instead (once per page load).
