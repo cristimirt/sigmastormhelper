@@ -1,5 +1,6 @@
 // The game still writes some of its picture addresses with http://; the same files are served over https.
-export const https = (u) => String(u || '').replace(/^http:\/\//i, 'https://');
+// (the local test server of the helper stays as it is)
+export const https = (u) => String(u || '').replace(/^http:\/\/(?!127\.0\.0\.1|localhost)/i, 'https://');
 
 export const esc = (x) => String(x).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
