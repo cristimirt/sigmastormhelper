@@ -5,20 +5,33 @@ export function gAlerts(doc) {
   return [...doc.querySelectorAll('table')].filter((t) => !t.querySelector('table') && /^\s*(INFORMATION|ERROR|WARNING|SUCCESS)?\s*ALERT\s*$/i.test((t.querySelector('b') || {}).textContent || ''));
 }
 
+// The game's message as a plain dialog: the head line ("INFORMATION ALERT") is the title, the text is the body.
 export function alertModal(alerts) {
   if (!alerts.length) return;
   const body = mel('div', 'mm-al');
-  alerts.forEach((t) => body.append(document.importNode(t, true)));
-  mModal('Message', body, [{ text: 'OK' }]);
+  let title = '';
+  alerts.forEach((t) => {
+    const c = document.importNode(t, true);
+    const b = c.querySelector('b');
+    if (!title) title = b.textContent.trim();
+    const row = b.closest('tr');
+    if (row && c.rows.length > 1) row.remove(); else b.remove();
+    const cells = [...c.querySelectorAll('td')].filter((td) => !td.querySelector('td'));
+    const p = mel('div', 'msg');
+    p.innerHTML = (cells.length ? cells.map((td) => td.innerHTML.trim()).filter(Boolean).join('<br>') : c.innerHTML).trim();
+    body.append(p);
+  });
+  mModal(title || 'Message', body, [{ text: 'OK' }], { center: true });
 }
 
 // A small draggable dialog (title bar, body, buttons). Esc or a click outside closes it.
-// opts: { keep: true } leaves this dialog open when another one is shown on top of it; { onClose } runs when it closes.
+// opts: { center: true } centers the title; { keep: true } leaves this dialog open when another one is shown on top of it; { onClose } runs when it closes.
 export function mModal(title, body, buttons, opts) {
   document.querySelectorAll('#ssh-mm:not(.keep)').forEach((e) => e.remove());
   const o = mel('div');
   o.id = 'ssh-mm';
   if (opts && opts.keep) o.classList.add('keep');
+  if (opts && opts.center) o.classList.add('ctr');
   o.innerHTML = '<div class="box"><div class="ph"><span class="t"></span><span class="x" title="Close">&#10006;</span></div><div class="pb"></div><div class="pf"></div></div>';
   o.querySelector('.t').textContent = title;
   o.querySelector('.pb').append(body);
