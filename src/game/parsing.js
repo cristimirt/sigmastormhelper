@@ -1,6 +1,6 @@
-// The game's tile tooltips still point their pictures at hosts that are gone (an old IP address, fileserver.huntedcow.com):
+// The game's tile tooltips still point their pictures at hosts that are gone (old IP addresses, fileserver.huntedcow.com):
 // the same files are on the CDN. Also applied when a tooltip is shown, because areas are kept in the browser.
-export const fixImgHosts = (html) => html.replace(/https?:\/\/(?:72\.29\.91\.222|fileserver\.huntedcow\.com)\/sigma2\//g, 'https://cdn.sigmastorm.com/');
+export const fixImgHosts = (html) => html.replace(/https?:\/\/(?:\d{1,3}(?:\.\d{1,3}){3}|fileserver\.huntedcow\.com)\/sigma2\//g, 'https://cdn.sigmastorm.com/');
 
 const LOC_RE =/([A-Za-z][\w' ]*(?:\([^)]*\))?)\s*-\s*\((\d+),\s*(\d+)\)/;
 
