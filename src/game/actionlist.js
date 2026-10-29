@@ -114,17 +114,19 @@ export function submitAction(clone) {
   submitForm();
 }
 
-// Healing at a healer: the same request as the game's button, in the background; the game's message in a dialog, the banner (HP,
-// credits) updated from the answer, the list read again. If the request itself fails, nothing was done, so the form is sent the old way.
+// Healing at a healer: the same request as the game's button, in the background; the game's message in the list in place of the
+// cost line, the banner (HP, credits) updated from the answer, the list read again. If the request itself fails, nothing was done, so
+// the form is sent the old way.
 async function doHeal(action, fields, fallback) {
   if (S.busy || S.pending) return;
   S.pending++;
   let ok = false;
+  let alerts = [];
   try {
     const body = new URLSearchParams();
     fields.forEach(([n, v]) => body.append(n, v));
     const html = await (await fetch(new URL(action, location.href).href, { method: 'POST', body, credentials: 'same-origin' })).text();
-    alertModal(gAlerts(new DOMParser().parseFromString(html, 'text/html')));
+    alerts = gAlerts(new DOMParser().parseFromString(html, 'text/html'));
     updateHeader(html);
     ok = true;
   } catch (e) {
@@ -134,8 +136,23 @@ async function doHeal(action, fields, fallback) {
     if (ok && !S.pending) {
       try { await refreshWorld(); } catch (e) { /* the next move reads it again */ }
       refreshDur(0);
+      if (!healNote(alerts)) alertModal(alerts);
     }
   }
+}
+
+// The game's message of a heal, written where the list says what the heal costs (the list is built again by then). False if there is
+// no such line or no message.
+function healNote(alerts) {
+  const text = alerts.map((t) => t.textContent.replace(/\s+/g, ' ').replace(/^\s*(INFORMATION|ERROR|WARNING|SUCCESS)?\s*ALERT\s*/i, '').trim()).filter(Boolean).join(' ');
+  const bad = alerts.some((t) => /ERROR|WARNING/i.test((t.querySelector('b') || {}).textContent || ''));
+  const line = [...document.querySelectorAll('#ssh-al *')].filter((e) => /Cost to fully heal/i.test(e.textContent) && ![...e.children].some((c) => /Cost to fully heal/i.test(c.textContent))).pop();
+  if (!text || !line) return false;
+  line.innerHTML = '<span style="color:' + (bad ? '#ff6b6b' : '#7fe08a') + '"></span>';
+  line.firstChild.textContent = text;
+  const row = line.closest('tr');
+  if (row) row.querySelectorAll('img[title="Credits"]').forEach((i) => i.closest('td').remove()); // the credits icon belongs to the cost
+  return true;
 }
 
 // A quest step: send it in the background and show the game's message in a pop-up instead of reloading the page.
