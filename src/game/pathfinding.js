@@ -44,17 +44,17 @@ export function learnFrom() {
 }
 
 // Shortest route over walkable tiles (8 directions; a diagonal step needs one of the two tiles beside it to be walkable).
-// First only over known-walkable tiles; if there is no way, again allowing unknown tiles.
+// Unknown tiles are allowed but cost a little more, so a short way through one beats a long way round over known tiles.
 export function findPath(area, sx, sy, tx, ty) {
   const a = S.areas.get(area);
   if (!a || (sx === tx && sy === ty)) return null;
-  for (const loose of [false, true]) {
+  {
     const okAt = (x, y) => {
       if (x < 0 || y < 0 || x >= a.cols || y >= a.rows) return false;
       const t = tileState(area, x, y);
-      return t === 'w' || (loose && t === '');
+      return t === 'w' || t === '';
     };
-    if (!okAt(tx, ty)) continue;
+    if (!okAt(tx, ty)) return null;
     const dist = new Map([[sx + ',' + sy, 0]]);
     const prev = new Map();
     const open = [[0, sx, sy]];
