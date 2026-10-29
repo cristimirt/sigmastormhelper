@@ -89,7 +89,7 @@ export function mCss() {
     '#ssh-mm .ph{cursor:move;user-select:none;display:flex;justify-content:space-between;padding:6px 10px;background:#1b1f1f;border-bottom:1px solid #3a3d3d;font-weight:bold;color:#fff}#ssh-mm .x{cursor:pointer;padding:0 4px}' +
     '#ssh-mm .pb{padding:10px 12px;line-height:1.5}#ssh-mm .pf{display:flex;justify-content:flex-end;gap:8px;padding:8px 12px;border-top:1px solid #3a3d3d}' +
     '#ssh-mm .mm-h{font-weight:bold;color:#fff;margin-bottom:4px}#ssh-mm .mm-o{display:block;margin:2px 0;cursor:pointer}#ssh-mm .mm-th{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;max-width:360px}#ssh-mm .mm-th img{width:36px;height:36px;background:#0D0905;border:1px solid #202122;object-fit:contain}' +
-    '#ssh-mm .bp-del{color:#ff8a80;border-color:#8a2a22}#ssh-mm .mm-al table{max-width:100%;margin:2px 0}' +
+    '#ssh-mm .bp-del{color:#ff8a80;border-color:#8a2a22}#ssh-mm.ctr .ph{justify-content:center;position:relative;text-transform:uppercase;letter-spacing:.5px}#ssh-mm.ctr .x{position:absolute;right:8px;top:6px}#ssh-mm .mm-al{text-align:center;padding:4px 8px}#ssh-mm .mm-al .msg+.msg{margin-top:8px}' +
     '#ssh-mm .cs{min-width:300px}#ssh-mm .cs.busy{opacity:.5;pointer-events:none}#ssh-mm .cb{position:relative;margin-bottom:8px}' +
     '#ssh-mm .cb-in{width:100%;box-sizing:border-box;height:22px;padding:2px 6px}' +
     '#ssh-mm .cb-list{position:absolute;left:0;right:0;top:100%;z-index:3;max-height:170px;overflow:auto;background:#0b0e0e;border:1px solid #6a6f6f;box-shadow:0 4px 12px rgba(0,0,0,.7)}' +

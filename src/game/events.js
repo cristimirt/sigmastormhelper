@@ -128,7 +128,7 @@ export function bind() {
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (document.getElementById('ssh-pop')) closeLog(); else closeEntity(); } });
   document.addEventListener('pointerdown', (e) => {
     const t = e.target;
-    if (e.button !== 0 || !t || typeof t.closest !== 'function' || !t.closest('#ssh-map') || t.closest('button')) return;
+    if (e.button !== 0 || !t || typeof t.closest !== 'function' || !t.closest('#ssh-map') || t.closest('button, .wp-q')) return;
     if (!S.viewer.classList.contains('ssh-pannable')) return;
     pd = { x: e.clientX, y: e.clientY, px: S.pan.x, py: S.pan.y };
     S.viewer.classList.add('ssh-dragging');
@@ -150,7 +150,7 @@ export function bind() {
   document.addEventListener('mousemove', (e) => {
     if (!S.cfg.route || S.walking || S.busy || S.pending || pd || !S.viewer) return;
     const t = e.target;
-    if (!t || typeof t.closest !== 'function' || !t.closest('#ssh-map') || t.closest('button') || t.closest('#ssh-al')) {
+    if (!t || typeof t.closest !== 'function' || !t.closest('#ssh-map') || t.closest('button, .wp-q') || t.closest('#ssh-al')) {
       if (S.hover) { S.hover = null; drawPath(null); }
       return;
     }
@@ -171,7 +171,7 @@ export function bind() {
   document.addEventListener('pointermove', (e) => { if (down && Math.abs(e.clientX - down.x) + Math.abs(e.clientY - down.y) > 4) down.moved = true; }, true);
   document.addEventListener('click', (e) => {
     const t = e.target;
-    if (!t || typeof t.closest !== 'function' || !t.closest('#ssh-map') || t.closest('button')) return;
+    if (!t || typeof t.closest !== 'function' || !t.closest('#ssh-map') || t.closest('button, .wp-q')) return;
     if (!S.cfg.route) return;
     if (e.__sshWalk) return; // same click seen twice
     e.__sshWalk = true;
