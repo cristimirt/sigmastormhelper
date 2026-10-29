@@ -3,7 +3,7 @@
 // @namespace    https://cristimirt.github.io/sigmastormhelper/
 // @description  Quality of life for Sigmastorm: a bigger map you can walk on, a modern profile and backpack, better tooltips.
 // @author       Aurik16
-// @version      1.0.1
+// @version      1.0.2
 // @match        https://www.sigmastorm.com/*
 // @match        https://sigmastorm.com/*
 // @match        https://cristimirt.github.io/sigmastormhelper/*
@@ -43,7 +43,9 @@
   };
   try {
     if (/[?&]cmd=world/.test(location.search)) early('ssh-early', HIDE_CSS);
-    if (/[?&]cmd=profile/.test(location.search) && localStorage.getItem('SSH_layout') === '"modern"') early('ssh-early-m', 'table[background*="large_content_bg"]{visibility:hidden}');
+    // the Modern layout rebuilds every page: keep the game's own page from showing for a moment first (the helper shows it again
+    // as soon as the new layout is built)
+    if (localStorage.getItem('SSH_layout') === '"modern"') early('ssh-early-m', 'html{background:#000!important}body{visibility:hidden!important}');
   } catch (e) { /* storage blocked */ }
   // never leave the page hidden if something goes wrong
   setTimeout(() => ['ssh-early', 'ssh-early-m'].forEach((id) => { const el = document.getElementById(id); if (el) el.remove(); }), 15000);
@@ -58,20 +60,38 @@
     if (!/\/$/.test(base)) base += '/';
     const key = 'SSH_loader' + (base === root ? '' : '_dev');
     let manifest = null;
+    // the published build starts from the last manifest this browser saw, without waiting for the network (the manifest is read again
+    // in the background, so a new build starts with the next page); the development server and a first visit wait for it
+    let fast = false;
+    if (base === root) { try { manifest = JSON.parse(localStorage.getItem(key)); fast = !!(manifest && manifest.main); } catch (e) { manifest = null; } }
+    const fresh = (async () => {
     try {
       const ctl = new AbortController();
       const t = setTimeout(() => ctl.abort(), 3000);
       const r = await fetch(base + 'manifest.json', { cache: 'no-cache', signal: ctl.signal });
       clearTimeout(t);
       if (r.ok) {
-        manifest = await r.json();
-        try { localStorage.setItem(key, JSON.stringify(manifest)); } catch (e) { /* storage full */ }
+        const m = await r.json();
+        try { localStorage.setItem(key, JSON.stringify(m)); } catch (e) { /* storage full */ }
+        return m;
       }
     } catch (e) { /* offline or the site is down: use the last one that worked */ }
+    return null;
+    })();
+    if (!fast) manifest = (await fresh) || manifest;
     if (!manifest) { try { manifest = JSON.parse(localStorage.getItem(key)); } catch (e) { manifest = null; } }
     try {
       if (!manifest || !manifest.main) throw new Error('no manifest');
-      const mod = await import(base + manifest.main);
+      let mod;
+      try {
+        mod = await import(base + manifest.main);
+      } catch (e) {
+        // the remembered build is gone from the site: use the current one
+        const m = fast && (await fresh);
+        if (!m || !m.main) throw e;
+        manifest = m;
+        mod = await import(base + manifest.main);
+      }
       await mod.default({ build: manifest.build, base, manifest, gmInfo: info });
     } catch (e) {
       console.error('[Sigmastorm Helper] could not start', e);
