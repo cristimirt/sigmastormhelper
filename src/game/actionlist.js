@@ -2,6 +2,7 @@ import { refreshDur, updateHeader } from '../banner.js';
 import { SSH } from '../core/constants.js';
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
+import { alertModal, gAlerts } from '../layout/modal.js';
 import { closeLog, placeResults, refreshWorld } from './combat.js';
 
 // A panel on the page itself (not in the map), draggable anywhere; it scrolls with the page.
@@ -100,6 +101,7 @@ export function submitAction(clone) {
   f.submit();
   };
   if (form.method === 'post' && fields.some((f) => f[0] === 'subcmd' && f[1] === 'questaction')) { doQuest(form.action, fields, submitForm); return; }
+  if (form.method === 'post' && fields.some((f) => f[0] === 'subcmd' && f[1] === 'heal')) { doHeal(form.action, fields, submitForm); return; }
   if (form.method === 'post' && fields.some((f) => f[0] === 'subcmd' && f[1] === 'usestairs')) {
     // a stairway changes the zone: send it in the background and swap the map in, like a step. Some stairways lead to a page
     // without a map (a hub): the move is done by then, so reload the page to show it. If the game answered with a message
@@ -110,6 +112,30 @@ export function submitAction(clone) {
     return;
   }
   submitForm();
+}
+
+// Healing at a healer: the same request as the game's button, in the background; the game's message in a dialog, the banner (HP,
+// credits) updated from the answer, the list read again. If the request itself fails, nothing was done, so the form is sent the old way.
+async function doHeal(action, fields, fallback) {
+  if (S.busy || S.pending) return;
+  S.pending++;
+  let ok = false;
+  try {
+    const body = new URLSearchParams();
+    fields.forEach(([n, v]) => body.append(n, v));
+    const html = await (await fetch(new URL(action, location.href).href, { method: 'POST', body, credentials: 'same-origin' })).text();
+    alertModal(gAlerts(new DOMParser().parseFromString(html, 'text/html')));
+    updateHeader(html);
+    ok = true;
+  } catch (e) {
+    fallback();
+  } finally {
+    S.pending--;
+    if (ok && !S.pending) {
+      try { await refreshWorld(); } catch (e) { /* the next move reads it again */ }
+      refreshDur(0);
+    }
+  }
 }
 
 // A quest step: send it in the background and show the game's message in a pop-up instead of reloading the page.
