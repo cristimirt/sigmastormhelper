@@ -52,8 +52,8 @@ export function addStyle() {
     '#ssh-al .rs{padding:5px 6px;line-height:1.45;}#ssh-al .rs .rt{font-weight:bold;font-size:12px;}#ssh-al .rs .win{color:#7fe08a;}#ssh-al .rs .lose{color:#ff6b6b;}' +
     '#ssh-al .rs .ln{font-weight:bold;}#ssh-al .rs .loot{margin-top:3px;}#ssh-al .rs .itm{cursor:help;font-weight:bold;}' +
     '#ssh-al .rs .gone{color:#8b8b8b;font-style:italic;margin-right:4px;}#ssh-al .rs .dx.arm{width:auto;padding:0 4px;background:#e0431a;}#ssh-al .rs .dx{display:inline-block;width:14px;height:14px;line-height:13px;text-align:center;background:#b3261e;color:#fff;font-weight:bold;font-size:11px;margin-right:4px;cursor:pointer;border:1px solid #6e1510;vertical-align:middle;text-decoration:none;}' +
-    '#ssh-al .rs .rrow{display:flex;align-items:center;justify-content:space-between;gap:6px;}#ssh-al .rs .clog{flex:none;width:22px;height:22px;line-height:20px;text-align:center;background:#5a4528;border:1px solid #9a7a45;color:#f3e2bd;cursor:pointer;font-size:14px;text-decoration:none;}' +
-    '#ssh-al .rs .clog:hover{border-color:#9fe0ff;color:#fff;}' +
+    '#ssh-al .rs .rrow{display:flex;align-items:center;justify-content:space-between;gap:6px;}#ssh-al .rs .clog{flex:none;box-sizing:border-box;width:16px;height:16px;line-height:14px;text-align:center;background:#2c3232;border:1px solid #5a5f5f;color:#d8d8d8;cursor:pointer;font-size:10px;text-decoration:none;}' +
+    '#ssh-al .rs .clog:hover{background:#3a4040;border-color:#8a9090;color:#fff;}' +
     '#ssh-ent{position:fixed;left:0;top:0;right:0;bottom:0;z-index:9500;background:rgba(0,0,0,.65);overflow:auto;display:flex;}' +
     '#ssh-ent .ehandle{position:absolute;left:0;top:0;right:54px;height:58px;z-index:1;cursor:move;}#ssh-ent .ebox{position:relative;width:640px;margin:auto;flex:none;}#ssh-ent .ebox>br{display:none;}' +
     '#ssh-ent .eclose{position:absolute;right:16px;top:12px;z-index:2;width:26px;height:26px;line-height:24px;text-align:center;background:#2a1d1a;border:1px solid #8a5a3a;color:#f3e2bd;font:bold 14px Arial,sans-serif;cursor:pointer;}' +
@@ -71,8 +71,8 @@ export function addStyle() {
     '#ssh-ent .eres{clear:both;box-sizing:border-box;width:0;min-width:100%;overflow-wrap:anywhere;cursor:auto;margin:16px 0 0;padding:6px;background:rgba(0,0,0,.5);border:1px solid #3a3527;color:#d8cfbf;font:12px Arial,sans-serif;text-align:left;}' +
     '#ssh-ent .rs{padding:3px 4px;line-height:1.45;}#ssh-ent .rs .ln{font-weight:bold;font-size:13px;}#ssh-ent .rs .loot{margin-top:4px;}#ssh-ent .rs .itm{cursor:help;font-weight:bold;}' +
     '#ssh-ent .rs .rrow{display:flex;align-items:center;justify-content:space-between;gap:6px;}' +
-    '#ssh-ent .rs .clog{flex:none;width:22px;height:22px;line-height:20px;text-align:center;background:#5a4528;border:1px solid #9a7a45;color:#f3e2bd;cursor:pointer;font-size:14px;text-decoration:none;}' +
-    '#ssh-ent .rs .clog:hover{border-color:#9fe0ff;color:#fff;}' +
+    '#ssh-ent .rs .clog{flex:none;box-sizing:border-box;width:16px;height:16px;line-height:14px;text-align:center;background:#2c3232;border:1px solid #5a5f5f;color:#d8d8d8;cursor:pointer;font-size:10px;text-decoration:none;}' +
+    '#ssh-ent .rs .clog:hover{background:#3a4040;border-color:#8a9090;color:#fff;}' +
     '#ssh-pop{position:fixed;left:0;top:0;right:0;bottom:0;z-index:9600;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;}' +
     '#ssh-pop .box{width:420px;max-width:92vw;max-height:84vh;overflow:auto;background:#0b0e0e;border:1px solid #6a6f6f;color:#d8cfbf;font:12px Arial,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.8);}' +
     '#ssh-pop .ph{cursor:move;user-select:none;display:flex;justify-content:space-between;padding:6px 10px;background:#1b1f1f;border-bottom:1px solid #3a3d3d;font-weight:bold;color:#fff;}' +
