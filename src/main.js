@@ -1,7 +1,7 @@
 // Entry point of the bundle. The loader (the small userscript in Tampermonkey) imports this file and calls the default
 // export: ctx = { build, base, manifest, gmInfo }. It must only run once per page; the loader makes sure of that.
 import { decorateHeader, grabVars, refreshDur } from './banner.js';
-import { SSH, dropEarly } from './core/constants.js';
+import { SSH, dropEarly, dropEarlyM } from './core/constants.js';
 import { loadData } from './core/data.js';
 import { pageParts } from './core/page.js';
 import { S } from './core/state.js';
@@ -40,6 +40,8 @@ export default async function start(ctx) {
   S.base = (ctx && ctx.base) || ''; // the site the bundle comes from: its media/ folder has pictures of the helper's own
   await loadData(ctx);
   SSH.init = init;
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go);
+  else go();
 }
+  // whatever happens, the page is shown again (the loader hides it while the Modern layout is built)
+  const go = () => init().catch((e) => console.error('[Sigmastorm Helper]', e)).finally(dropEarlyM);

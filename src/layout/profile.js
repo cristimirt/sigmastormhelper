@@ -115,11 +115,11 @@ function applyLayout() {
   let st = document.getElementById('ssh-mstyle');
   if (!st) { st = document.createElement('style'); st.id = 'ssh-mstyle'; document.head.appendChild(st); }
   st.textContent = mCss();
-  dropEarlyM();
   document.documentElement.classList.toggle('ssh-modern', modern);
   // the page around the content: divs (a banner, two columns of widgets you can rearrange, a footer) in the Modern layout, the game's own
   // table otherwise
   if (modern) { buildFrame(); decorateHeader(); buildSidebars(); buildWorldPage(); } else { unbuildWorldPage(); unbuildSidebars(); restoreHeader(); unbuildFrame(); decorateHeader(); }
+  dropEarlyM(); // the page is built: show it
   const sel = document.querySelector('#ssh-lay select');
   if (sel) { sel.style.display = modern ? '' : 'none'; sel.value = S.theme; }
   document.querySelectorAll('#ssh-lay button').forEach((b) => b.classList.toggle('on', b.dataset.l === S.layout));
