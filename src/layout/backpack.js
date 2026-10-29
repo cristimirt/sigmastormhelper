@@ -193,7 +193,7 @@ function bpRender() {
 }
 
 // Load a page of the backpack (a folder, another page, or the same one again) without leaving the page.
-async function bpLoad(url, note) {
+async function bpLoad(url, note, bad) {
   const my = ++BP.req;
   const rb = document.querySelector('#ssh-prof [data-hb="refresh"]');
   bpBusy(true);
@@ -212,7 +212,7 @@ async function bpLoad(url, note) {
     bpRender();
     const cs = secFromDoc(doc, 'components'); // the components under the bag are refreshed together with it
     if (cs) compUpdate(cs.rows);
-    if (note) bpMsg(note);
+    if (note) bpMsg(note, bad);
     ok = true;
     if (BP.onChange) BP.onChange(); // whoever shows the bag outside the profile (the world page) can update its count
   } catch (e) {
@@ -228,8 +228,10 @@ export function bpNote(doc) {
   return gAlerts(doc).map((t) => t.textContent.replace(/\s+/g, ' ').replace(/^\s*(INFORMATION|ERROR|WARNING|SUCCESS)?\s*ALERT\s*/i, '').trim()).join(' ').slice(0, 240);
 }
 
+const bpBad = (doc) => gAlerts(doc).some((t) => /ERROR|WARNING/i.test((t.querySelector('b') || {}).textContent || ''));
+
 // Use an item without leaving the page: consumables and resources reload the bag (and the components); gear
-// reloads the whole profile content, since the stats change too. The game's message, if any, is shown in a dialog.
+// reloads the whole profile content, since the stats change too. The game's message, if any, is shown in the line above the bag.
 export async function bpUse(a) {
   const href = a.getAttribute('href') || '';
   const gear = /subcmd=(un)?equipitem/.test(href); // equipping or unequipping: the stats change too
@@ -244,14 +246,17 @@ export async function bpUse(a) {
     bpMsg('The request failed.', true);
     return;
   }
-  alertModal(gAlerts(new DOMParser().parseFromString(html, 'text/html')));
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const note = bpNote(doc);
+  const bad = bpBad(doc);
   updateHeader(html);
   if (gear) {
     let ok = false;
     try { ok = await refreshProfile(); } catch (e) { ok = false; }
-    if (!ok) await bpLoad(BP.url);
+    if (!ok) await bpLoad(BP.url, note, bad);
+    else if (note) bpMsg(note, bad);
     profBusy(false);
-  } else await bpLoad(BP.url);
+  } else await bpLoad(BP.url, note, bad);
 }
 
 // Components: the picture under the bag. A click destroys one (as in the game); paging works in place.
@@ -283,8 +288,7 @@ export async function compDestroy(href) {
     bpMsg('The request failed.', true);
     return;
   }
-  alertModal(gAlerts(doc));
-  await bpLoad(BP.url);
+  await bpLoad(BP.url, bpNote(doc), bpBad(doc));
 }
 
 // Send a form post; resolves to the game's message ('' if none) or null when the request failed.
