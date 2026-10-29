@@ -120,6 +120,10 @@ export function submitAction(clone) {
 async function doHeal(action, fields, fallback) {
   if (S.busy || S.pending) return;
   S.pending++;
+  const wait = healLine();
+  if (wait) wait.dataset.heal = '1';
+  if (wait && wait.closest('tr')) wait.closest('tr').querySelectorAll('img[title="Credits"]').forEach((i) => i.closest('td').remove());
+  if (wait) wait.innerHTML = '<span class="ssh-spin"></span> Healing...'; // like the repair
   let ok = false;
   let alerts = [];
   try {
@@ -141,13 +145,20 @@ async function doHeal(action, fields, fallback) {
   }
 }
 
+// The line of the healer's row that says what the heal costs (the one the heal writes its progress and its message in).
+function healLine() {
+  const rows = [...document.querySelectorAll('#ssh-al *')];
+  return rows.filter((e) => e.dataset && e.dataset.heal).pop() || rows.filter((e) => /Cost to fully heal/i.test(e.textContent) && ![...e.children].some((c) => /Cost to fully heal/i.test(c.textContent))).pop() || null;
+}
+
 // The game's message of a heal, written where the list says what the heal costs (the list is built again by then). False if there is
 // no such line or no message.
 function healNote(alerts) {
   const text = alerts.map((t) => t.textContent.replace(/\s+/g, ' ').replace(/^\s*(INFORMATION|ERROR|WARNING|SUCCESS)?\s*ALERT\s*/i, '').trim()).filter(Boolean).join(' ');
   const bad = alerts.some((t) => /ERROR|WARNING/i.test((t.querySelector('b') || {}).textContent || ''));
-  const line = [...document.querySelectorAll('#ssh-al *')].filter((e) => /Cost to fully heal/i.test(e.textContent) && ![...e.children].some((c) => /Cost to fully heal/i.test(c.textContent))).pop();
+  const line = healLine();
   if (!text || !line) return false;
+  line.dataset.heal = '1'; // the next heal writes its progress here too
   line.innerHTML = '<span style="color:' + (bad ? '#ff6b6b' : '#7fe08a') + '"></span>';
   line.firstChild.textContent = text;
   const row = line.closest('tr');
