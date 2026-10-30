@@ -8,6 +8,7 @@ import { S } from './core/state.js';
 import { bind } from './game/events.js';
 import { read, show } from './game/loading.js';
 import { initLayout } from './layout/profile.js';
+import { rememberScripts } from './layout/sidebars.js';
 import { initInventing } from './pages/inventing.js';
 import { initSettings, movePanels, trimTail } from './settings.js';
 import { initRecipes } from './tooltips/blueprints.js';
@@ -26,6 +27,7 @@ function ownFont() {
 
 async function init() {
   if (!pageParts()) return;
+  rememberScripts();
   ownFont();
   grabVars(document.documentElement.innerHTML);
   decorateHeader();

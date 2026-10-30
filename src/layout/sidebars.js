@@ -211,6 +211,48 @@ export function buildSidebars() {
   syncMenu();
   bindDrag();
   bindMenu();
+  ensureSkills();
+}
+
+// The skills box and the menu are run by the game's own scripts, which the page runs late (Cloudflare's Rocket Loader). When the helper
+// moves the sidebars before that, the page sometimes drops them and never runs them: the box stays empty (and the menu function is
+// missing). So the helper keeps a copy of those scripts as soon as it starts (rememberScripts) and, when it sees the box empty and the
+// game's function missing, runs the copies itself.
+const KEEP = /changeMenu\s*\(|var skills\s*=|skillbox\.min\.js/;
+let spare = [];
+const pick = (doc) => [...doc.querySelectorAll('script')].filter((x) => KEEP.test(x.src + x.textContent)).map((x) => ({ src: x.src, text: x.textContent }));
+export function rememberScripts() {
+  if (!spare.length) spare = pick(document);
+}
+// The page has already taken them away when the helper starts (the copy is then empty): read them from the page's own text again.
+async function loadSpare() {
+  if (spare.length) return;
+  try { spare = pick(new DOMParser().parseFromString(await (await fetch(location.href, { credentials: 'same-origin' })).text(), 'text/html')); } catch (e) { /* no copy: the box stays as it is */ }
+}
+function runSpare(want) {
+  spare.filter((x) => want(x)).forEach((x) => {
+    const e = document.createElement('script');
+    if (x.src) e.src = x.src; else e.textContent = x.text;
+    document.head.append(e);
+  });
+}
+// Look at the box for a few seconds: empty and the game's function there: call it; the function missing: run the copies.
+function ensureSkills() {
+  let n = 0;
+  let again = false;
+  const t = setInterval(() => {
+    const box = document.getElementById('skillBoxData');
+    if (!box || box.children.length || ++n > 50) { clearInterval(t); return; }
+    if (typeof window.showSkillBox === 'function' && Array.isArray(window.skills)) { try { window.showSkillBox(); } catch (e) { /* the next look tries again */ } return; }
+    if (n > 10 && !again) {
+      again = true;
+      loadSpare().then(() => {
+        if (typeof window.changeMenu !== 'function') runSpare((x) => /changeMenu/.test(x.text));
+        if (!Array.isArray(window.skills)) runSpare((x) => /var skills\s*=/.test(x.text));
+        if (typeof window.showSkillBox !== 'function') runSpare((x) => /skillbox/.test(x.src));
+      });
+    }
+  }, 300);
 }
 
 // The Main Menu's buttons open and close their lists. The game's own function keeps a list of what is open that does not know the section
