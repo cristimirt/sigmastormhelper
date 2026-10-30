@@ -75,7 +75,7 @@ function secFromDoc(doc, name) {
   return null;
 }
 
-function bpFromDoc(doc) {
+export function bpFromDoc(doc) {
   const s = secFromDoc(doc, 'backpack');
   return s ? bpParse(s.rows) : null;
 }
