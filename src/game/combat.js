@@ -1,6 +1,7 @@
 import { grabVars } from '../banner.js';
 import { S } from '../core/state.js';
 import { esc } from '../core/util.js';
+import { alertModal, gAlerts } from '../layout/modal.js';
 import { read, show, swapIn } from './loading.js';
 
 export const isSep = (tr) => tr.classList.contains('ssh-mech') || tr.cells.length === 1 && tr.cells[0].colSpan === 3 && tr.cells[0].hasAttribute('bgcolor');
@@ -127,6 +128,14 @@ export function openLog(r) {
   pop.innerHTML = '<div class="box"><div class="ph"><div>Combat Log &ndash; ' + esc(c.name[0] || '') + ' vs ' + esc(c.name[1] || '') + '</div><span data-close="1" title="Close">&#10006;</span></div><div class="pb">' +
     stat(c.name[0], 0) + stat(c.name[1], 1) + '<hr style="border:0;border-top:1px solid #333;margin:8px 0">' + rows + '</div></div>';
   document.body.appendChild(pop);
+}
+
+// The game answered an attack with a message instead of a fight (not enough energy, ...): show it in a dialog. False when there is none.
+export function attackAlert(html) {
+  const alerts = gAlerts(new DOMParser().parseFromString(html, 'text/html'));
+  if (!alerts.length) return false;
+  alertModal(alerts);
+  return true;
 }
 
 export function closeLog() { const p = document.getElementById('ssh-pop'); if (p) p.remove(); }

@@ -2,7 +2,7 @@ import { refreshDur, updateHeader } from '../banner.js';
 import { S } from '../core/state.js';
 import { esc, txt } from '../core/util.js';
 import { renderActions } from './actionlist.js';
-import { isSep, logBody, parseCombat, refreshWorld, resultHtml } from './combat.js';
+import { attackAlert, isSep, logBody, parseCombat, refreshWorld, resultHtml } from './combat.js';
 import { fillEvaluation } from './evaluation.js';
 
 // Creature details in a pop-up (the game's "View Entity" page), with the same background fight.
@@ -112,7 +112,15 @@ export async function entityAttack(btn) {
   try {
     const html = await (await fetch(new URL(href, location.href).href, { credentials: 'same-origin' })).text();
     const c = parseCombat(html);
-    if (!c || c.type !== 0) { leave = true; location.href = href; return; }
+    if (!c || c.type !== 0) {
+      if (attackAlert(html)) {
+        btn.disabled = false;
+        if (res) res.style.display = 'none';
+        updateHeader(html);
+        return;
+      }
+      leave = true; location.href = href; return;
+    }
     S.entRes.push(c);
     // Same as a fight started from the Action List: the result takes the creature's place in the list.
     const cid = (href.match(/creature_id=(\d+)/) || [])[1];
@@ -161,7 +169,16 @@ export async function doAttack(a) {
   try {
     const html = await (await fetch(new URL(href, location.href).href, { credentials: 'same-origin' })).text();
     const c = parseCombat(html);
-    if (!c || c.type !== 0) { leave = true; location.href = href; return; }
+    if (!c || c.type !== 0) {
+      if (attackAlert(html)) {
+        tr.classList.remove('ssh-fight');
+        const sp = tr.querySelector('.ssh-spin');
+        if (sp) sp.outerHTML = saved;
+        updateHeader(html);
+        return;
+      }
+      leave = true; location.href = href; return;
+    }
     const r = { pos, quick, html: resultHtml(c), log: c };
     S.results.push(r);
     if (tr.isConnected) {
