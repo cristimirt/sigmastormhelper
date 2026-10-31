@@ -4,6 +4,10 @@ import { CFG_DEFAULT, S } from './core/state.js';
 import { store } from './core/storage.js';
 import { esc } from './core/util.js';
 
+// Everything the helper keeps in the browser as a setting (not what it learns or caches): the options of this page, the map zoom, the
+// layout and theme, the backpack's item size, the side panels' arrangement, the Action List's place and the footprints switch.
+const SETTING_KEYS = ['cfg', 'zoom', 'layout', 'theme', 'bp', 'sidebars', 'alpos', 'fp'];
+
 export function initSettings() {
   const p = pageParts();
   const t = p && p.body.querySelector('table[background*="large_content_bg"]');
@@ -55,6 +59,9 @@ export function initSettings() {
   panel.className = 'ssh-helper-row';
   panel.innerHTML = '<td colspan="3"><div class="ssh-set">' + F.map(field).join('') +
     '<div class="btns"><input type="button" class="custombutton" id="ssh-save" value="Save Settings"><input type="button" class="custombutton" id="ssh-defaults" value="Defaults"><span class="note" id="ssh-note"></span></div>' +
+    '<h4>Export / import settings</h4><div class="lb">All the settings of the helper (the options above, layout and theme, map zoom, backpack item size, side panels, Action List position) as one piece of text, to keep or to use in another browser.</div>' +
+    '<textarea id="ssh-sdata" placeholder="Export puts your settings here. To import, paste exported settings here and press Import."></textarea>' +
+    '<div class="btns"><input type="button" class="custombutton" id="ssh-sexp" value="Export"><input type="button" class="custombutton" id="ssh-simp" value="Import"></div>' +
     '<h4>Learned map data</h4><div class="lb">Walkable and blocked tiles the helper has learned while you played: <b id="ssh-known">' + tilesKnown() + '</b> entries.</div>' +
     '<textarea id="ssh-data" placeholder="Export puts the learned data here. To import, paste exported data here and press Import."></textarea>' +
     '<div class="btns"><input type="button" class="custombutton" id="ssh-exp" value="Export"><input type="button" class="custombutton" id="ssh-imp" value="Import"><input type="button" class="custombutton" id="ssh-reset" value="Forget learned data"><input type="button" class="custombutton" id="ssh-fpclear" value="Clear footprints"></div>' +
@@ -77,7 +84,21 @@ export function initSettings() {
     const id = e.target && e.target.id;
     if (id === 'ssh-save') { S.cfg = readCfg(); store.set('cfg', S.cfg); note('Saved.'); }
     else if (id === 'ssh-defaults') { store.set('cfg', {}); S.cfg = Object.assign({}, CFG_DEFAULT); panel.querySelectorAll('[data-k]').forEach((i) => { const v = CFG_DEFAULT[i.getAttribute('data-k')]; if (i.type === 'checkbox') i.checked = !!v; else i.value = v; }); note('Defaults restored.'); }
-    else if (id === 'ssh-exp') { document.getElementById('ssh-data').value = JSON.stringify(S.learn); note('Exported below.'); }
+    else if (id === 'ssh-sexp') {
+      const o = {};
+      SETTING_KEYS.forEach((k) => { const v = store.get(k, undefined); if (v !== undefined) o[k] = v; });
+      document.getElementById('ssh-sdata').value = JSON.stringify({ helper: 'Sigmastorm Helper', version: VERSION, settings: o });
+      note('Exported below.');
+    } else if (id === 'ssh-simp') {
+      try {
+        const d = JSON.parse(document.getElementById('ssh-sdata').value);
+        if (!d || d.helper !== 'Sigmastorm Helper' || !d.settings || typeof d.settings !== 'object') throw new Error('bad');
+        SETTING_KEYS.forEach((k) => { if (k in d.settings) store.set(k, d.settings[k]); });
+        S.cfg = Object.assign({}, CFG_DEFAULT, store.get('cfg', {}));
+        panel.querySelectorAll('[data-k]').forEach((i) => { const v = S.cfg[i.getAttribute('data-k')]; if (i.type === 'checkbox') i.checked = !!v; else i.value = v; });
+        note('Imported. Reload the page to apply everything.');
+      } catch (er) { note('That is not valid exported settings.'); }
+    } else if (id === 'ssh-exp') { document.getElementById('ssh-data').value = JSON.stringify(S.learn); note('Exported below.'); }
     else if (id === 'ssh-imp') {
       try {
         const d = JSON.parse(document.getElementById('ssh-data').value);
