@@ -144,7 +144,8 @@ export function modernHeader(t, n) {
   });
 
   // XP
-  add(bar(q('img[src*="xp_progress"]'), SLOT.xp, null, '', 'xp'));
+  const xpImg = q('img[src*="xp_progress"]');
+  add(bar(xpImg, SLOT.xp, xpImg && xpImg.closest('td'), '', 'xp'));
 
   // the news picture, centred in its slot, and the Skill Power bar with its icon
   const news = q('img[src*="instance_tip"]');

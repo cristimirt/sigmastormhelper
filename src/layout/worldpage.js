@@ -122,7 +122,7 @@ export const worldCss = (contentBg) => {
     W + '.wp-left{width:341px;margin:27px 22px 0 0}' +
     W + '.wp-strip{box-sizing:border-box;width:341px;height:60px;display:flex;align-items:flex-start;padding-top:20px;background-repeat:no-repeat;font:8pt tahoma,sans-serif;color:#fff}' +
     // the game's table shrinks its 70 px cells to what fits: 50 px for the first, 44 px for the others, 5 px apart
-    W + '.wp-strip.ql{gap:5px;padding-left:24px}' + W + '.wp-strip.ql .wp-i{width:44px}' + W + '.wp-strip.ql .wp-i:first-child{width:50px}' + W + '.wp-strip.ab{justify-content:center;gap:8px}' +
+    W + '.wp-strip.ql{gap:5px;padding-left:24px}' + W + '.wp-strip.ql .wp-i{width:44px}' + W + '.wp-strip.ql .wp-i:first-child{width:50px}' + W + '.wp-strip.ab{justify-content:center;gap:4px 6px;flex-wrap:wrap;height:auto;min-height:60px;padding-bottom:4px}' + W + '.wp-strip.ab .wp-i{width:48px}' +
     W + '.wp-i{text-align:center}' + W + '.wp-i img{border:0}' +
     W + '.wp-right{width:218px;margin-top:17px}' +
     W + '.wp-bar{width:218px;height:19px;background-repeat:no-repeat}.wp-bar.loc{margin-bottom:10px}' +
