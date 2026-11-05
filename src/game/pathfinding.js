@@ -2,7 +2,8 @@ import { TILE } from '../core/constants.js';
 import { DATA } from '../core/data.js';
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
-import { go } from './loading.js';
+import { applyHtml, go, read } from './loading.js';
+import { renderWorld } from './map.js';
 
 const tileIdAt = (area, x, y) => {
   const a = S.areas.get(area);
@@ -96,10 +97,23 @@ export function drawPath(path) {
     return;
   }
   const br = (x, y, w, l) => 'M' + x + ',' + (y + l) + 'V' + y + 'H' + (x + l) + 'M' + (x + w - l) + ',' + y + 'H' + (x + w) + 'V' + (y + l) + 'M' + (x + w) + ',' + (y + w - l) + 'V' + (y + w) + 'H' + (x + w - l) + 'M' + (x + l) + ',' + (y + w) + 'H' + x + 'V' + (y + w - l);
-  const pts = path.map((p) => (p[0] * TILE + TILE / 2) + ',' + (p[1] * TILE + TILE / 2)).join(' ');
   const last = path[path.length - 1];
-  svg.innerHTML = '<polyline points="' + pts + '" fill="none" stroke="#22ee22" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="0.1 8" style="vector-effect:non-scaling-stroke"/>' +
-    '<path d="' + br(last[0] * TILE + 3, last[1] * TILE + 3, TILE - 6, 16) + '" fill="none" stroke="#22ee22" stroke-width="3" stroke-linecap="square" style="vector-effect:non-scaling-stroke"/>';
+  // The look of Fallen Sword's route: soft green dots (3 px, 9 px apart) over a faint dark shadow of the same dots, and the
+  // same two layers for the corners round the last tile.
+  // Fallen Sword draws its route inside the map's own scaled drawing, on 40 px tiles: dots 3 px wide (a 4.5 px shadow under them),
+  // 9 px apart, starting at the middle of the last tile and going back to the player; corners 8 px long, 4 px in from the tile's
+  // edge, 2 px wide (3.5 px shadow). Here it is the same in proportion to our 65 px tile, scaled with the map.
+  const k = TILE / 40;
+  const dot = 3 * k;
+  const gap = 9 * k;
+  const shadow = 1.5 * k;
+  const ns = 'fill="none" stroke-linecap="round" stroke-linejoin="round"';
+  const back = path.map((p) => (p[0] * TILE + TILE / 2) + ',' + (p[1] * TILE + TILE / 2)).reverse().join(' ');
+  const corners = br(last[0] * TILE + 4 * k, last[1] * TILE + 4 * k, TILE - 8 * k, 8 * k);
+  svg.innerHTML = '<polyline points="' + back + '" ' + ns + ' stroke="rgba(0,0,0,0.3)" stroke-width="' + (dot + shadow) + '" stroke-dasharray="0.001 ' + gap + '"/>' +
+    '<polyline points="' + back + '" ' + ns + ' stroke="rgba(120,230,120,0.9)" stroke-width="' + dot + '" stroke-dasharray="0.001 ' + gap + '"/>' +
+    '<path d="' + corners + '" ' + ns + ' stroke="rgba(0,0,0,0.3)" stroke-width="' + (2 * k + shadow) + '"/>' +
+    '<path d="' + corners + '" ' + ns + ' stroke="rgba(120,230,120,0.9)" stroke-width="' + 2 * k + '"/>';
   if (info) {
     info.textContent = 'Go to (' + last[0] + ', ' + last[1] + ') - ' + (path.length - 1) + ' steps';
     info.style.display = 'block';
@@ -132,6 +146,93 @@ export function stopWalk(msg) {
   }
 }
 
+// Fast walk: the steps the energy pays for (1 for a straight step, 2 for a diagonal one) are sent one after another at the pace of Fallen Sword's walking,
+// without waiting for each page; the map shows each step as it is sent and the energy goes down with it. Only when the last
+// answer is in (or one is wrong) is the page updated, once.
+// Fallen Sword's character takes 250 ms for a straight step and 250 x 1.414 ms for a diagonal one; the steps are sent at that pace
+// (the map slides the same time), so the character can be seen walking.
+const STEP_MS = 250;
+const stepMs = (a, b) => Math.round(a[0] !== b[0] && a[1] !== b[1] ? STEP_MS * 1.414 : STEP_MS);
+const stepCost = (a, b) => (a[0] !== b[0] && a[1] !== b[1] ? 2 : 1);
+const energyEl = () => document.getElementById('staminaCurrent');
+const energyNow = () => {
+  const e = energyEl();
+  const n = e ? parseInt(e.textContent.replace(/\D/g, ''), 10) : NaN;
+  return Number.isNaN(n) ? null : n;
+};
+const moveHref = (x, y) => {
+  const tpl = (S.moves.find((m) => m.href) || {}).href;
+  return tpl ? new URL(tpl.replace(/([?&;]x=)\d+/, '$1' + x).replace(/([?&;]y=)\d+/, '$1' + y), location.href).href : null;
+};
+
+// Sends the steps of seg (seg[0] is where we stand) and puts the final page in. Returns true when every step was answered by the
+// page of the tile it went to.
+async function sendSteps(seg) {
+  const v = S.viewer;
+  v && v.classList.add('ssh-fast');
+  const results = [];
+  const reqs = [];
+  let bad = false;
+  let energy = energyNow();
+  const area = S.loc.area;
+  for (let i = 1; i < seg.length && !bad && !S.cancel; i++) {
+    const [x, y] = seg[i];
+    const href = moveHref(x, y);
+    if (!href) break;
+    const ms = stepMs(seg[i - 1], seg[i]);
+    v && v.style.setProperty('--ssh-step', ms + 'ms');
+    S.loc = Object.assign({}, S.loc, { x, y });
+    renderWorld();
+    drawPath(seg.slice(i - 1));
+    if (energy !== null) {
+      energy -= stepCost(seg[i - 1], seg[i]);
+      const el = energyEl();
+      if (el) el.textContent = String(Math.max(0, energy));
+    }
+    const k = i - 1;
+    reqs.push(fetch(href, { credentials: 'same-origin' }).then((r) => r.text()).then((html) => {
+      const loc = read(new DOMParser().parseFromString(html, 'text/html')).loc;
+      const ok = !!loc && loc.area === area && loc.x === x && loc.y === y;
+      results[k] = { html, ok };
+      if (!ok) bad = true;
+    }).catch(() => { results[k] = { html: '', ok: false }; bad = true; }));
+    await sleep(ms);
+  }
+  await Promise.all(reqs);
+  const sent = reqs.length;
+  let html = sent && results.length === sent && results.every((r) => r && r.ok) ? results[sent - 1].html : '';
+  try {
+    if (!html) html = await (await fetch('index.php?cmd=world', { credentials: 'same-origin' })).text(); // where are we really?
+    if (!(await applyHtml(html))) location.href = 'index.php?cmd=world';
+  } catch (e) { location.href = 'index.php?cmd=world'; }
+  v && v.classList.remove('ssh-fast');
+  return !bad && sent === seg.length - 1;
+}
+
+async function fastWalk(tx, ty) {
+  let replans = 0;
+  let path = findPath(S.loc.area, S.loc.x, S.loc.y, tx, ty);
+  while (path && !S.cancel) {
+    const energy = energyNow();
+    let left = energy === null ? Infinity : energy;
+    let n = 0;
+    for (let i = 1; i < path.length; i++) {
+      const c = stepCost(path[i - 1], path[i]);
+      if (c > left) break;
+      left -= c;
+      n++;
+    }
+    if (!n) { stopWalk('Not enough energy'); return; }
+    const seg = path.slice(0, n + 1);
+    const ok = await sendSteps(seg);
+    if (S.cancel || (S.loc.x === tx && S.loc.y === ty)) return;
+    if (ok && n < path.length - 1) { stopWalk('Out of energy: ' + (path.length - 1 - n) + ' steps left'); return; }
+    if (++replans > 3) { stopWalk('Route blocked'); return; }
+    path = findPath(S.loc.area, S.loc.x, S.loc.y, tx, ty); // a step was refused: the page now tells us about that tile
+  }
+  if (!path) stopWalk('No route found');
+}
+
 // Follow a route one step at a time using the game's own move links. If a step turns out to be blocked, learn from it and re-plan.
 export async function walkTo(tx, ty) {
   if (S.walking || S.busy || S.pending) return;
@@ -140,6 +241,7 @@ export async function walkTo(tx, ty) {
   S.cancel = false;
   let replans = 0;
   try {
+    if (S.cfg.fastWalk) { await fastWalk(tx, ty); return; }
     let path = findPath(S.loc.area, S.loc.x, S.loc.y, tx, ty);
     let i = 1;
     while (path && i < path.length && !S.cancel) {

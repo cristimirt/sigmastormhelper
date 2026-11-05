@@ -2,7 +2,7 @@ import { refreshDur, updateHeader } from '../banner.js';
 import { SSH } from '../core/constants.js';
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
-import { alertModal, gAlerts } from '../layout/modal.js';
+import { alertModal, gAlerts, mModal } from '../layout/modal.js';
 import { closeLog, placeResults, refreshWorld } from './combat.js';
 
 // A panel on the page itself (not in the map), draggable anywhere; it scrolls with the page.
@@ -102,6 +102,7 @@ export function submitAction(clone) {
   };
   if (form.method === 'post' && fields.some((f) => f[0] === 'subcmd' && f[1] === 'questaction')) { doQuest(form.action, fields, submitForm); return; }
   if (form.method === 'post' && fields.some((f) => f[0] === 'subcmd' && f[1] === 'heal')) { doHeal(form.action, fields, submitForm); return; }
+  if (form.method === 'post' && fields.some((f) => f[0] === 'cmd' && f[1] === 'portal') && !fields.some((f) => f[0] === 'subcmd')) { doPortal(form.action, fields, submitForm); return; }
   if (form.method === 'post' && fields.some((f) => f[0] === 'subcmd' && f[1] === 'usestairs')) {
     // a stairway changes the zone: send it in the background and swap the map in, like a step. Some stairways lead to a page
     // without a map (a hub): the move is done by then, so reload the page to show it. If the game answered with a message
@@ -112,6 +113,83 @@ export function submitAction(clone) {
     return;
   }
   submitForm();
+}
+
+// A transit portal: the game's page of destinations (name, minimum level, cost in credits, a Travel button) in a dialog. The page is
+// read in the background; if it is not what we expect, the form is sent the old way. A Travel button asks once more, then goes
+// the way the game's does (the address of its button) in the background and swaps the new place in; a message of the game's
+// (not enough credits...) shows in a dialog.
+async function doPortal(action, fields, fallback) {
+  if (S.busy || S.pending) return;
+  S.pending++;
+  let rows = [];
+  let note = '';
+  try {
+    const body = new URLSearchParams();
+    fields.forEach(([n, v]) => body.append(n, v));
+    const html = await (await fetch(new URL(action, location.href).href, { method: 'POST', body, credentials: 'same-origin' })).text();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const tb = [...doc.querySelectorAll('table')].filter((t) => /Destination/.test(t.textContent) && /Min Level/.test(t.textContent) && t.rows.length > 2).pop();
+    if (tb) {
+      [...tb.rows].forEach((r) => {
+        const btn = r.querySelector('input[onclick]');
+        const m = btn ? btn.getAttribute('onclick') : '';
+        const to = (m.match(/window\.location\s*=\s*'([^']+)'/) || [])[1];
+        const tds = [...r.children].filter((c) => c.tagName === 'TD');
+        if (!to || tds.length < 3) return;
+        rows.push({ name: tds[0].textContent.trim(), level: tds[1].textContent.trim(), cost: tds[2].textContent.replace(/\s+/g, ' ').trim(), to });
+      });
+      const intro = [...doc.querySelectorAll('td')].find((c) => /Transit portals permit/i.test(c.textContent) && !c.querySelector('td'));
+      note = intro ? intro.textContent.replace(/\s+/g, ' ').trim() : '';
+    }
+  } catch (e) { rows = []; }
+  S.pending--;
+  if (!rows.length) { fallback(); return; }
+  const wrap = document.createElement('div');
+  wrap.className = 'pt-wrap';
+  if (note) { const n = document.createElement('div'); n.className = 'pt-note'; n.textContent = note; wrap.append(n); }
+  const list = document.createElement('div');
+  list.className = 'pt-list';
+  // the header stays put above the scrolling part (its own table with the same column widths, so the scrollbar starts under it)
+  const cols = '<colgroup><col><col style="width:84px"><col style="width:84px"><col style="width:112px"></colgroup>';
+  const head = document.createElement('div');
+  head.className = 'pt-head';
+  head.innerHTML = '<table class="pt">' + cols + '<thead><tr><th>Destination</th><th class="n">Min Level</th><th class="n">Cost</th><th></th></tr></thead></table>';
+  const tbl = document.createElement('table');
+  tbl.className = 'pt';
+  tbl.innerHTML = cols + '<tbody></tbody>';
+  rows.forEach((r) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td></td><td class="n"></td><td class="n"></td><td></td>';
+    tr.children[0].textContent = r.name;
+    tr.children[1].textContent = r.level;
+    tr.children[2].innerHTML = '<span></span><img src="https://cdn.sigmastorm.com/skin/gold_button.gif" title="Credits" alt="">';
+    tr.children[2].firstChild.textContent = r.cost;
+    const b = document.createElement('input');
+    b.type = 'button';
+    b.className = 'custombutton';
+    b.value = 'Travel Here';
+    let t = 0;
+    b.addEventListener('click', () => {
+      if (!b.classList.contains('sure')) {
+        b.classList.add('sure');
+        b.value = 'Sure?';
+        t = setTimeout(() => { b.classList.remove('sure'); b.value = 'Travel Here'; }, 3000);
+        return;
+      }
+      clearTimeout(t);
+      document.querySelectorAll('#ssh-mm .x').forEach((x) => x.click());
+      SSH.go(r.to, undefined, (html) => {
+        const alerts = html ? gAlerts(new DOMParser().parseFromString(html, 'text/html')) : [];
+        if (alerts.length) alertModal(alerts); else location.href = 'index.php?cmd=world';
+      });
+    });
+    tr.children[3].append(b);
+    tbl.tBodies[0].append(tr);
+  });
+  list.append(tbl);
+  wrap.append(head, list);
+  mModal('Transit Portal', wrap, [{ text: 'Close' }]);
 }
 
 // Healing at a healer: the same request as the game's button, in the background; the game's message in the list in place of the
