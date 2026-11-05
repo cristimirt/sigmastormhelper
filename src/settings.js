@@ -36,8 +36,9 @@ export function initSettings() {
   const F = [
     ['h', 'Map and movement'],
     ['route', 'check', 'Route preview and click to walk', 'Hover a tile to see the route, click to walk it. Press any key or click the map to stop.'],
-    ['stopOnCreatures', 'check', 'Stop walking when there are creatures on a tile'],
-    ['stepDelay', 'number', 'Delay between steps (milliseconds)', 'Lower is faster. Minimum 100.'],
+    ['fastWalk', 'check', 'Fast walk', 'Sends every step your energy pays for one after another, without waiting for each page; the map shows the walk at once and the page updates when you arrive. A creature cannot stop a fast walk on the way.'],
+    ['stopOnCreatures', 'check', 'Stop walking when there are creatures on a tile', 'Only when Fast walk is off.'],
+    ['stepDelay', 'number', 'Delay between steps (milliseconds)', 'Only when Fast walk is off. Lower is faster. Minimum 100.'],
     ['slide', 'check', 'Slide animation when moving'],
     ['h', 'Top banner'],
     ['bannerNums', 'check', 'Write HP, skill power and the energy maximum on the banner'],

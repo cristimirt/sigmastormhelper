@@ -79,6 +79,17 @@ export async function show(info, prev) {
   return true;
 }
 
+// Puts the text of a world page in place of the current one (header, map, actions). False when it is not a normal world page.
+export async function applyHtml(html) {
+  grabVars(html);
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const info = read(doc);
+  const pw = S.viewer && S.viewer.querySelector('#ssh-world');
+  const pm = S.viewer && S.viewer.querySelector('#ssh-me');
+  const prev = pw && pm ? { t: pw.style.transform, l: pm.style.left, tp: pm.style.top, sy: window.scrollY } : null;
+  return !!(info.loc && doc.getElementById('mapDiv') && swapIn(doc) && (await show(info, prev)));
+}
+
 // Loads a world page in the background and swaps the map in place. `init` is extra fetch options (a POST for stairways) and
 // `fallback(html)` what to do when the answer is not a normal world page (default: let the browser open the address); html is
 // the answer, empty when the request itself failed.
@@ -92,13 +103,7 @@ export async function go(href, init, fallback) {
     const url = new URL(href, location.href).href;
     const res = await fetch(url, Object.assign({ credentials: 'same-origin' }, init));
     const html = await res.text();
-    grabVars(html);
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    const info = read(doc);
-    const pw = S.viewer && S.viewer.querySelector('#ssh-world');
-    const pm = S.viewer && S.viewer.querySelector('#ssh-me');
-    const prev = pw && pm ? { t: pw.style.transform, l: pm.style.left, tp: pm.style.top, sy: window.scrollY } : null;
-    if (!info.loc || !doc.getElementById('mapDiv') || !swapIn(doc) || !(await show(info, prev))) {
+    if (!(await applyHtml(html))) {
       if (fallback) fallback(html); else location.href = url; // not a normal world page: let the browser handle it
       return;
     }
