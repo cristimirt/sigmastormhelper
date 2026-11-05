@@ -44,6 +44,7 @@ The helper only changes how pages look and how they are used in your own browser
 - **Path finding**: hover any tile to see the route as a green dotted line with "Go to (x, y) - N steps"; click to walk it step by step. It plans around blocked tiles, re-plans if a step is refused, and stops when you press any key or click the map (option: also stop when creatures are on a tile). **Fast walk** (on by default): the steps your energy pays for (1 per straight step, 2 per diagonal) are sent one after another at Fallen Sword's walking pace (250 ms per straight step, 354 ms per diagonal) without waiting for each page; the map shows the walk at once, the energy number goes down with each step, and the page updates once on arrival or when a step is refused (then it re-plans). A creature cannot stop a fast walk on the way. With Fast walk off: one move request per step, spaced by the delay you set (default 320 ms, minimum 100 ms).
 - **Walkable-tile data**: built in for the known areas (`data/tiles.json`) and learned from the game's own arrows while you play; exportable and importable on the Config page.
 - **Footprints**: a button that marks the tiles you have walked on (per area).
+- **Transit portals**: the Examine Portal button in the Action List opens a dialog with every destination, its minimum level, its cost in credits and a Travel Here button (it asks once more before going), instead of a new page. The travel is sent in the background and the new place is swapped in; a message of the game's shows in a dialog.
 
 ### Action list and combat (world page)
 
