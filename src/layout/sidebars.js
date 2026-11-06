@@ -1,6 +1,7 @@
 import { pageParts } from '../core/page.js';
 import { store } from '../core/storage.js';
 import { https } from '../core/util.js';
+import { FI_URL } from '../pages/factioninv.js';
 import { mel } from './dom.js';
 
 // The sidebars of the Modern layout, made of divs: every widget (Main Menu, Questions, Game Stats, Skills, ...) is a div with a
@@ -157,6 +158,15 @@ export function buildSidebars() {
             const row = mel('div', 'mm-l');
             row.append(e.cloneNode(true));
             items.append(row);
+            // the helper's own page, right under Manage
+            if (/cmd=guild&subcmd=manage$/.test(e.getAttribute('href') || '')) {
+              const fi = mel('div', 'mm-l');
+              const a = mel('a');
+              a.href = FI_URL;
+              a.textContent = 'Faction Inventory';
+              fi.append(a);
+              items.append(fi);
+            }
           });
           kids.forEach((n) => n.remove());
           k.append(items);

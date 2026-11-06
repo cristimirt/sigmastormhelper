@@ -9,6 +9,7 @@ import { bind } from './game/events.js';
 import { read, show } from './game/loading.js';
 import { initLayout } from './layout/profile.js';
 import { rememberScripts } from './layout/sidebars.js';
+import { initFactionInv } from './pages/factioninv.js';
 import { initInventing } from './pages/inventing.js';
 import { initSettings, movePanels, trimTail } from './settings.js';
 import { initRecipes } from './tooltips/blueprints.js';
@@ -38,6 +39,7 @@ async function init() {
   initTips();
   refreshDur(30000);
   if (/[?&]cmd=settings/.test(location.search)) { initSettings(); return; }
+  if (/[?&]cmd=guild/.test(location.search) && /[?&]subcmd=inventory/.test(location.search) && /[?&]subcmd2=report/.test(location.search) && S.cfg.factionInv) { initFactionInv(); return; }
   if (/[?&]cmd=inventing/.test(location.search) && !/[?&]subcmd=[^&]/.test(location.search)) { initRecipes(); initInventing(); return; }
   const info = read(document);
   if (!info.loc || !document.getElementById('mapDiv')) { dropEarly(); return; } // not the world page
