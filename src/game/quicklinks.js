@@ -27,12 +27,12 @@ export function buildQuickBar(src) {
     if (!a || !img) return;
     const href = a.getAttribute('href') || '';
     const kind = /subcmd=dropitems/.test(href) ? 'bag' : /cmd=guild/.test(href) ? 'assault' : /openQuickBuffDialog/.test(href) ? 'buff'
-      : /worldmedipack/.test(href) ? 'heal' : /worldrepairkit/.test(href) ? 'repair' : '';
+      : /worldmedipack/.test(href) ? 'heal' : /worldrepair/.test(href) ? 'repair' : '';
     if (!kind) return; // the area map, and anything the game adds that is not known
     const b = mel('a', 'wp-qb');
     b.dataset.q = kind;
     if (kind === 'buff') b.setAttribute('href', href); // the game's own dialog
-    else { b.setAttribute('href', '#'); b.dataset.href = href; }
+    else { b.setAttribute('href', '#'); b.dataset.href = href.replace(/mode=worldrepairkit/, 'mode=worldrepair'); } // the game's link names the repair kit's mode wrongly
     b.title = (img.getAttribute('title') || '').replace(/\s+/g, ' ').trim();
     const im = mel('img');
     im.src = https(img.getAttribute('src'));
@@ -185,7 +185,7 @@ export async function quickAction(href, label) {
     if (ok && !S.pending) {
       try { await refreshWorld(); } catch (e) { /* the next move refreshes it */ }
       refreshDur(0);
-      if (/worldmedipack|worldrepairkit/.test(href)) refreshSupplies();
+      if (/worldmedipack|worldrepair/.test(href)) refreshSupplies();
     }
   }
 }

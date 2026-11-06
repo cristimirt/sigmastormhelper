@@ -16,6 +16,8 @@ export function initTips() {
   st.textContent = '#ssh-gtip{position:fixed;left:0;top:0;z-index:10000;display:none;box-sizing:content-box;' + look.box + 'pointer-events:none;}' +
     '#ssh-gtip .tt{margin:-1px -1px 3px;padding:2px 3px;font-weight:bold;background:' + look.title + '}' +
     '#ssh-gtip .sk{margin-top:5px;padding-top:4px;border-top:1px solid #3a3d3d;text-align:left;line-height:1.35}#ssh-gtip .sk b{color:#7fe08a}#ssh-gtip .sx{margin-top:4px;color:#9a9488;font-size:11px}' +
+    // the site's top bar (z-index 99995) would cover the top of a tall tooltip: it goes just under the tooltips
+    '#top-bar-default{z-index:9000!important;}' +
     // gear comparing: the hovered item and the worn one side by side, the hovered one on the side of the pointer
     pairCss('#ssh-gtip');
   document.head.appendChild(st);

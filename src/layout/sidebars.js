@@ -1,6 +1,7 @@
 import { pageParts } from '../core/page.js';
 import { store } from '../core/storage.js';
 import { https } from '../core/util.js';
+import { FI_URL } from '../pages/factioninv.js';
 import { mel } from './dom.js';
 
 // The sidebars of the Modern layout, made of divs: every widget (Main Menu, Questions, Game Stats, Skills, ...) is a div with a
@@ -53,12 +54,23 @@ export function buildSidebars() {
 
   // A layout table becomes divs: the table a div, each row a div (a flex row when it has several cells), each cell a div that keeps
   // its alignment, size and padding. The content of the cells moves; innermost tables first.
+  // the text-align that applies where a table sits: the nearest cell (or the widget body) that says one
+  const textAlignAt = (el) => {
+    for (let n = el.parentNode; n && n.nodeType === 1; n = n.parentNode) {
+      const a = n.tagName === 'TD' || n.tagName === 'TH' ? n.getAttribute('align') : n.style && n.style.textAlign;
+      if (a) return a;
+      if (n.classList && n.classList.contains('wb')) break;
+    }
+    return '';
+  };
   const divTables = (root) => {
     [...root.querySelectorAll('table')].reverse().forEach((tb) => {
       const box = mel('div', 'dt' + (tb.className ? ' ' + tb.className : ''));
       const w = tb.getAttribute('width');
       if (w) box.style.width = /%/.test(w) ? w : w + 'px';
-      if (tb.getAttribute('align') === 'center') box.style.margin = '0 auto';
+      // a table with no align is centred by the text-align of where it sits (the browser's quirks mode does that for tables)
+      const al = tb.getAttribute('align');
+      if (al === 'center' || (!al && w && textAlignAt(tb) === 'center')) box.style.margin = '0 auto';
       if (tb.getAttribute('bgcolor')) box.style.background = tb.getAttribute('bgcolor');
       const pad = +tb.getAttribute('cellpadding') || 0;
       [...tb.rows].forEach((tr) => {
@@ -146,6 +158,15 @@ export function buildSidebars() {
             const row = mel('div', 'mm-l');
             row.append(e.cloneNode(true));
             items.append(row);
+            // the helper's own page, right under Manage
+            if (/cmd=guild&subcmd=manage$/.test(e.getAttribute('href') || '')) {
+              const fi = mel('div', 'mm-l');
+              const a = mel('a');
+              a.href = FI_URL;
+              a.textContent = 'Faction Inventory';
+              fi.append(a);
+              items.append(fi);
+            }
           });
           kids.forEach((n) => n.remove());
           k.append(items);

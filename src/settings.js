@@ -45,6 +45,8 @@ export function initSettings() {
     ['durBar', 'check', 'Show the gear durability bar'],
     ['h', 'Items'],
     ['gearCompare', 'check', 'Compare gear in item tooltips', 'An item you are not wearing is shown next to the worn item of the same kind, with the differences coloured.'],
+    ['h', 'Faction'],
+    ['factionInv', 'check', 'Faction Inventory on the Tagged Item Report page', "Replaces the game's report with one list of every item of the faction (the ones the members carry and the ones in the store), with filters, sorting and buttons to recall or take them. Takes effect after reloading the page. Faction > Faction Inventory opens it."],
     ['h', 'Side panels'],
     ['movePanels', 'check', 'Move Game Stats and Kill Logs to the left column', 'Takes effect after reloading the page.'],
   ];
