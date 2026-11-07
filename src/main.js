@@ -7,6 +7,7 @@ import { pageParts } from './core/page.js';
 import { S } from './core/state.js';
 import { bind } from './game/events.js';
 import { read, show } from './game/loading.js';
+import { initLive } from './layout/live.js';
 import { initLayout } from './layout/profile.js';
 import { rememberScripts } from './layout/sidebars.js';
 import { initBank } from './pages/bank.js';
@@ -39,6 +40,7 @@ async function init() {
   serverOffset();
   initTips();
   refreshDur(30000);
+  initLive();
   if (/[?&]cmd=settings/.test(location.search)) { initSettings(); return; }
   if (/[?&]cmd=guild/.test(location.search) && /[?&]subcmd=inventory/.test(location.search) && /[?&]subcmd2=report/.test(location.search) && S.cfg.factionInv) { initFactionInv(); return; }
   if (/[?&]cmd=bank/.test(location.search) || document.getElementById('deposit_amount')) { initBank(); return; } // also the page a deposit or an action-list button posts to
