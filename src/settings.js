@@ -44,6 +44,7 @@ export function initSettings() {
     ['bannerNums', 'check', 'Write HP, skill power and the energy maximum on the banner'],
     ['durBar', 'check', 'Show the gear durability bar'],
     ['pathfinder', 'check', 'Path Finder button on the map', 'A Path Finder button on the map opens a panel that shows the shortest way to an area (search by name or level). Takes effect after reloading the page.'],
+    ['live', 'check', 'Refresh the banner and the faction chat every 10 seconds', 'While the tab is in front, the character page is read in the background to update HP, energy and the faction chat; the chat message is sent without reloading the page. Takes effect after reloading the page.'],
     ['h', 'Items'],
     ['gearCompare', 'check', 'Compare gear in item tooltips', 'An item you are not wearing is shown next to the worn item of the same kind, with the differences coloured.'],
     ['h', 'Faction'],

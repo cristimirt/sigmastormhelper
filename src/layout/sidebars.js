@@ -106,6 +106,25 @@ export function buildSidebars() {
     root.querySelectorAll('script').forEach((s) => take(s, keep));
   };
 
+  // The game's HTML puts a <form> between the rows of a table, so the form is empty and its fields belong to it only because the
+  // parser put them there; once they move they lose it (the faction chat could not send). Each field gets a form attribute, and the
+  // form goes to a hidden div, so that they stay together.
+  let formNo = 0;
+  const keepForms = (root, host) => {
+    const keep = mel('div', 'ssh-forms');
+    keep.hidden = true;
+    host.append(keep);
+    undo.push(() => keep.remove());
+    root.querySelectorAll('form').forEach((f) => {
+      if (!f.id) f.id = 'ssh-form' + formNo++;
+      [...f.elements].forEach((e) => {
+        e.setAttribute('form', f.id);
+        if (e.type === 'hidden') take(e, f); // they sit between the rows, which are about to go
+      });
+      take(f, keep);
+    });
+  };
+
   const widgets = []; // { id, side, el }
   const caps = {};
   const widget = (id, side) => {
@@ -184,6 +203,7 @@ export function buildSidebars() {
     const c = sides[side];
     const outer = c.querySelector(':scope > table');
     if (!outer) return;
+    keepForms(c, c);
     caps[side] = outer.querySelector('img');
     const inner = outer.querySelector('table[width="120"]');
     if (!inner) return;
