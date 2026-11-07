@@ -30,6 +30,14 @@ function loadRouter() {
   return st.loading;
 }
 
+// The route data for other parts of the helper (the stairs on the map): loaded once, null when it cannot be.
+let tried = false;
+export function getRouter() {
+  if (st.router) return Promise.resolve(st.router);
+  if (!st.loading && !tried) { tried = true; loadRouter(); }
+  return (st.loading || Promise.resolve()).then(() => st.router);
+}
+
 function recompute() {
   st.route = null;
   const { router, dest, here, tile } = st;

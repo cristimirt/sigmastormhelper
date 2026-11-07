@@ -2,6 +2,7 @@
 // read once and the banner (HP, energy, Skill Power ...) and the faction chat of the page are brought up to date from it.
 // The faction chat form is sent in the background (no page reload) and the chat is read again right after.
 import { updateHeader } from '../banner.js';
+import { renderStairs, setLevelFrom } from '../game/stairs.js';
 import { pageParts } from '../core/page.js';
 import { S } from '../core/state.js';
 import { alertModal, gAlerts } from './modal.js';
@@ -59,6 +60,7 @@ export async function refreshLive() {
     const hovered = p && p.header && p.header.matches(':hover');
     if (!S.busy && !hovered && !(S.hdrT > t0)) updateHeader(html);
     updateChat(doc);
+    if (setLevelFrom(html)) renderStairs(); // a new level opens the stairs that were red
     last = Date.now();
   } catch (e) { /* offline or logged out: next time */ }
   busy = false;

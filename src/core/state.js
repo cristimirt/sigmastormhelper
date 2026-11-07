@@ -14,7 +14,7 @@ export const S = {
 
 SSH.S = S;
 
-export const CFG_DEFAULT = { route: true, fastWalk: true, stopOnCreatures: false, stepDelay: 320, slide: true, bannerNums: true, durBar: true, gearCompare: true, movePanels: true, factionInv: true, pathfinder: true, live: true };
+export const CFG_DEFAULT = { route: true, fastWalk: true, stopOnCreatures: false, stepDelay: 320, slide: true, bannerNums: true, durBar: true, gearCompare: true, movePanels: true, factionInv: true, pathfinder: true, live: true, stairMarks: true };
 
 S.cfg = Object.assign({}, CFG_DEFAULT, store.get('cfg', {}));
 

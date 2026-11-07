@@ -1,11 +1,12 @@
 import { HIDE_CSS, TILE } from '../core/constants.js';
+import { stairCss } from './stairs.js';
 
 export function addStyle() {
   if (document.getElementById('ssh-style')) return;
   const st = document.createElement('style');
   st.id = 'ssh-style';
   const hide = HIDE_CSS;
-  st.textContent = hide +
+  st.textContent = hide + stairCss +
     '#ssh-map{position:relative;width:100%;height:500px;overflow:hidden;box-sizing:border-box;background:#000;' +
     'border:1px solid #3a3d3d;margin:0 0 8px;user-select:none;-webkit-user-select:none;}' +
     '#ssh-map.ssh-dragging,#ssh-map.ssh-dragging *{cursor:grabbing;}#ssh-tip{position:fixed;z-index:9500;display:none;padding:5px 8px;background:#101414;color:#e8e8e8;border:1px solid #5a5f5f;font:11px Arial,sans-serif;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.6);}#ssh-tip img{display:block;margin-top:4px;max-width:100%;}' +
