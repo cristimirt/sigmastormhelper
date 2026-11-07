@@ -194,6 +194,16 @@ export function bind() {
     return /^[1-9]$/.test(k) || !!DIRS[k];
   };
   ['keydown', 'keyup'].forEach((t) => document.addEventListener(t, (e) => { if (ours(e)) e.stopImmediatePropagation(); }, true));
+  // The game's own document.onkeypress sends every key to its hotkeys (movement, F repair, ...) and only skips the global chat box,
+  // so typing in any other text box (the Faction Info chat) fired them. Take the handler off for the length of such a keypress.
+  document.addEventListener('keypress', (e) => {
+    const tg = e.target;
+    if (!tg || !(/^(input|textarea|select)$/i.test(tg.tagName) || tg.isContentEditable)) return;
+    const h = document.onkeypress;
+    if (!h) return;
+    document.onkeypress = null;
+    setTimeout(() => { if (!document.onkeypress) document.onkeypress = h; }, 0);
+  }, true);
   document.addEventListener('keypress', (e) => {
     if (!S.loc || e.ctrlKey || e.metaKey || e.altKey) return;
     const tg = e.target;

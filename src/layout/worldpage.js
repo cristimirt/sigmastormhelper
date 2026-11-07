@@ -128,5 +128,5 @@ export const worldCss = (contentBg) => {
     W + '.wp-bar{width:218px;height:19px;background-repeat:no-repeat}.wp-bar.loc{margin-bottom:10px}' +
     W + '.wp-chat{padding-top:7px;font:8pt tahoma,sans-serif;color:#fff}.wp-chat small{display:block}' +
     W + '.wp-frame{margin-top:17px;text-align:center}' + W + '.wp-frame iframe{border:0}' +
-    W + '.wp-f{flex:none;height:58px;background-repeat:no-repeat;background-position:center top;background-size:640px auto}';
+    W + '.wp-f{flex:none;height:54px;background-repeat:no-repeat;background-position:center top;background-size:640px auto}';
 };
