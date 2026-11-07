@@ -3,7 +3,7 @@ import { DATA } from '../core/data.js';
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
 import { applyHtml, go, read } from './loading.js';
-import { renderWorld } from './map.js';
+import { applyZoom, renderWorld } from './map.js';
 
 const tileIdAt = (area, x, y) => {
   const a = S.areas.get(area);
@@ -241,6 +241,7 @@ export async function walkTo(tx, ty) {
   S.cancel = false;
   let replans = 0;
   try {
+    if (S.pan && (S.pan.x || S.pan.y)) { S.pan.x = 0; S.pan.y = 0; applyZoom(); } // centre the map on the player first
     if (S.cfg.fastWalk) { await fastWalk(tx, ty); return; }
     let path = findPath(S.loc.area, S.loc.x, S.loc.y, tx, ty);
     let i = 1;
