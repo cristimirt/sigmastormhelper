@@ -2,6 +2,7 @@ import { TILE, ZOOM_MAX, ZOOM_MIN } from '../core/constants.js';
 import { DATA } from '../core/data.js';
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
+import { pfUpdate } from '../pathfinder/panel.js';
 import { renderTrail } from './footprints.js';
 
 const KEEP = 80; // px of the map that always stay in the window when it is dragged
@@ -46,6 +47,7 @@ export function renderWorld() {
     if (id) gd.href = 'https://guide.sigmastorm.com/index.php?cmd=realms&subcmd=view&realm_id=' + id;
   }
   applyZoom();
+  pfUpdate();
 }
 
 // Direction pad: 8 buttons on the frame of the map, same directions as the game's arrows.

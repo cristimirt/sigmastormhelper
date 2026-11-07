@@ -8,6 +8,7 @@ import { renderActions } from './actionlist.js';
 import { renderWorld } from './map.js';
 import { parseAreaMap, parseAreaUrl, parseLoc, parseMoves } from './parsing.js';
 import { learnFrom } from './pathfinding.js';
+import { initPathfinder } from '../pathfinder/panel.js';
 import { attachViewer } from './viewer.js';
 
 async function ensureArea() {
@@ -57,6 +58,7 @@ export async function show(info, prev) {
   S.moves = info.moves;
   if (info.areaUrl) S.areaUrl = info.areaUrl;
   const ok = (await ensureArea()) && attachViewer();
+  if (ok) initPathfinder();
   if (!ok) return false;
   if (S.layout === 'modern') buildWorldPage(); // the Modern layout: the page content as divs, with the viewer in it
   learnFrom();
