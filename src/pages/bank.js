@@ -19,7 +19,18 @@ function under(box, max, gameBase) {
   addSlider(box, { max, after: game || undefined });
 }
 
+// The game's own sliders may be written into the page after the helper has run (its scripts are run late), so hide them by style,
+// not by looking for them once.
+function hideGameSliders() {
+  if (document.getElementById('ssh-bank-css')) return;
+  const s = document.createElement('style');
+  s.id = 'ssh-bank-css';
+  s.textContent = '#sl0base,#sl1base{display:none!important}';
+  document.head.append(s);
+}
+
 export function initBank() {
+  hideGameSliders();
   const dep = document.getElementById('deposit_amount');
   const wd = document.getElementById('withdraw_amount');
   if (dep) under(dep, rowValue('Current Max Deposit'), 'sl0base');

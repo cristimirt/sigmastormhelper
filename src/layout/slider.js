@@ -29,6 +29,7 @@ function css() {
 }
 
 export function addSlider(box, opt = {}) {
+  if (box.sshSlider && box.sshSlider.el.isConnected) { if (opt.max !== undefined) box.sshSlider.setMax(opt.max); return box.sshSlider; } // one per box, however often the page is set up
   css();
   const min = opt.min || 0;
   let max = Math.max(min, +opt.max || 0);
@@ -51,10 +52,10 @@ export function addSlider(box, opt = {}) {
   wrap.append(r);
   if (opt.after) opt.after.after(wrap);
   else (box.closest('td') || box.parentElement).append(wrap);
-  return {
+  return (box.sshSlider = {
     el: wrap,
     input: r,
     setMax(m) { max = Math.max(min, +m || 0); fit(); },
-    remove() { wrap.remove(); },
-  };
+    remove() { wrap.remove(); box.sshSlider = null; },
+  });
 }

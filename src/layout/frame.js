@@ -106,5 +106,9 @@ export function frameCss(contentBg) {
     P + ' .cf-body>#ssh-wp~br{display:none}' + // the game's line break under its content
     P + ' .cf-bot{height:5px;background-repeat:no-repeat;background-position:0 0}' +
     P + ' .ssh-lb,' + P + ' .ssh-rb{flex:none;order:2;height:42px;background-repeat:no-repeat}' +
-    P + ' .ssh-banner{grid-column:1/-1;height:85px;background-repeat:no-repeat}';
+    P + ' .ssh-banner{grid-column:1/-1;height:85px;background-repeat:no-repeat}' +
+    // The game's pages put a 640x54 header picture (bank_header.jpg, ...) and footer picture on a cell that is 54 px high plus 20 px of
+    // padding above and below, so the picture was drawn twice (it repeats). One picture, in its own 54 px; the footer is the helper's own.
+    P + ' .cf-body td[background*="_header.jpg"],' + P + ' .cf-body td[background*="large_content_footer"]{padding-top:0!important;padding-bottom:0!important;height:54px;background-repeat:no-repeat!important;background-position:center top!important}' +
+    (S.base ? P + ' .cf-body td[background*="large_content_footer"]{background-image:url("' + S.base + 'media/large_content_footer.png")!important}' : '');
 }
