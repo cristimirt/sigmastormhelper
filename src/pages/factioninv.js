@@ -21,6 +21,9 @@ const PER = [25, 50, 100, 250];
 const ABBR = { Attack: 'Atk', Damage: 'Dmg', Defense: 'Def', Defence: 'Def', Armor: 'Arm', Armour: 'Arm', HP: 'HP' };
 const BYCOLOR = { '#40FFFF': 'Rare', '#FF40FF': 'Unique', '#FFFF40': 'Legendary', '#FFFFFF': 'Common' };
 const QRANK = ['Uncrafted', 'Very Poor', 'Poor', 'Average', 'Good', 'Very Good', 'Excellent', 'Perfect']; // worst to best
+// the item classes (Core, Psi, ...) of gear; the other items have none
+const CLASSES = ['Core', 'Psi', 'Battlesuit', 'Rad', 'Hardwired'];
+const NOCLASS = 'None';
 const RANK = { Common: 0, Uncommon: 1, Rare: 2, Unique: 3, Epic: 4, Legendary: 5, 'Super Elite': 6, Crystalline: 7 };
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -99,10 +102,12 @@ function readDetail(html) {
   const parts = rest.split(' - ').map((s) => s.trim());
   // gear says "Rarity - Category - Quality"; other things (stims, drones, mission items) say less, and may add a line like "Bound (Non-Tradable)"
   const gear = parts.length === 3;
+  // gear that cannot be crafted has no quality: "Common - Core"
+  const noQ = parts.length === 2 && CLASSES.includes(parts[1]);
   const col = fc ? fc.getAttribute('color') : '';
   // gear says its rarity first, and it may be a condition like "HK" or "Fragile (Non-Repairable)"; for the rest it is the first word, if any;
   // with none, the colour of the name says it (cyan Rare, magenta Unique, yellow Legendary, white Common)
-  const rar = (gear ? parts[0].replace(/\s*\(.*$/, '') : (rest.match(/^(Common|Uncommon|Rare|Unique|Epic|Legendary|Super Elite|Crystalline)/) || [''])[0]) || BYCOLOR[col.toUpperCase()] || '';
+  const rar = (gear || noQ ? parts[0].replace(/\s*\(.*$/, '') : (rest.match(/^(Common|Uncommon|Rare|Unique|Epic|Legendary|Super Elite|Crystalline)/) || [''])[0]) || BYCOLOR[col.toUpperCase()] || '';
   const qf = gearQ(hdr, parts);
   // the upgrade level is shown as a row of pictures under "Upgrade Level"
   const ul = [...d.querySelectorAll('td')].find((td) => !td.querySelector('td') && td.textContent.trim() === 'Upgrade Level');
@@ -110,7 +115,7 @@ function readDetail(html) {
   const lv = text.match(/Min Level:\s*(\d+)/);
   const du = text.match(/Durability:\s*(\d+)\s*\/\s*(\d+)/);
   return {
-    n: it.name, k: col, v: 3, qc: qf, u: up, t: it.type, r: rar, c: gear ? parts[1] : '', q: gear ? parts[2] : '',
+    n: it.name, k: col, v: 4, qc: qf, u: up, t: it.type, r: rar, c: gear || noQ ? parts[1] : '', q: gear ? parts[2] : '',
     l: lv ? +lv[1] : 0, d: du ? +du[1] : -1, m: du ? +du[2] : 0, b: it.stats.Bonuses || {}, s: /Set Details/.test(text) ? 1 : 0, ts: Date.now(),
   };
 }
@@ -165,8 +170,8 @@ export function initFactionInv() {
   if (!p || !p.body) return;
   initFactionInv.on = true;
 
-  const st = { q: '', where: '', min: '', max: '', eq: '', set: '', offT: new Set(), offR: new Set(), offQ: new Set(), sort: { k: 'l', d: -1 }, per: 50, page: 0, ...store.get('fi_ui', {}) };
-  st.offT = new Set(); st.offR = new Set(); st.offQ = new Set(); st.page = 0;
+  const st = { q: '', where: '', min: '', max: '', eq: '', set: '', offT: new Set(), offC: new Set(), offR: new Set(), offQ: new Set(), sort: { k: 'l', d: -1 }, per: 50, page: 0, ...store.get('fi_ui', {}) };
+  st.offT = new Set(); st.offC = new Set(); st.offR = new Set(); st.offQ = new Set(); st.page = 0;
   let items = [];
   let det = store.get('fi3', {}); // k -> record
   const sel = new Set();
@@ -191,6 +196,7 @@ export function initFactionInv() {
     '<label>Set item <select id="fi-set"><option value="">Any</option><option value="1">Yes</option><option value="0">No</option></select></label>' +
     '<span class="fi-sp"></span><a href="#" id="fi-reset">Reset filters</a></div>' +
     '<div class="fi-grp"><span class="fi-gl">Type</span><span class="fi-chips" id="fi-ct"></span><span class="fi-all"><a href="#" data-all="T:1">All</a> <a href="#" data-all="T:0">None</a></span></div>' +
+    '<div class="fi-grp"><span class="fi-gl">Class</span><span class="fi-chips" id="fi-cc"></span><span class="fi-all"><a href="#" data-all="C:1">All</a> <a href="#" data-all="C:0">None</a></span></div>' +
     '<div class="fi-grp"><span class="fi-gl">Rarity</span><span class="fi-chips" id="fi-cr"></span><span class="fi-all"><a href="#" data-all="R:1">All</a> <a href="#" data-all="R:0">None</a></span></div>' +
     '<div class="fi-grp"><span class="fi-gl">Quality</span><span class="fi-chips" id="fi-cq"></span><span class="fi-all"><a href="#" data-all="Q:1">All</a> <a href="#" data-all="Q:0">None</a></span></div>' +
     '</div>' +
@@ -225,7 +231,7 @@ export function initFactionInv() {
 
   // Fetches what the items are, six at a time; the table fills in as the answers arrive.
   async function loadDetails(force) {
-    const todo = items.filter((i) => force || !det[i.k] || Date.now() - det[i.k].ts > STALE || det[i.k].v !== 3);
+    const todo = items.filter((i) => force || !det[i.k] || Date.now() - det[i.k].ts > STALE || det[i.k].v < 3 || (det[i.k].v === 3 && !det[i.k].c));
     // the ones never read first, then the stale ones
     todo.sort((a, b) => (det[a.k] ? 1 : 0) - (det[b.k] ? 1 : 0));
     if (!todo.length) { status(''); return; }
@@ -301,7 +307,7 @@ export function initFactionInv() {
     if (st.eq === '1' && !i.eq) return false;
     if (st.eq === '0' && i.eq) return false;
     if (d) {
-      if (st.offT.has(d.t) || st.offR.has(d.r) || st.offQ.has(d.q)) return false;
+      if (st.offT.has(d.t) || st.offC.has(d.c || NOCLASS) || st.offR.has(d.r) || st.offQ.has(d.q)) return false;
       if (st.set === '1' && !d.s) return false;
       if (st.set === '0' && d.s) return false;
       const lo = parseInt(st.min, 10);
@@ -339,6 +345,7 @@ export function initFactionInv() {
     const qh = {};
     items.forEach((i) => { const d = info(i); if (d && d.r && d.k && !hue[d.r]) hue[d.r] = d.k; if (d && d.q && d.qc && !qh[d.q]) qh[d.q] = d.qc; });
     chips($('fi-ct'), cnt((d) => d.t), st.offT, (a, b) => a.localeCompare(b));
+    chips($('fi-cc'), cnt((d) => d.c || NOCLASS), st.offC, (a, b) => (CLASSES.indexOf(a) + 1 || 99) - (CLASSES.indexOf(b) + 1 || 99) || a.localeCompare(b));
     chips($('fi-cr'), cnt((d) => d.r), st.offR, (a, b) => (RANK[a] ?? 99) - (RANK[b] ?? 99) || a.localeCompare(b), (v) => hue[v] || '#9fb0b0');
     chips($('fi-cq'), cnt((d) => d.q), st.offQ, (a, b) => (QRANK.indexOf(a) + 1 || 99) - (QRANK.indexOf(b) + 1 || 99) || a.localeCompare(b), (v) => qh[v] || '#9fb0b0');
     // where: the store, then the members (with how many items each carries)
@@ -624,14 +631,14 @@ export function initFactionInv() {
     if (a.id === 'fi-stop') { stop = true; return; }
     if (a.id === 'fi-reset') {
       Object.assign(st, { q: '', where: '', min: '', max: '', eq: '', set: '', page: 0 });
-      st.offT.clear(); st.offR.clear(); st.offQ.clear();
+      st.offT.clear(); st.offC.clear(); st.offR.clear(); st.offQ.clear();
       $('fi-q').value = ''; $('fi-min').value = ''; $('fi-max').value = ''; $('fi-eq').value = ''; $('fi-set').value = '';
       drawChips(); drawTable();
       return;
     }
     if (a.dataset.all) {
       const [g, on] = a.dataset.all.split(':');
-      const off = g === 'T' ? st.offT : g === 'R' ? st.offR : st.offQ;
+      const off = g === 'T' ? st.offT : g === 'C' ? st.offC : g === 'R' ? st.offR : st.offQ;
       off.clear();
       if (on === '0') root.querySelectorAll('#fi-c' + g.toLowerCase() + ' .fi-chip').forEach((c) => off.add(c.dataset.v));
       st.page = 0; drawChips(); drawTable();
@@ -640,7 +647,7 @@ export function initFactionInv() {
     if (a.classList.contains('fi-chip')) {
       e.preventDefault();
       const id = a.parentNode.id;
-      const off = id === 'fi-ct' ? st.offT : id === 'fi-cr' ? st.offR : st.offQ;
+      const off = id === 'fi-ct' ? st.offT : id === 'fi-cc' ? st.offC : id === 'fi-cr' ? st.offR : st.offQ;
       const v = a.dataset.v;
       if (off.has(v)) off.delete(v); else off.add(v);
       st.page = 0; drawChips(); drawTable();
