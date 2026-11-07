@@ -43,6 +43,7 @@ export function initSettings() {
     ['h', 'Top banner'],
     ['bannerNums', 'check', 'Write HP, skill power and the energy maximum on the banner'],
     ['durBar', 'check', 'Show the gear durability bar'],
+    ['pathfinder', 'check', 'Path Finder button on the map', 'A Path Finder button on the map opens a panel that shows the shortest way to an area (search by name or level). Takes effect after reloading the page.'],
     ['h', 'Items'],
     ['gearCompare', 'check', 'Compare gear in item tooltips', 'An item you are not wearing is shown next to the worn item of the same kind, with the differences coloured.'],
     ['h', 'Faction'],

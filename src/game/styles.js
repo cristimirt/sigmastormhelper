@@ -25,8 +25,9 @@ export function addStyle() {
     '#ssh-me img{width:23px;height:23px;filter:drop-shadow(0 0 4px #fff);}' +
     '#ssh-pinfo{position:absolute;left:38px;top:67px;z-index:5;display:none;padding:2px 8px;background:rgba(0,0,0,.75);color:#7dff7d;border:1px solid #1d6a1d;font:bold 11px Arial,sans-serif;}' +
     '#ssh-path{position:absolute;left:0;top:0;pointer-events:none;overflow:visible;}' +
+    '#ssh-pfbtn{position:absolute;right:112px;bottom:6px;z-index:5;height:22px;padding:0 8px;box-sizing:border-box;background:rgba(0,0,0,.75);color:#d8cfbf;border:1px solid #5a5f5f;font:bold 12px/20px Arial,sans-serif;cursor:pointer;}' +
     '#ssh-fpbtn{position:absolute;right:38px;bottom:6px;z-index:5;height:22px;padding:0 8px;box-sizing:border-box;background:rgba(0,0,0,.75);color:#d8cfbf;border:1px solid #5a5f5f;font:bold 12px/20px Arial,sans-serif;cursor:pointer;}' +
-    '#ssh-fpbtn:hover{border-color:#9fe0ff;color:#fff;}#ssh-fpbtn.on{border-color:#e8872a;color:#ffb36b;}' +
+    '#ssh-fpbtn:hover,#ssh-pfbtn:hover{border-color:#9fe0ff;color:#fff;}#ssh-fpbtn.on,#ssh-pfbtn.on{border-color:#e8872a;color:#ffb36b;}' +
     '#ssh-fp .fp{position:absolute;width:12px;height:12px;border-radius:50%;background:#e8872a;border:1px solid #7a3d08;box-sizing:border-box;}' +
     '#ssh-zoom{position:absolute;left:38px;bottom:6px;display:flex;gap:4px;align-items:center;z-index:5;}' +
     '#ssh-zoom button,#ssh-zoom span{height:22px;min-width:24px;padding:0 6px;box-sizing:border-box;background:rgba(0,0,0,.75);' +
@@ -38,6 +39,19 @@ export function addStyle() {
     '.ssh-lk:hover{border-color:#9fe0ff;color:#fff;}#ssh-wiki{left:38px}#ssh-guide{left:66px}#ssh-guide[hidden]{display:none}' +
     '#ssh-loc{position:absolute;left:38px;top:43px;z-index:5;padding:3px 8px;background:rgba(0,0,0,.75);color:#e8e8e8;' +
     'border:1px solid #5a5f5f;font:bold 12px Arial,sans-serif;white-space:nowrap;}' +
+    // Path Finder panel (src/pathfinder/panel.js): same look as the Action List
+    '#ssh-pf{position:absolute;z-index:1000;width:300px;max-width:calc(100% - 8px);box-sizing:border-box;background:rgba(8,10,10,.94);border:1px solid #5a5f5f;color:#d8cfbf;font:12px/1.35 Arial,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.6);}#ssh-pf[hidden]{display:none}' +
+    '#ssh-pf .hd{padding:4px 8px;background:#1b1f1f;border-bottom:1px solid #3a3d3d;font-weight:bold;color:#fff;cursor:move;user-select:none;touch-action:none}#ssh-pf .x{float:right;cursor:pointer;color:#d8cfbf;font-size:18px;line-height:14px}#ssh-pf .x:hover{color:#fff}' +
+    '#ssh-pf .md{display:flex;gap:4px;padding:6px 8px 0}#ssh-pf button{background:#2c3232;border:1px solid #5a5f5f;color:#d8d8d8;font:inherit;cursor:pointer;padding:2px 8px}#ssh-pf button:hover{border-color:#9fe0ff;color:#fff}#ssh-pf .md button{flex:1}#ssh-pf .md button.on{border-color:#e8872a;color:#ffb36b}' +
+    '#ssh-pf .sr{position:relative;display:flex;gap:4px;padding:8px 8px 4px}#ssh-pf input{flex:1;min-width:0;box-sizing:border-box;padding:3px 6px;background:#000;border:1px solid #5a5f5f;color:#e8e8e8;font:inherit}' +
+    '#ssh-pf .sg{position:absolute;left:8px;right:8px;top:100%;z-index:2;margin:0;padding:0;list-style:none;background:#0b0e0e;border:1px solid #5a5f5f;max-height:260px;overflow:auto}#ssh-pf .sg[hidden]{display:none}' +
+    '#ssh-pf .sg li{display:flex;justify-content:space-between;gap:8px;padding:3px 8px;cursor:pointer}#ssh-pf .sg li span{color:#8b8b8b;white-space:nowrap}#ssh-pf .sg li.on,#ssh-pf .sg li:hover{background:#1f2626}' +
+    '#ssh-pf .bd{padding:4px 8px 8px}#ssh-pf .m{padding:6px 2px;opacity:.8}#ssh-pf .er{color:#ff8a7a;opacity:1}#ssh-pf a{color:#9fe0ff}' +
+    '#ssh-pf .ds span{color:#8b8b8b;margin-left:4px}#ssh-pf .ct{color:#9a9a9a;margin:4px 0 6px}#ssh-pf .dn{margin:8px 0 2px;padding:10px;text-align:center;font-size:16px;font-weight:bold;background:#16301a;border:1px solid #3f8a4a;color:#7fe08a}' +
+    '#ssh-pf .nx{padding:8px 10px;background:#0f1414;border:2px solid #e8872a}#ssh-pf .in{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#8b8b8b}#ssh-pf .ld{color:#b8b0a0}#ssh-pf .bg{font-size:18px;font-weight:bold;line-height:1.2;margin:2px 0;color:#fff}#ssh-pf .sb{color:#b8b0a0}' +
+    '#ssh-pf .nt{margin-top:4px;font-style:italic;color:#ff8a7a}#ssh-pf .aw{margin-top:6px;font-weight:bold;color:#ffb36b}#ssh-pf .aw.hr{color:#7fe08a}' +
+    '#ssh-pf .rs{margin:8px 0 0;padding-left:22px;max-height:230px;overflow:auto;font-size:11px;color:#b8b0a0;scrollbar-width:thin;scrollbar-color:#2c3232 transparent}#ssh-pf .rs li{padding:2px 0;border-top:1px dotted #3a3d3d}#ssh-pf .rs li:first-child{border-top:0}#ssh-pf .rs span{display:block;font-size:10px;text-transform:uppercase;color:#7a7a7a}' +
+    '#ssh-pf .ft{padding:4px 8px 6px;border-top:1px solid #3a3d3d;text-align:center;font-size:11px}' +
     '#ssh-al{position:absolute;z-index:1000;width:270px;max-height:340px;overflow:auto;background:rgba(8,10,10,.92);' +
     'border:1px solid #5a5f5f;color:#d8cfbf;font:11px Arial,sans-serif;box-shadow:0 3px 10px rgba(0,0,0,.6);}' +
     // a slim dark scroll bar without arrows (Firefox: the thin standard one)

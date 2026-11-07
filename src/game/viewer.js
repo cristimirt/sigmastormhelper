@@ -16,6 +16,7 @@ function buildViewer() {
     '<div id="ssh-loc"></div>' +
     '<a id="ssh-wiki" class="ssh-lk" target="_blank" rel="noopener" title="Open this area in the Wiki">W</a>' +
     '<a id="ssh-guide" class="ssh-lk" target="_blank" rel="noopener" title="Open this area in the Guide">G</a>' +
+    (S.cfg.pathfinder ? '<button type="button" id="ssh-pfbtn" title="Find the way to an area">Path Finder</button>' : '') +
     '<div id="ssh-zoom"><button type="button" data-z="-1" title="Zoom out">&minus;</button><span></span>' +
     '<button type="button" data-z="1" title="Zoom in">+</button></div>' +
     '<button type="button" id="ssh-fpbtn" title="Mark the tiles you walked on">Footprints</button>' +
