@@ -87,7 +87,7 @@ export function parseCombat(html) {
 export function resultHtml(c) {
   const fmt = (n) => Number(n).toLocaleString('en-US');
   const part = (label, n, extra) => '<span style="color:' + (n < 0 ? '#FF5a5a' : '#97D6E2') + '">' + label + ': ' + fmt(n) + (extra || '') + '</span>';
-  const parts = [part('XP', c.xp), part('Gold', c.gold, c.tax > 0 ? ' [' + fmt(c.tax) + ']' : '')];
+  const parts = [part('XP', c.xp), part('Credits', c.gold, c.tax > 0 ? ' [' + fmt(c.tax) + ']' : '')];
   if (c.surge) parts.push(part(esc(c.surgeName || 'Surge'), c.surge));
   if (c.level > 0) parts.push('<span style="color:#7fe08a">Level up!</span>');
   if (c.level < 0) parts.push('<span style="color:#FF5a5a">Level down!</span>');
