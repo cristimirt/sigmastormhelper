@@ -3,7 +3,7 @@
 // @namespace    https://cristimirt.github.io/sigmastormhelper/
 // @description  Quality of life for Sigmastorm: a bigger map you can walk on, a modern profile and backpack, better tooltips.
 // @author       Aurik16
-// @version      1.0.2
+// @version      1.0.3
 // @match        https://www.sigmastorm.com/*
 // @match        https://sigmastorm.com/*
 // @match        https://cristimirt.github.io/sigmastormhelper/*
@@ -47,6 +47,10 @@
     // as soon as the new layout is built)
     if (localStorage.getItem('SSH_layout') === '"modern"') early('ssh-early-m', 'html{background:#000!important}body{visibility:hidden!important}');
   } catch (e) { /* storage blocked */ }
+  // The Bank page's own slider script (slider.js) fails while the page loads (it looks for the picture it writes with document.write,
+  // which Cloudflare's script loader has not put in the page yet) and logs an error twice, before the helper is loaded. The helper
+  // replaces those sliders, so the loader drops that error. Not only when the address says cmd=bank: the page also comes from a POST.
+  window.addEventListener('error', (e) => { if (/\/js\/slider\.js/.test(e.filename || '')) e.preventDefault(); });
   // never leave the page hidden if something goes wrong
   setTimeout(() => ['ssh-early', 'ssh-early-m'].forEach((id) => { const el = document.getElementById(id); if (el) el.remove(); }), 15000);
 

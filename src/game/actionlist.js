@@ -100,6 +100,8 @@ export function submitAction(clone) {
   document.body.appendChild(f);
   f.submit();
   };
+  // The Bank button posts cmd=bank. A GET to the same address shows the same page, with the page in the address (reloadable, linkable).
+  if (form.method === 'post' && fields.length === 1 && fields[0][0] === 'cmd' && fields[0][1] === 'bank') { location.href = 'index.php?cmd=bank'; return; }
   if (form.method === 'post' && fields.some((f) => f[0] === 'subcmd' && f[1] === 'questaction')) { doQuest(form.action, fields, submitForm); return; }
   if (form.method === 'post' && fields.some((f) => f[0] === 'subcmd' && f[1] === 'heal')) { doHeal(form.action, fields, submitForm); return; }
   if (form.method === 'post' && fields.some((f) => f[0] === 'cmd' && f[1] === 'portal') && !fields.some((f) => f[0] === 'subcmd')) { doPortal(form.action, fields, submitForm); return; }
