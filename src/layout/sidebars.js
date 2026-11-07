@@ -306,6 +306,19 @@ export function unbuildSidebars() {
 const save = () => {
   const o = {};
   document.querySelectorAll('.ssh-col').forEach((c) => { o[c.dataset.side] = [...c.querySelectorAll(':scope > .ssh-w')].map((w) => w.dataset.w); });
+  // A widget that is not on this page (the notifications of a new log or message only show while there is one) keeps its place:
+  // it goes back right after the widget that was before it in the saved arrangement, so the next time it shows it is there.
+  const old = store.get('sidebars', null) || {};
+  const here = new Set([].concat(...Object.values(o)));
+  Object.keys(old).forEach((side) => {
+    const list = o[side] || (o[side] = []);
+    let anchor = -1; // position in `list` after which the next absent widget goes
+    (old[side] || []).forEach((id) => {
+      if (here.has(id)) { const i = list.indexOf(id); if (i >= 0) anchor = i; return; }
+      if (Object.values(o).some((l) => l.includes(id))) return;
+      list.splice(++anchor, 0, id);
+    });
+  });
   store.set('sidebars', o);
 };
 
