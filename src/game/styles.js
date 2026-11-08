@@ -21,6 +21,10 @@ export function addStyle() {
     'background:rgba(0,0,0,.72);color:#d6f4ff;border:1px solid #5a5f5f;font:bold 15px/22px Arial,sans-serif;}' +
     '#ssh-pad button:hover:not(:disabled){border-color:#9fe0ff;background:rgba(40,70,90,.9);color:#fff;}' +
     '#ssh-pad button:disabled{opacity:.28;cursor:not-allowed;}' +
+    // short message above the down arrow of the map, gone after 2 seconds
+    '#ssh-toast{position:absolute;left:50%;bottom:38px;transform:translateX(-50%);z-index:6;max-width:80%;padding:3px 10px;pointer-events:none;transition:opacity .6s ease-out;' +
+    'background:rgba(0,0,0,.82);color:#d6f4ff;border:1px solid #5a5f5f;font:bold 11px Arial,sans-serif;text-align:center;}' +
+    '#ssh-toast.bad{color:#ff8a8a;border-color:#8a3a3a;}' +
     '#ssh-me{position:absolute;width:' + TILE + 'px;height:' + TILE + 'px;transition:left .28s ease-out,top .28s ease-out;' +
     'pointer-events:none;display:flex;align-items:center;justify-content:center;}' +
     '#ssh-me img{width:23px;height:23px;filter:drop-shadow(0 0 4px #fff);}' +

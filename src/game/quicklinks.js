@@ -3,7 +3,7 @@ import { S } from '../core/state.js';
 import { https } from '../core/util.js';
 import { BP, bpFromDoc, bpPopup } from '../layout/backpack.js';
 import { mel } from '../layout/dom.js';
-import { alertModal, gAlerts, mModal } from '../layout/modal.js';
+import { alertModal, gAlerts, mModal, toast } from '../layout/modal.js';
 import { loadItem, parseItem } from '../tooltips/compare.js';
 import { refreshWorld } from './combat.js';
 
@@ -167,7 +167,7 @@ export async function quickAction(href, label) {
     const html = await (await fetch(new URL(href, location.href).href, { credentials: 'same-origin' })).text();
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const alerts = gAlerts(doc);
-    if (alerts.length) alertModal(alerts);
+    if (alerts.length) { if (/worldmedipack|worldrepair/.test(href)) toast(alerts); else alertModal(alerts); }
     else if (!doc.getElementById('mapDiv')) { // no message and not the world page: show what the game answered
       const body = mel('div');
       body.textContent = pageText(doc) || 'Done.';
