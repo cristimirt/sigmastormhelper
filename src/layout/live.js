@@ -1,7 +1,7 @@
 // Live sidebar: every 10 seconds (the same as the game's global chat), while the tab is the one in front, the character page is
 // read once and the banner (HP, energy, Skill Power ...) and the faction chat of the page are brought up to date from it.
 // The faction chat form is sent in the background (no page reload) and the chat is read again right after.
-import { updateHeader } from '../banner.js';
+import { refreshDur, updateHeader } from '../banner.js';
 import { renderStairs, setLevelFrom } from '../game/stairs.js';
 import { pageParts } from '../core/page.js';
 import { S } from '../core/state.js';
@@ -91,7 +91,16 @@ async function sendChat(form) {
   refreshLive();
 }
 
+// A skill used from the Skills widget changes health, energy and gear: read them again once the game has answered.
+function bindSkills() {
+  document.addEventListener('click', (e) => {
+    if (!e.target || typeof e.target.closest !== 'function' || !e.target.closest('#skillBoxData')) return;
+    [1200, 3500].forEach((ms) => setTimeout(() => { refreshLive(); refreshDur(0); }, ms));
+  }, true);
+}
+
 export function initLive() {
+  bindSkills();
   if (!S.cfg.live || timer || !pageParts()) return;
   timer = setInterval(tick, EVERY);
   document.addEventListener('visibilitychange', () => {

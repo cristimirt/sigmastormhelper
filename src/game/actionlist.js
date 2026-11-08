@@ -260,10 +260,7 @@ async function doQuest(action, fields, fallback) {
     const alerts = [...doc.querySelectorAll('table')].filter((t) => /^\s*INFORMATION ALERT/i.test(t.textContent) && !t.querySelector('table'));
     if (!alerts.length) throw new Error('no message');
     closeLog();
-    const pop = document.createElement('div');
-    pop.id = 'ssh-pop';
-    pop.innerHTML = '<div class="box" style="width:540px"><div class="ph"><div>Quest</div><span data-close="1" title="Close">&#10006;</span></div><div class="pb" style="line-height:1.35">' + alerts.map((t) => t.outerHTML).join('<div style="height:8px"></div>') + '</div></div>';
-    document.body.appendChild(pop);
+    alertModal(alerts, 'Quest'); // the same plain dialog as the other messages (no box inside the box)
     updateHeader(html);
     ok = true;
   } catch (e) {

@@ -6,7 +6,7 @@ export function gAlerts(doc) {
 }
 
 // The game's message as a plain dialog: the head line ("INFORMATION ALERT") is the title, the text is the body.
-export function alertModal(alerts) {
+export function alertModal(alerts, heading) {
   if (!alerts.length) return;
   const body = mel('div', 'mm-al');
   let title = '';
@@ -21,7 +21,24 @@ export function alertModal(alerts) {
     p.innerHTML = (cells.length ? cells.map((td) => td.innerHTML.trim()).filter(Boolean).join('<br>') : c.innerHTML).trim();
     body.append(p);
   });
-  mModal(title || 'Message', body, [{ text: 'OK' }], { center: true });
+  mModal(heading || title || 'Message', body, [{ text: 'OK' }], { center: true });
+}
+
+// The game's message as a small note on the map, above the down arrow, that goes away by itself. Without the map: the dialog.
+let toastT = 0;
+export function toast(alerts) {
+  const v = document.getElementById('ssh-map');
+  if (!v) { alertModal(alerts); return; }
+  const text = alerts.map((t) => t.textContent.replace(/\s+/g, ' ').replace(/^\s*(INFORMATION|ERROR|WARNING|SUCCESS)?\s*ALERT\s*/i, '').trim()).filter(Boolean).join(' ');
+  if (!text) return;
+  v.querySelectorAll('#ssh-toast').forEach((e) => e.remove());
+  const n = mel('div');
+  n.id = 'ssh-toast';
+  if (alerts.some((t) => /ERROR|WARNING/i.test((t.querySelector('b') || {}).textContent || ''))) n.className = 'bad';
+  n.textContent = text;
+  v.append(n);
+  clearTimeout(toastT);
+  toastT = setTimeout(() => { n.style.opacity = '0'; setTimeout(() => n.remove(), 600); }, 2400); // 3 seconds in all, the last part fading out
 }
 
 // A small draggable dialog (title bar, body, buttons). Esc or a click outside closes it.
