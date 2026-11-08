@@ -5,6 +5,7 @@ import { store } from '../core/storage.js';
 import { BP, bpUse, compDestroy, compLoad } from './backpack.js';
 import { csOpen } from './combatsets.js';
 import { mel, proxify } from './dom.js';
+import { applyPfOrder, bindPfDrag, pfResetLink } from './pfdrag.js';
 import { pfSection, pfSections } from './sections.js';
 import { buildFrame, unbuildFrame } from './frame.js';
 import { buildSidebars, unbuildSidebars } from './sidebars.js';
@@ -94,7 +95,10 @@ function buildProfile(table) {
     cl.setAttribute('href', '#');
     cl.addEventListener('click', (e) => { e.preventDefault(); csOpen(); });
   }
+  applyPfOrder(grid);
   root.append(grid, mel('div', 'pf-foot'));
+  pfResetLink(root);
+  bindPfDrag();
   root.addEventListener('click', onProfClick);
   table.setAttribute('data-ssh-orig', '1');
   table.parentNode.insertBefore(root, table.nextSibling);
