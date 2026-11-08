@@ -2,6 +2,7 @@ import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
 import { bannerCss } from './header.js';
 import { frameCss } from './frame.js';
+import { pfDragCss } from './pfdrag.js';
 import { sidebarCss } from './sidebars.js';
 import { worldCss } from './worldpage.js';
 import { quickCss } from '../game/quicklinks.js';
@@ -28,7 +29,7 @@ export function mCss() {
   const u = (k) => 'url("' + T.skin + T.img[k] + '")';
   const P = '#ssh-prof ';
   const PB = ':is(#ssh-prof,#ssh-mm) '; // the backpack is also shown in a dialog (the world page)
-  return 'html.ssh-modern [data-ssh-orig]{display:none!important}' + bannerCss() + frameCss(u('page')) + sidebarCss() + worldCss(u('page')) + quickCss() +
+  return 'html.ssh-modern [data-ssh-orig]{display:none!important}' + bannerCss() + frameCss(u('page')) + sidebarCss() + worldCss(u('page')) + quickCss() + pfDragCss() +
     P.trim() + '{display:none;width:640px;margin:0 auto;box-sizing:border-box;background:' + u('page') + ';font:8pt tahoma,sans-serif;color:#fff;}html.ssh-modern ' + P.trim() + '{display:block}' +
     P + '.pf-title{height:48px;background:' + u('title') + ' no-repeat center top}' +
     P + '.pf-foot{height:54px;background:' + (S.base ? 'url("' + S.base + 'media/large_content_footer.png")' : u('foot')) + ' no-repeat center top / 640px auto}' +

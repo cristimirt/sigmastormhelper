@@ -13,6 +13,7 @@ import { rememberScripts } from './layout/sidebars.js';
 import { initBank } from './pages/bank.js';
 import { initFactionInv } from './pages/factioninv.js';
 import { initInventing } from './pages/inventing.js';
+import { initQuest } from './pages/quest.js';
 import { initSettings, movePanels, trimTail } from './settings.js';
 import { initRecipes } from './tooltips/blueprints.js';
 import { serverOffset } from './tooltips/energy.js';
@@ -44,6 +45,7 @@ async function init() {
   if (/[?&]cmd=settings/.test(location.search)) { initSettings(); return; }
   if (/[?&]cmd=guild/.test(location.search) && /[?&]subcmd=inventory/.test(location.search) && /[?&]subcmd2=report/.test(location.search) && S.cfg.factionInv) { initFactionInv(); return; }
   if (/[?&]cmd=bank/.test(location.search) || document.getElementById('deposit_amount')) { initBank(); return; } // also the page a deposit or an action-list button posts to
+  if (/[?&]cmd=questbook/.test(location.search) && /[?&]subcmd=viewquest/.test(location.search)) { initQuest(); return; }
   if (/[?&]cmd=inventing/.test(location.search) && !/[?&]subcmd=[^&]/.test(location.search)) { initRecipes(); initInventing(); return; }
   const info = read(document);
   if (!info.loc || !document.getElementById('mapDiv')) { dropEarly(); return; } // not the world page
