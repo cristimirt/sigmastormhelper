@@ -9,6 +9,10 @@ import { applyZoom, moveFor, setZoom } from './map.js';
 import { fixImgHosts } from './parsing.js';
 import { drawPath, findPath, stopWalk, tileUnderMouse, walkTo } from './pathfinding.js';
 
+// Whatever sits on top of the map (buttons, links, the area name, the zoom, the Path Finder, the notes): a click or a drag on it is not a click
+// or a drag on the map, so it neither pans the map nor walks to the tile under it.
+const OVER = 'button, a, .wp-q, #ssh-loc, #ssh-pinfo, #ssh-zoom, #ssh-pad, #ssh-pf, #ssh-toast';
+
 export function bind() {
   document.addEventListener('click', (e) => {
     if (e.__ssh) return; // already handled by another listener
@@ -128,7 +132,7 @@ export function bind() {
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (document.getElementById('ssh-pop')) closeLog(); else closeEntity(); } });
   document.addEventListener('pointerdown', (e) => {
     const t = e.target;
-    if (e.button !== 0 || !t || typeof t.closest !== 'function' || !t.closest('#ssh-map') || t.closest('button, .wp-q')) return;
+    if (e.button !== 0 || !t || typeof t.closest !== 'function' || !t.closest('#ssh-map') || t.closest(OVER)) return;
     if (!S.viewer.classList.contains('ssh-pannable')) return;
     pd = { x: e.clientX, y: e.clientY, px: S.pan.x, py: S.pan.y };
     S.viewer.classList.add('ssh-dragging');
@@ -150,7 +154,7 @@ export function bind() {
   document.addEventListener('mousemove', (e) => {
     if (!S.cfg.route || S.walking || S.busy || S.pending || pd || !S.viewer) return;
     const t = e.target;
-    if (!t || typeof t.closest !== 'function' || !t.closest('#ssh-map') || t.closest('button, .wp-q') || t.closest('#ssh-al')) {
+    if (!t || typeof t.closest !== 'function' || !t.closest('#ssh-map') || t.closest(OVER) || t.closest('#ssh-al')) {
       if (S.hover) { S.hover = null; drawPath(null); }
       return;
     }
@@ -171,7 +175,7 @@ export function bind() {
   document.addEventListener('pointermove', (e) => { if (down && Math.abs(e.clientX - down.x) + Math.abs(e.clientY - down.y) > 4) down.moved = true; }, true);
   document.addEventListener('click', (e) => {
     const t = e.target;
-    if (!t || typeof t.closest !== 'function' || !t.closest('#ssh-map') || t.closest('button, .wp-q')) return;
+    if (!t || typeof t.closest !== 'function' || !t.closest('#ssh-map') || t.closest(OVER)) return;
     if (!S.cfg.route) return;
     if (e.__sshWalk) return; // same click seen twice
     e.__sshWalk = true;
