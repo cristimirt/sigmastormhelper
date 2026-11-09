@@ -7,6 +7,7 @@ import { unslash } from '../layout/dom.js';
 import { alertModal, gAlerts, mModal } from '../layout/modal.js';
 import { closeLog, placeResults, refreshWorld } from './combat.js';
 import { navigate } from '../core/net.js';
+import { tableToDivs } from './rows.js';
 
 // A panel on the page itself (not in the map), draggable anywhere; it scrolls with the page.
 function ensurePanel() {
@@ -205,7 +206,7 @@ async function doHeal(action, fields, fallback) {
   S.pending++;
   const wait = healLine();
   if (wait) wait.dataset.heal = '1';
-  if (wait && wait.closest('tr')) wait.closest('tr').querySelectorAll('img[title="Credits"]').forEach((i) => i.closest('td').remove());
+  if (wait && wait.closest('.r')) wait.closest('.r').querySelectorAll('img[title="Credits"]').forEach((i) => i.closest('.c').remove());
   if (wait) wait.innerHTML = '<span class="ssh-spin"></span> Healing...'; // like the repair
   let ok = false;
   let alerts = [];
@@ -244,8 +245,8 @@ function healNote(alerts) {
   line.dataset.heal = '1'; // the next heal writes its progress here too
   line.innerHTML = '<span style="color:' + (bad ? '#ff6b6b' : '#7fe08a') + '"></span>';
   line.firstChild.textContent = text;
-  const row = line.closest('tr');
-  if (row) row.querySelectorAll('img[title="Credits"]').forEach((i) => i.closest('td').remove()); // the credits icon belongs to the cost
+  const row = line.closest('.r');
+  if (row) row.querySelectorAll('img[title="Credits"]').forEach((i) => i.closest('.c').remove()); // the credits icon belongs to the cost
   return true;
 }
 
@@ -295,13 +296,13 @@ const HEAL_ICON = 'https://cdn.sigmastorm.com/skin/icon_action_heal.gif';
 // The repair button (same icon as the healer's) sits next to the "Use Mechanic" icon; the cost goes in a line under it.
 function mechRow(bd) {
   const hit = bd.querySelector('[title*="echanic"]');
-  const row = hit && hit.closest('tr');
+  const row = hit && hit.closest('.r');
   if (!row) return null;
   let tr = bd.querySelector('.ssh-mech');
   if (!tr) {
-    tr = document.createElement('tr');
-    tr.className = 'ssh-mech';
-    tr.innerHTML = '<td colspan="3"><div class="mech"></div></td>';
+    tr = document.createElement('div');
+    tr.className = 'r ssh-mech';
+    tr.innerHTML = '<div class="c full"><div class="w"><div class="mech"></div></div></div>';
     row.parentNode.insertBefore(tr, row.nextSibling);
   }
   let btn = row.querySelector('.ssh-repair');
@@ -309,8 +310,8 @@ function mechRow(bd) {
     btn = document.createElement('span');
     btn.className = 'ssh-repair';
     btn.innerHTML = '<img src="' + HEAL_ICON + '" alt="">';
-    const cell = row.cells[row.cells.length - 1];
-    const host = cell.querySelector('nobr') || cell;
+    const cell = row.lastElementChild;
+    const host = cell.querySelector('nobr') || cell.querySelector('.w') || cell;
     host.insertBefore(btn, host.firstChild);
   }
   // Same size and alignment as the game's own icon next to it.
@@ -357,7 +358,7 @@ async function loadMechanic(bd) {
 
 export async function doRepair(btn) {
   if (btn.dataset.state !== 'ok') return;
-  const row = btn.closest('tr');
+  const row = btn.closest('.r');
   const box = row && row.nextElementSibling && row.nextElementSibling.querySelector('.mech');
   if (!box) return;
   btn.dataset.state = 'wait';
@@ -415,6 +416,7 @@ export function renderActions(text) {
     bd.innerHTML = '<div class="none">Nothing to do here.</div>';
   }
   unslash(bd);
+  tableToDivs(bd);
   placeResults(bd);
   loadMechanic(bd);
 }
