@@ -5,6 +5,19 @@ const GROUPS = ['Bonuses', 'Enhancements', 'Resistances'];
 
 // An item's answer from fetchitem.php, kept for a minute (cleared whenever the bag or profile is reloaded) and shared by every
 // tooltip that shows an item.
+// The game's answer for an item: "Item details unavailable." (404) when the type in the address does not fit where the item is (the pages
+// say 1, but the game wants another number for an item that is carried): the other numbers are tried, the one that works is the answer.
+export async function fetchItem(itemId, invId, type, pid) {
+  const tries = [type, 1, 2, 3, 0].filter((t, i, a) => a.indexOf(t) === i);
+  let last = '';
+  for (const t of tries) {
+    const r = await fetch('fetchitem.php?item_id=' + itemId + '&inv_id=' + invId + '&t=' + t + '&p=' + pid + '&uid=' + Date.now(), { credentials: 'same-origin' });
+    last = await r.text();
+    if (r.status !== 404) return last;
+  }
+  return last;
+}
+
 const cache = new Map();
 const pending = new Map();
 export const peekItem = (itemId, invId) => {
@@ -18,8 +31,7 @@ export function loadItem(itemId, invId, type, pid) {
   if (hit !== null) return Promise.resolve(hit);
   let p = pending.get(key);
   if (!p) {
-    p = fetch('fetchitem.php?item_id=' + itemId + '&inv_id=' + invId + '&t=' + type + '&p=' + pid + '&uid=' + Date.now(), { credentials: 'same-origin' })
-      .then((r) => r.text())
+    p = fetchItem(itemId, invId, type, pid)
       .then((html) => { cache.set(key, { t: Date.now(), html }); return html; });
     pending.set(key, p);
     const done = () => pending.delete(key);

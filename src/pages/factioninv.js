@@ -3,7 +3,7 @@ import { store } from '../core/storage.js';
 import { https } from '../core/util.js';
 import { mel } from '../layout/dom.js';
 import { gAlerts, mModal } from '../layout/modal.js';
-import { parseItem } from '../tooltips/compare.js';
+import { fetchItem, parseItem } from '../tooltips/compare.js';
 import { withToken } from '../core/net.js';
 
 // Faction Inventory: every item of the faction in one list - the tagged items the members carry (the game's "Tagged Item Report")
@@ -255,7 +255,7 @@ export function initFactionInv() {
       while (!stop && next < todo.length) {
         const i = todo[next++];
         try {
-          const html = await (await fetch('fetchitem.php?item_id=' + i.item + '&inv_id=' + i.inv + '&t=' + i.type + '&p=' + i.pid + '&uid=' + Date.now(), { credentials: 'same-origin' })).text();
+          const html = await fetchItem(i.item, i.inv, i.type, i.pid);
           const r = readDetail(html);
           if (r.n) det[i.k] = r; else fail++;
         } catch (e) { fail++; }

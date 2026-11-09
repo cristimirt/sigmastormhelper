@@ -1,7 +1,7 @@
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
 import { esc } from '../core/util.js';
-import { compareParts, loadItem, pairCss, tipLook } from './compare.js';
+import { compareParts, fetchItem, loadItem, pairCss, tipLook } from './compare.js';
 
 const BP_V = 1;
 
@@ -11,7 +11,7 @@ async function bpItem(a) {
   const key = 'bpi:' + a[0];
   const c = store.get(key, null);
   if (c && c.v === BP_V) return c;
-  const html = await (await fetch('fetchitem.php?item_id=' + a[0] + '&inv_id=' + a[1] + '&t=' + a[2] + '&p=' + a[3] + '&uid=' + Date.now(), { credentials: 'same-origin' })).text();
+  const html = await fetchItem(a[0], a[1], a[2], a[3]);
   const doc = new DOMParser().parseFromString(html, 'text/html');
   const td = doc.querySelector('td');
   let lines = [];
