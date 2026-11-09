@@ -26,6 +26,8 @@
   .num { flex: none; width: 28px; height: 28px; border-radius: 50%; background: #1b2a30; color: var(--accent); display: grid; place-items: center; font-weight: 700; }
   .state { font-weight: 600; }
   .state.ok { color: var(--ok); }
+  h3.grp { margin: 18px 0 4px; font-size: 1rem; color: var(--accent); }
+  ul.feat code { background: #1b2222; padding: 1px 5px; border-radius: 4px; font-size: .9em; }
   ul.feat { padding-left: 20px; margin: 8px 0; }
   ul.feat li { margin: 4px 0; }
   small, .dim { color: var(--dim); }
@@ -79,12 +81,39 @@
   </section>
 
   <h2>What it does</h2>
+
+  <h3 class="grp">On every page</h3>
   <ul class="feat">
-    <li><b>World map</b>: a bigger map that zooms and drags, click a tile to walk there, footprints, quick combat from a floating action list.</li>
-    <li><b>Modern profile</b> (switch at the bottom left): the profile rebuilt with modern CSS, same pictures. Backpack with folders, move / combine / split / destroy and quick use without reloading; equip and unequip without reloading; combat sets in a pop-up.</li>
-    <li><b>Gear comparison</b>: hover an item you are not wearing and see it next to the worn item of the same kind, with every stat coloured green or red and the difference in brackets.</li>
-    <li><b>Tooltips</b>: no more frozen page when hovering items, buff and skill tooltips show what they do (scaled to the level), a live energy countdown with the time it will be full.</li>
-    <li><b>Banner numbers</b>, repair-all button at the mechanic, blueprint previews and more.</li>
+    <li><b>Modern layout toggle</b> (bottom left, remembered): <code>Modern</code> uses divs and modern CSS instead of tables. The header, sidebars and footer are updated on all pages, but only some pages got the modern treatment for their contents. <code>Original</code> keeps the game's own pages. The sidebar widgets can be dragged to another place, also to the other sidebar.</li>
+    <li><b>Better tooltips</b>: they follow the pointer, never get stuck, load without freezing the page, and work for carried items too. Buffs and skills explain what they do, and the energy tooltip counts down to the next gain and shows when it will be full.</li>
+    <li><b>Gear comparison</b>: the tooltip of an item you are not wearing is shown next to the worn one, with the differences coloured.</li>
+    <li><b>Top banner</b>: real HP, skill power and energy numbers, and a gear durability bar.</li>
+    <li><b>Config page tab</b>: settings for all of the above, with export / import of everything.</li>
+    <li><b>Follows the game's changes</b>: the game's new request rules (token, POST forms) and broken pages are handled, its messages show their links and line breaks, pop-ups stay readable, and the upgrade stars of item tooltips load again.</li>
+  </ul>
+
+  <h3 class="grp">World map</h3>
+  <ul class="feat">
+    <li><b>A bigger map</b> you can zoom and drag, with moving, stairs and fights in place, without page reloads.</li>
+    <li><b>Click to walk</b> along a planned route, with fast walk, a direction pad and hotkeys; the zone bar links to the wiki and the Guide.</li>
+    <li><b>Path Finder</b> to find the way to any area, with the stairs marked on the map (and a "no entry" mark for areas above your level), and footprints of where you have been.</li>
+    <li><b>Transit portals</b>, <b>healing</b>, <b>quests</b> and the <b>mechanic</b> (repair all) work in dialogs or in place.</li>
+    <li><b>Faction Inventory</b>: every item of the faction in one list you can filter, sort, recall and take from.</li>
+  </ul>
+
+  <h3 class="grp">Action list and combat</h3>
+  <ul class="feat">
+    <li><b>Floating action list</b> you can drag anywhere, with number-key attacks and quick fights whose results are written into the list, and a combat log.</li>
+    <li><b>Creature kinds</b> (Champion, Elite, HK, Behemoth) have their own colours, bold names and tinted rows; settings choose the colours and which kinds get attack hotkeys.</li>
+    <li><b>Creature pop-up</b> with its stats and a combat evaluation.</li>
+    <li><b>Quick links</b> for the backpack, assault, buffs, medipacks and repair kits, with counts of what you have left.</li>
+  </ul>
+
+  <h3 class="grp">Profile, backpack and blueprints</h3>
+  <ul class="feat">
+    <li><b>Modern profile</b> with panels you can move and hide, and a backpack that works without reloads: folders, selecting, moving, combining, splitting, using, equipping and destroying items.</li>
+    <li><b>Combat sets</b> you can search, use, save and delete.</li>
+    <li><b>Blueprints</b>: hover to see what one makes, and manage folders and blueprints without reloads.</li>
   </ul>
 
   <h2>See it working</h2>
@@ -99,7 +128,7 @@
     </figure>
   </div>
 
-  <h2>Everything the helper changes</h2>
+  <h2>Every change in detail</h2>
   <div class="changes">
 <!-- CHANGES -->
   </div>
