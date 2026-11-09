@@ -1,4 +1,5 @@
 import { grabVars } from '../banner.js';
+import { hotkeyOn, TYPE_COLOR, typeOf } from '../core/creatures.js';
 import { S } from '../core/state.js';
 import { esc } from '../core/util.js';
 import { alertModal, gAlerts } from '../layout/modal.js';
@@ -28,6 +29,29 @@ export function placeResults(bd) {
   numberSlots(bd);
 }
 
+// The names of the special creatures get a colour: (Champion) purple, (Elite) yellow, (HK) red, (Behemoth) blue. Normal ones stay as they are.
+function colorNames(tb) {
+  if (S.cfg.creatureColors === false) return;
+  [...tb.children].filter((tr) => !isSep(tr) && !tr.classList.contains('ssh-resrow')).forEach((tr) => {
+    [...tr.cells].forEach((td) => {
+      if (td.querySelector('td, .ssh-ct')) return;
+      const m = td.textContent.replace(/\s+/g, ' ').trim().match(/(?:\((Champion|Elite|HK|Behemoth)\)|(?:^|\s)(HK))$/i);
+      if (!m) return;
+      const col = TYPE_COLOR[(m[1] || m[2]).toLowerCase()];
+      const w = document.createTreeWalker(td, NodeFilter.SHOW_TEXT);
+      const nodes = [];
+      for (let n = w.nextNode(); n; n = w.nextNode()) if (n.nodeValue.trim()) nodes.push(n);
+      nodes.forEach((n) => {
+        const sp = document.createElement('span');
+        sp.className = 'ssh-ct';
+        sp.style.color = col;
+        n.replaceWith(sp);
+        sp.append(n);
+      });
+    });
+  });
+}
+
 // Attack hotkeys count the creatures that can be attacked with a key (Elite and Champion creatures and the like have none, as in the
 // game), in the order of the list, and a finished fight keeps its row, so the creatures below it never change their number. The
 // picture on the attack button says the same number as the key does (the game's own pictures go up to 8).
@@ -35,11 +59,25 @@ const ICON = (n) => 'icon_action_attack' + (n <= 8 ? '1_' + n : '3') + '.gif';
 function numberSlots(bd) {
   const tb = bd.querySelector('tbody');
   if (!tb) return;
+  colorNames(tb);
   let n = 0;
   [...tb.children].filter((tr) => !isSep(tr)).forEach((tr) => {
     if (tr.classList.contains('ssh-resrow')) { if (tr.dataset.q) n++; return; }
     const a = tr.querySelector('a[data-atk]');
-    if (!a || a.getAttribute('data-atk') === 'x') return;
+    if (!a) return;
+    // the settings say which kinds of creature have a key (the game gives one to the normal ones and to HK, not to Champion, Elite and
+    // Behemoth creatures): the name says the kind. A creature without a key is attacked with a click, and the numbers go on without it.
+    const nm = [...tr.cells].map((td) => td.textContent.replace(/\s+/g, ' ').trim()).filter(Boolean).join(' '); // the creature's name is plain text in the row (its links are pictures)
+    const kind = typeOf(nm);
+    const want = kind ? hotkeyOn(S.cfg, kind) : a.getAttribute('data-atk') !== 'x';
+    if (!want) {
+      if (a.getAttribute('data-atk') !== 'x') {
+        a.setAttribute('data-atk', 'x');
+        const im0 = a.querySelector('img');
+        if (im0) im0.setAttribute('src', im0.getAttribute('src').replace(/[^/]*$/, '') + ICON(9));
+      }
+      return;
+    }
     n++;
     a.setAttribute('data-atk', String(n));
     const im = a.querySelector('img');

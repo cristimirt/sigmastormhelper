@@ -1,3 +1,4 @@
+import { CREATURE_TYPES } from './core/creatures.js';
 import { VERSION } from './core/constants.js';
 import { pageParts } from './core/page.js';
 import { CFG_DEFAULT, S } from './core/state.js';
@@ -33,6 +34,7 @@ export function initSettings() {
     '.ssh-set input[type=checkbox]:hover{border-color:#c2c6c6}' +
     '.ssh-set input[type=text],.ssh-set input[type=number],.ssh-set textarea{background:#181a1b;color:#fff;border:1px solid #848484;padding:2px;font:11px Verdana,sans-serif;}' +
     '.ssh-set textarea{width:100%;height:90px;box-sizing:border-box;}.ssh-set .btns{margin:12px 0;text-align:center;}' +
+    '.ssh-set .ssh-legend{display:flex;flex-wrap:wrap;gap:4px 16px;margin:2px 0 6px 36px;font-size:11px}' +
     '.ssh-set .btns input{margin:0 4px;}.ssh-set .note{color:#8fd18f;margin-left:8px;}';
   document.head.appendChild(st);
   t.classList.add('ssh-game');
@@ -45,6 +47,11 @@ export function initSettings() {
     ['route', 'check', 'Route preview and click to walk', 'Hover a tile to see the route, click to walk it. Press any key or click the map to stop.'],
     ['fastWalk', 'check', 'Fast walk', 'Sends every step your energy pays for one after another, without waiting for each page; the map shows the walk at once and the page updates when you arrive. A creature cannot stop a fast walk on the way.'],
     ['stopOnCreatures', 'check', 'Stop walking when there are creatures on a tile', 'Only when Fast walk is off.'],
+    ['creatureColors', 'check', 'Colour creature names by type', 'In the Action List, the name of a creature that ends with (Champion), (Elite), (HK) or (Behemoth) is coloured. Normal creatures stay as they are.', 'legend'],
+    ['hotkeyChampion', 'check', 'Attack hotkeys for Champion creatures', 'The number keys also attack creatures whose name ends with (Champion). Without it they are attacked with a click only, and the keys go to the other creatures.'],
+    ['hotkeyElite', 'check', 'Attack hotkeys for Elite creatures', 'The number keys also attack creatures whose name ends with (Elite).'],
+    ['hotkeyHK', 'check', 'Attack hotkeys for HK creatures', 'The number keys also attack creatures whose name ends with (HK). Turn it off to attack them with a click only.'],
+    ['hotkeyBehemoth', 'check', 'Attack hotkeys for Behemoth creatures', 'The number keys also attack creatures whose name ends with (Behemoth).'],
     ['stepDelay', 'number', 'Delay between steps (milliseconds)', 'Only when Fast walk is off. Lower is faster. Minimum 100.'],
     ['slide', 'check', 'Slide animation when moving'],
     ['h', 'Top banner'],
@@ -60,11 +67,13 @@ export function initSettings() {
     ['h', 'Side panels'],
     ['movePanels', 'check', 'Move Game Stats and Kill Logs to the left column', 'Takes effect after reloading the page.'],
   ];
+  // the colours of the kinds of creature, as the names look in the Action List
+  const legend = () => '<div class="lb ssh-legend">' + ['<span>Normal</span>'].concat(CREATURE_TYPES.map((c) => '<span style="color:' + c.color + '">Name ' + c.suffix + '</span>')).join('') + '</div>';
   const field = (f) => {
     if (f[0] === 'h') return '<h4>' + f[1] + '</h4>';
     const v = S.cfg[f[0]];
     const tip = f[3] ? ' title="' + esc(f[3]) + '"' : '';
-    if (f[1] === 'check') return '<label' + tip + '><input type="checkbox" data-k="' + f[0] + '"' + (v ? ' checked' : '') + '> ' + f[2] + '</label>';
+    if (f[1] === 'check') return '<label' + tip + '><input type="checkbox" data-k="' + f[0] + '"' + (v ? ' checked' : '') + '> ' + f[2] + '</label>' + (f[4] === 'legend' ? legend() : '');
     return '<div class="lb"' + tip + '>' + f[2] + ': <input type="' + f[1] + '" data-k="' + f[0] + '" value="' + esc(v) + '"' + (f[1] === 'number' ? ' min="100" max="3000" style="width:70px"' : ' style="width:260px"') + '></div>' + (f[3] ? '<div class="lb"><small>' + f[3] + '</small></div>' : '');
   };
   const tilesKnown = () => Object.keys(S.learn.tiles).length + Object.values(S.learn.over).reduce((n, o) => n + Object.keys(o).length, 0);
