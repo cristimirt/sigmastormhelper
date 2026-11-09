@@ -66,7 +66,10 @@ export function addStyle() {
     '#ssh-al .hd{padding:4px 8px;background:#1b1f1f;border-bottom:1px solid #3a3d3d;font-weight:bold;color:#fff;cursor:move;' +
     'user-select:none;-webkit-user-select:none;touch-action:none;}' +
     '#ssh-al .rf{float:right;margin-left:8px;cursor:pointer;color:#d8cfbf;font-size:14px;line-height:12px;user-select:none}#ssh-al .rf:hover{color:#fff}#ssh-al .rf.spin{display:inline-block;animation:ssh-rot .7s linear infinite}' +
-    '#ssh-al .bd{padding:4px 6px;}#ssh-al .bd table{width:100%;}#ssh-al .bd td{font:11px Arial,sans-serif;color:#d8cfbf;}' +
+    '#ssh-al .bd{padding:4px 6px;}#ssh-al .al{width:100%;}#ssh-al .r{display:flex;align-items:stretch;}#ssh-al .c{display:flex;align-items:center;box-sizing:border-box;flex:none;padding:3px 2px;font:11px Arial,sans-serif;color:#d8cfbf;}' +
+    '#ssh-al .c.full{flex:1 1 100%;min-width:0;}#ssh-al .r>.c:nth-child(2):not(:last-child){flex:1;min-width:0;}#ssh-al .r>.c:last-child:not(:first-child){margin-left:auto;}#ssh-al .c.ra{justify-content:flex-end;text-align:right;}#ssh-al .c.ca{justify-content:center;text-align:center;}' +
+    '#ssh-al .ssh-ct{text-shadow:1px 1px 1px #000,-1px -1px 1px #000,1px -1px 1px #000,-1px 1px 1px #000,0 0 4px #000;}' + // a dark outline and glow, so the colour stands out
+    '#ssh-al .r.sep>.c{padding:0;}#ssh-al .c>.w{min-width:0;}#ssh-al .c.full>.w{flex:1;min-width:0;}' +
     '@keyframes ssh-rot{to{transform:rotate(360deg)}}' +
     '.ssh-spin{display:inline-block;width:16px;height:16px;box-sizing:border-box;border:2px solid #4a5a5a;border-top-color:#9fe0ff;border-radius:50%;animation:ssh-rot .7s linear infinite;vertical-align:middle;}' +
     '#ssh-al .rs{padding:5px 6px;line-height:1.45;}#ssh-al .rs .rt{font-weight:bold;font-size:12px;}#ssh-al .rs .win{color:#7fe08a;}#ssh-al .rs .lose{color:#ff6b6b;}' +

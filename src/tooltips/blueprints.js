@@ -1,7 +1,7 @@
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
 import { esc } from '../core/util.js';
-import { compareParts, loadItem, pairCss, tipLook } from './compare.js';
+import { compareParts, fetchItem, loadItem, pairCss, tipLook } from './compare.js';
 
 const BP_V = 1;
 
@@ -11,7 +11,7 @@ async function bpItem(a) {
   const key = 'bpi:' + a[0];
   const c = store.get(key, null);
   if (c && c.v === BP_V) return c;
-  const html = await (await fetch('fetchitem.php?item_id=' + a[0] + '&inv_id=' + a[1] + '&t=' + a[2] + '&p=' + a[3] + '&uid=' + Date.now(), { credentials: 'same-origin' })).text();
+  const html = await fetchItem(a[0], a[1], a[2], a[3]);
   const doc = new DOMParser().parseFromString(html, 'text/html');
   const td = doc.querySelector('td');
   let lines = [];
@@ -31,12 +31,15 @@ function parseRecipe(html) {
   const out = { v: BP_V, credits: null, items: [], comps: [], target: null, mine: null };
   const cf = [...doc.querySelectorAll('table.sidebars font')].find((f) => /^[\d,]+$/.test(f.textContent.trim()));
   if (cf) out.mine = parseInt(cf.textContent.replace(/,/g, ''), 10);
-  [...c.querySelectorAll('td > b')].forEach((b) => {
+  // the headings are bold lines (a row of the old table, a paragraph now) and what belongs to one follows it, up to the next heading
+  const isHead = (e) => !!e.querySelector(':scope > b, td > b') && /Required|Target Invention/.test(e.textContent);
+  [...c.querySelectorAll('td > b, p > b')].forEach((b) => {
     const n = b.textContent;
     const key = /Credits Required/.test(n) ? 'credits' : /Items Required/.test(n) ? 'items' : /Components Required/.test(n) ? 'comps' : /Target Invention/.test(n) ? 'target' : null;
     if (!key) return;
-    let row = b.closest('tr').nextElementSibling;
-    while (row && !row.querySelector('td > b')) {
+    const head = b.closest('p, tr'); // the nearest one: the paragraph of the new page, the row of the old one
+    let row = head.nextElementSibling;
+    while (row && !(row.matches('p') ? isHead(row) : row.querySelector('td > b'))) {
       if (key === 'credits') {
         const m = row.textContent.replace(/\s+/g, ' ').match(/(\d[\d,]*)/);
         if (m && out.credits === null) out.credits = parseInt(m[1].replace(/,/g, ''), 10);
@@ -154,7 +157,7 @@ export function initRecipes() {
     tip.innerHTML = r.worn ? '<div class="cw"><div class="cm">' + r.html + '</div><div class="ce"><div class="eqh">Equipped</div>' + r.worn + '</div></div>' : r.html;
   };
   document.addEventListener('mouseover', async (e) => {
-    const img = e.target && typeof e.target.closest === 'function' ? e.target.closest('img[src*="/recipes/"]') : null;
+    const img = e.target && typeof e.target.closest === 'function' ? e.target.closest('img[src*="recipes/"]') : null;
     if (!img) return;
     const a = img.closest('tr') && img.closest('tr').querySelector('a[href*="recipe_id="]');
     const id = a && (a.getAttribute('href').match(/recipe_id=(\d+)/) || [])[1];
@@ -177,6 +180,7 @@ export function initRecipes() {
         place(e);
       }
     } catch (x) {
+      console.warn('[Sigmastorm Helper] blueprint', x);
       if (my === seq) setTip({ html: 'Could not load this blueprint.' });
     }
   });

@@ -2,8 +2,9 @@ import { refreshDur, updateHeader } from '../banner.js';
 import { S } from '../core/state.js';
 import { esc, txt } from '../core/util.js';
 import { renderActions } from './actionlist.js';
-import { attackAlert, isSep, logBody, parseCombat, refreshWorld, resultHtml } from './combat.js';
+import { attackAlert, fillResult, isSep, logBody, parseCombat, refreshWorld, resultHtml } from './combat.js';
 import { fillEvaluation } from './evaluation.js';
+import { navigate, postHref } from '../core/net.js';
 
 // Creature details in a pop-up (the game's "View Entity" page), with the same background fight.
 S.entRes = [];
@@ -60,10 +61,13 @@ export async function openEntity(href) {
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const m = doc.getElementById('mainContentDiv');
     const frame = m && (m.querySelector('table[background*="large_content_bg"]') || (m.rows[1] && m.rows[1].cells[1] && m.rows[1].cells[1].querySelector(':scope > table')));
-    const btn = frame && [...frame.querySelectorAll('input[type="button"]')].find((b) => /attack/i.test(b.value));
-    if (!frame || !btn) { location.href = href; return; }
-    const am = (btn.getAttribute('onclick') || '').match(/window\.location\s*=\s*'([^']+)'/);
-    if (!am) { location.href = href; return; }
+    // the attack is a small POST form now (an address that stands for it is used); before it was a button that went to an address
+    const af = frame && [...frame.querySelectorAll('form')].find((f) => f.querySelector('input[name="creature_id"]'));
+    const btn = af ? af.querySelector('button, input[type="submit"], input[type="button"], input[type="image"]') : frame && [...frame.querySelectorAll('input[type="button"]')].find((b) => /attack/i.test(b.value));
+    if (!frame || !btn) { navigate(href); return; }
+    const am = af ? [null, postHref(af)] : (btn.getAttribute('onclick') || '').match(/window\.location\s*=\s*'([^']+)'/);
+    if (!am) { navigate(href); return; }
+    if (af) { btn.type = 'button'; if (!btn.value && btn.tagName === 'INPUT') btn.value = 'Attack Creature'; btn.className = btn.className || 'custombutton'; }
     const back = [...frame.querySelectorAll('input[type="button"]')].find((b) => /back to world/i.test(b.value));
     if (back) back.remove();
     btn.removeAttribute('onclick');
@@ -96,7 +100,7 @@ export async function openEntity(href) {
       fillEvaluation(frame);
     }
   } catch (e) {
-    location.href = href;
+    navigate(href);
   }
 }
 
@@ -119,20 +123,19 @@ export async function entityAttack(btn) {
         updateHeader(html);
         return;
       }
-      leave = true; location.href = href; return;
+      leave = true; navigate(href); return;
     }
     S.entRes.push(c);
     // Same as a fight started from the Action List: the result takes the creature's place in the list.
     const cid = (href.match(/creature_id=(\d+)/) || [])[1];
     const link = cid && document.querySelector('#ssh-al a[href*="viewcreature"][href*="creature_id=' + cid + '"]');
-    const row = link && link.closest('tr');
+    const row = link && link.closest('.r');
     if (row && !row.classList.contains('ssh-resrow')) {
       const pos = [...row.parentNode.children].filter((x) => !isSep(x)).indexOf(row);
       const la = row.querySelector('a[data-atk]');
       const rr = { pos, quick: !!la && la.getAttribute('data-atk') !== 'x', html: resultHtml(c), log: c };
       S.results.push(rr);
-      row.className = 'ssh-resrow';
-      row.innerHTML = '<td colspan="3">' + rr.html.replace('data-r="#"', 'data-r="' + (S.results.length - 1) + '"') + '</td>';
+      fillResult(row, rr.html.replace('data-r="#"', 'data-r="' + (S.results.length - 1) + '"'));
     }
     if (res && res.isConnected) {
       res.innerHTML = resultHtml(c).replace(/<a class="clog"[^>]*>[^<]*<\/a>/, '') + '<div class="elog">' + logBody(c) + '</div>';
@@ -141,7 +144,7 @@ export async function entityAttack(btn) {
     updateHeader(html);
   } catch (e) {
     leave = true;
-    location.href = href;
+    navigate(href);
   } finally {
     S.pending--;
     if (!S.pending && !leave) {
@@ -155,7 +158,7 @@ export async function entityAttack(btn) {
 
 export async function doAttack(a) {
   if (S.busy) return;
-  const tr = a.closest('tr');
+  const tr = a.closest('.r');
   if (!tr || tr.classList.contains('ssh-fight')) return;
   const href = a.getAttribute('href');
   const img = a.querySelector('img');
@@ -177,20 +180,19 @@ export async function doAttack(a) {
         updateHeader(html);
         return;
       }
-      leave = true; location.href = href; return;
+      leave = true; navigate(href); return;
     }
     const r = { pos, quick, html: resultHtml(c), log: c };
     S.results.push(r);
     if (tr.isConnected) {
-      tr.className = 'ssh-resrow';
-      tr.innerHTML = '<td colspan="3">' + r.html.replace('data-r="#"', 'data-r="' + (S.results.length - 1) + '"') + '</td>';
+      fillResult(tr, r.html.replace('data-r="#"', 'data-r="' + (S.results.length - 1) + '"'));
     }
     updateHeader(html);
   } catch (e) {
     leave = true;
     const sp = tr.querySelector('.ssh-spin');
     if (sp) sp.outerHTML = saved;
-    location.href = href;
+    navigate(href);
   } finally {
     S.pending--;
     if (!S.pending && !leave) {

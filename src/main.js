@@ -3,7 +3,10 @@
 import { decorateHeader, grabVars, refreshDur } from './banner.js';
 import { SSH, dropEarly, dropEarlyM } from './core/constants.js';
 import { loadData } from './core/data.js';
+import { installImgFix } from './core/imgfix.js';
+import { installCsrf } from './core/net.js';
 import { pageParts } from './core/page.js';
+import { repairPage } from './core/repair.js';
 import { S } from './core/state.js';
 import { bind } from './game/events.js';
 import { read, show } from './game/loading.js';
@@ -30,6 +33,7 @@ function ownFont() {
 }
 
 async function init() {
+  repairPage();
   if (!pageParts()) return;
   rememberScripts();
   ownFont();
@@ -47,6 +51,7 @@ async function init() {
   if (/[?&]cmd=bank/.test(location.search) || document.getElementById('deposit_amount')) { initBank(); return; } // also the page a deposit or an action-list button posts to
   if (/[?&]cmd=questbook/.test(location.search) && /[?&]subcmd=viewquest/.test(location.search)) { initQuest(); return; }
   if (/[?&]cmd=inventing/.test(location.search) && !/[?&]subcmd=[^&]/.test(location.search)) { initRecipes(); initInventing(); return; }
+  if (S.cfg.modernMap === false) { dropEarly(); return; } // the setting "Modern map" is off: the game's own map
   const info = read(document);
   if (!info.loc || !document.getElementById('mapDiv')) { dropEarly(); return; } // not the world page
   bind();
@@ -57,6 +62,8 @@ async function init() {
 }
 
 export default async function start(ctx) {
+  installCsrf();
+  installImgFix();
   S.build = (ctx && ctx.build) || 'dev';
   S.base = (ctx && ctx.base) || ''; // the site the bundle comes from: its media/ folder has pictures of the helper's own
   await loadData(ctx);

@@ -1,31 +1,67 @@
 import { grabVars } from '../banner.js';
+import { hotkeyOn, TYPE_COLOR, typeOf } from '../core/creatures.js';
 import { S } from '../core/state.js';
 import { esc } from '../core/util.js';
 import { alertModal, gAlerts } from '../layout/modal.js';
 import { read, show, swapIn } from './loading.js';
 
-export const isSep = (tr) => tr.classList.contains('ssh-mech') || tr.cells.length === 1 && tr.cells[0].colSpan === 3 && tr.cells[0].hasAttribute('bgcolor');
+export const isSep = (row) => row.classList.contains('ssh-mech') || row.classList.contains('sep');
+
+// A row of the list (a div) shows the result of a fight, over its whole width.
+export function fillResult(row, html) {
+  row.className = 'r ssh-resrow';
+  row.removeAttribute('style');
+  row.innerHTML = '<div class="c full"><div class="w">' + html + '</div></div>';
+}
 
 // Put the finished fights back into the action list, in the slot where the creature was.
 export function placeResults(bd) {
   if (!S.results.length) { numberSlots(bd); return; }
-  let tb = bd.querySelector('tbody');
+  let tb = bd.querySelector('.al');
   if (!tb) {
-    bd.innerHTML = '<table><tbody></tbody></table>';
-    tb = bd.querySelector('tbody');
+    bd.innerHTML = '<div class="al"></div>';
+    tb = bd.querySelector('.al');
   }
   [...S.results].sort((a, b) => a.pos - b.pos).forEach((r) => {
     const slots = [...tb.children].filter((tr) => !isSep(tr));
-    const tr = document.createElement('tr');
-    tr.className = 'ssh-resrow';
+    const tr = document.createElement('div');
+    fillResult(tr, r.html.replace('data-r="#"', 'data-r="' + S.results.indexOf(r) + '"'));
     if (r.quick) tr.dataset.q = '1'; // it was a numbered creature: its slot keeps its number
-    tr.innerHTML = '<td colspan="3">' + r.html.replace('data-r="#"', 'data-r="' + S.results.indexOf(r) + '"') + '</td>';
-    const sep = document.createElement('tr');
-    sep.innerHTML = '<td colspan="3" height="1" bgcolor="#212323"></td>';
+    const sep = document.createElement('div');
+    sep.className = 'r sep';
+    sep.innerHTML = '<div class="c full" style="background:#212323;height:1px"><div class="w"></div></div>';
     const before = slots[r.pos] || null;
     if (before) { tb.insertBefore(tr, before); tb.insertBefore(sep, before); } else { tb.appendChild(tr); tb.appendChild(sep); }
   });
   numberSlots(bd);
+}
+
+// The names of the special creatures get a colour: (Champion) silver, (Elite) yellow, (HK) red, (Behemoth) purple. Normal ones stay as they are.
+function colorNames(tb) {
+  if (S.cfg.creatureColors === false) return;
+  [...tb.children].filter((tr) => !isSep(tr) && !tr.classList.contains('ssh-resrow')).forEach((tr) => {
+    [...tr.children].forEach((td) => {
+      if (td.querySelector('.ssh-ct, .c')) return;
+      const m = td.textContent.replace(/\s+/g, ' ').trim().match(/(?:\((Champion|Elite|HK|Behemoth)\)|(?:^|\s)(HK))$/i);
+      if (!m) return;
+      const col = TYPE_COLOR[(m[1] || m[2]).toLowerCase()];
+      if (!tr.dataset.kindBar) { // a faint tint behind the row, in the colour of the kind
+        tr.dataset.kindBar = '1';
+        tr.style.background = 'rgba(' + [1, 3, 5].map((i) => parseInt(col.slice(i, i + 2), 16)).join(',') + ',.14)';
+      }
+      const w = document.createTreeWalker(td, NodeFilter.SHOW_TEXT);
+      const nodes = [];
+      for (let n = w.nextNode(); n; n = w.nextNode()) if (n.nodeValue.trim()) nodes.push(n);
+      nodes.forEach((n) => {
+        const sp = document.createElement('span');
+        sp.className = 'ssh-ct';
+        sp.style.color = col;
+        sp.style.fontWeight = 'bold';
+        n.replaceWith(sp);
+        sp.append(n);
+      });
+    });
+  });
 }
 
 // Attack hotkeys count the creatures that can be attacked with a key (Elite and Champion creatures and the like have none, as in the
@@ -33,13 +69,27 @@ export function placeResults(bd) {
 // picture on the attack button says the same number as the key does (the game's own pictures go up to 8).
 const ICON = (n) => 'icon_action_attack' + (n <= 8 ? '1_' + n : '3') + '.gif';
 function numberSlots(bd) {
-  const tb = bd.querySelector('tbody');
+  const tb = bd.querySelector('.al');
   if (!tb) return;
+  colorNames(tb);
   let n = 0;
   [...tb.children].filter((tr) => !isSep(tr)).forEach((tr) => {
     if (tr.classList.contains('ssh-resrow')) { if (tr.dataset.q) n++; return; }
     const a = tr.querySelector('a[data-atk]');
-    if (!a || a.getAttribute('data-atk') === 'x') return;
+    if (!a) return;
+    // the settings say which kinds of creature have a key (the game gives one to the normal ones and to HK, not to Champion, Elite and
+    // Behemoth creatures): the name says the kind. A creature without a key is attacked with a click, and the numbers go on without it.
+    const nm = [...tr.children].map((td) => td.textContent.replace(/\s+/g, ' ').trim()).filter(Boolean).join(' '); // the creature's name is plain text in the row (its links are pictures)
+    const kind = typeOf(nm);
+    const want = kind ? hotkeyOn(S.cfg, kind) : a.getAttribute('data-atk') !== 'x';
+    if (!want) {
+      if (a.getAttribute('data-atk') !== 'x') {
+        a.setAttribute('data-atk', 'x');
+        const im0 = a.querySelector('img');
+        if (im0) im0.setAttribute('src', im0.getAttribute('src').replace(/[^/]*$/, '') + ICON(9));
+      }
+      return;
+    }
     n++;
     a.setAttribute('data-atk', String(n));
     const im = a.querySelector('img');

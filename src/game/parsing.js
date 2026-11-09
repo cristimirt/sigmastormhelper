@@ -1,6 +1,10 @@
+import { fixHellforge } from '../core/imgfix.js';
 // The game's tile tooltips still point their pictures at hosts that are gone (old IP addresses, fileserver.huntedcow.com):
 // the same files are on the CDN. Also applied when a tooltip is shown, because areas are kept in the browser.
-export const fixImgHosts = (html) => html.replace(/https?:\/\/(?:\d{1,3}(?:\.\d{1,3}){3}|fileserver\.huntedcow\.com)\/sigma2\//g, 'https://cdn.sigmastorm.com/');
+// The text of a JavaScript string literal (the game writes the tooltip of a tile as Tip("...") with \" \/ < and so on in it).
+const unJs = (s) => s.replace(/\\(u[0-9a-fA-F]{4}|x[0-9a-fA-F]{2}|[\s\S])/g, (m, c) => (c.length > 1 ? String.fromCharCode(parseInt(c.slice(1), 16)) : ({ n: '\n', r: '\r', t: '\t' }[c] || c)));
+
+export const fixImgHosts = (html) => fixHellforge(html).replace(/https?:\/\/(?:\d{1,3}(?:\.\d{1,3}){3}|fileserver\.huntedcow\.com)\/sigma2\//g, 'https://cdn.sigmastorm.com/');
 
 const LOC_RE =/([A-Za-z][\w' ]*(?:\([^)]*\))?)\s*-\s*\((\d+),\s*(\d+)\)/;
 
@@ -34,10 +38,14 @@ export function parseMoves(doc, loc) {
 
 export function parseAreaUrl(doc) {
   for (const a of doc.querySelectorAll('a[href*="subcmd=map"]')) {
-    const m = (a.getAttribute('href') || '').match(/openWindow\('([^']+)'/);
+    const h = a.getAttribute('href') || '';
+    const m = h.match(/openWindow\('([^']+)'/); // the game used to open the map in a window ...
     if (m) return m[1].replace(/&amp;/g, '&');
+    if (/[?&]cmd=world&(?:amp;)?subcmd=map\b|[?&]subcmd=map\b/.test(h) && !/^javascript:/i.test(h)) return h.replace(/&amp;/g, '&'); // ... and now it is a plain link
   }
-  return null;
+  // the link's address is written into the page by the game's script, after the helper may have looked: the map page is the same address
+  // without it (the helper adds the token to the request)
+  return doc.getElementById('mapDiv') ? 'index.php?cmd=world&subcmd=map' : null;
 }
 
 // The "Open Area Map" page: one big table, a 65x65 cell per tile with the tile image as background.
@@ -52,11 +60,11 @@ export function parseAreaMap(html) {
   rows.forEach((r) => {
     [...r.cells].forEach((c) => {
       const on = c.getAttribute('onmouseover') || '';
-      const tm = on.match(/Tip\('((?:[^'\\]|\\.)*)'/);
+      const tm = on.match(/Tip\((['"])((?:(?!\1)[^\\]|\\.)*)\1/); // the game now writes the tip in double quotes (it was single)
       const wm = on.match(/tt_setWidth\((\d+)\)/);
       cells.push({
         bg: c.getAttribute('background') || '',
-        tip: tm ? fixImgHosts(tm[1].replace(/\\'/g, "'")) : '',
+        tip: tm ? fixImgHosts(unJs(tm[2])) : '',
         tipW: wm ? parseInt(wm[1], 10) : 200,
       });
     });

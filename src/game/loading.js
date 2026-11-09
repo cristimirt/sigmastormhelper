@@ -10,13 +10,14 @@ import { parseAreaMap, parseAreaUrl, parseLoc, parseMoves } from './parsing.js';
 import { learnFrom } from './pathfinding.js';
 import { initPathfinder } from '../pathfinder/panel.js';
 import { attachViewer } from './viewer.js';
+import { navigate } from '../core/net.js';
 
 async function ensureArea() {
   if (S.areas.has(S.loc.area)) return true;
   if (!S.areaUrl) return false;
   try {
     const cached = store.get('area:' + S.loc.area, null);
-    if (cached && cached.v === 1 && cached.a) {
+    if (cached && cached.v === 2 && cached.a) {
       S.areas.set(S.loc.area, cached.a);
       return true;
     }
@@ -24,7 +25,7 @@ async function ensureArea() {
     const a = parseAreaMap(html);
     if (!a) return false;
     S.areas.set(S.loc.area, a);
-    store.set('area:' + S.loc.area, { v: 1, a });
+    store.set('area:' + S.loc.area, { v: 2, a });
     return true;
   } catch (e) {
     return false;
@@ -106,11 +107,11 @@ export async function go(href, init, fallback) {
     const res = await fetch(url, Object.assign({ credentials: 'same-origin' }, init));
     const html = await res.text();
     if (!(await applyHtml(html))) {
-      if (fallback) fallback(html); else location.href = url; // not a normal world page: let the browser handle it
+      if (fallback) fallback(html); else navigate(url); // not a normal world page: let the browser handle it
       return;
     }
   } catch (e) {
-    if (fallback) fallback(); else location.href = href;
+    if (fallback) fallback(); else navigate(href);
   } finally {
     S.busy = false;
     S.viewer && S.viewer.classList.remove('ssh-busy');

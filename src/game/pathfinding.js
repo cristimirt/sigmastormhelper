@@ -4,6 +4,7 @@ import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
 import { applyHtml, go, read } from './loading.js';
 import { applyZoom, renderWorld } from './map.js';
+import { navigate } from '../core/net.js';
 
 const tileIdAt = (area, x, y) => {
   const a = S.areas.get(area);
@@ -203,8 +204,8 @@ async function sendSteps(seg) {
   let html = sent && results.length === sent && results.every((r) => r && r.ok) ? results[sent - 1].html : '';
   try {
     if (!html) html = await (await fetch('index.php?cmd=world', { credentials: 'same-origin' })).text(); // where are we really?
-    if (!(await applyHtml(html))) location.href = 'index.php?cmd=world';
-  } catch (e) { location.href = 'index.php?cmd=world'; }
+    if (!(await applyHtml(html))) navigate('index.php?cmd=world');
+  } catch (e) { navigate('index.php?cmd=world'); }
   v && v.classList.remove('ssh-fast');
   return !bad && sent === seg.length - 1;
 }

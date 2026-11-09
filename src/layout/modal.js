@@ -1,8 +1,29 @@
-import { mel } from './dom.js';
+import { withToken } from '../core/net.js';
+import { mel, unslash } from './dom.js';
 
 // The game's own messages in a response page: boxes with a head line like "INFORMATION ALERT".
 export function gAlerts(doc) {
   return [...doc.querySelectorAll('table')].filter((t) => !t.querySelector('table') && /^\s*(INFORMATION|ERROR|WARNING|SUCCESS)?\s*ALERT\s*$/i.test((t.querySelector('b') || {}).textContent || ''));
+}
+
+// The game's messages sometimes carry their markup as text (a line break as the characters <br>, a link as <a href=...>): that markup is
+// shown as markup. Only plain formatting stays (line breaks, links, bold, italics, colours); links to the game get the page's token.
+export function richHtml(html) {
+  let h = html;
+  if (/&lt;\/?(?:br|a|b|i|u|strong|em|font|span|p)\b/i.test(h)) { const t = document.createElement('textarea'); t.innerHTML = h; h = t.value; }
+  const box = document.createElement('div');
+  box.innerHTML = h;
+  box.querySelectorAll('script, style, iframe, object, embed, form, link, meta').forEach((e) => e.remove());
+  box.querySelectorAll('*').forEach((e) => {
+    [...e.attributes].forEach((a) => {
+      if (/^on/i.test(a.name) || (/^(href|src|action)$/i.test(a.name) && /^\s*javascript:/i.test(a.value))) e.removeAttribute(a.name);
+    });
+    if (e.tagName === 'A' && e.getAttribute('href')) {
+      e.setAttribute('href', withToken(e.getAttribute('href')));
+      if (!/^\s*(#|index\.php|\/)/.test(e.getAttribute('href')) && !/sigmastorm\.com/.test(e.getAttribute('href'))) e.setAttribute('target', '_blank');
+    }
+  });
+  return box.innerHTML;
 }
 
 // The game's message as a plain dialog: the head line ("INFORMATION ALERT") is the title, the text is the body.
@@ -18,8 +39,8 @@ export function alertModal(alerts, heading) {
     if (row && c.rows.length > 1) row.remove(); else b.remove();
     const cells = [...c.querySelectorAll('td')].filter((td) => !td.querySelector('td'));
     const p = mel('div', 'msg');
-    p.innerHTML = (cells.length ? cells.map((td) => td.innerHTML.trim()).filter(Boolean).join('<br>') : c.innerHTML).trim();
-    body.append(p);
+    p.innerHTML = richHtml((cells.length ? cells.map((td) => td.innerHTML.trim()).filter(Boolean).join('<br>') : c.innerHTML).trim());
+    body.append(unslash(p));
   });
   mModal(heading || title || 'Message', body, [{ text: 'OK' }], { center: true });
 }
@@ -29,7 +50,8 @@ let toastT = 0;
 export function toast(alerts) {
   const v = document.getElementById('ssh-map');
   if (!v) { alertModal(alerts); return; }
-  const text = alerts.map((t) => t.textContent.replace(/\s+/g, ' ').replace(/^\s*(INFORMATION|ERROR|WARNING|SUCCESS)?\s*ALERT\s*/i, '').trim()).filter(Boolean).join(' ');
+  const flat = (t) => { const d = document.createElement('div'); d.innerHTML = richHtml(t.innerHTML.replace(/<br\s*\/?>/gi, ' ')); return d.textContent; }; // the message as one line, without its markup
+  const text = alerts.map((t) => flat(t).replace(/\s+/g, ' ').replace(/^\s*(INFORMATION|ERROR|WARNING|SUCCESS)?\s*ALERT\s*/i, '').trim()).filter(Boolean).join(' ');
   if (!text) return;
   v.querySelectorAll('#ssh-toast').forEach((e) => e.remove());
   const n = mel('div');

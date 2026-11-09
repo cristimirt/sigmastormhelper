@@ -1,6 +1,7 @@
 import { pageParts } from '../core/page.js';
 import { mel } from '../layout/dom.js';
 import { alertModal, gAlerts, mModal } from '../layout/modal.js';
+import { navigate } from '../core/net.js';
 
 // The blueprint list (Inventing): switching folder, creating a folder and moving blueprints are sent in the background and
 // only the page's content is replaced, so the page never reloads. A new folder or a move refreshes the folder you are in
@@ -33,6 +34,14 @@ export function initInventing() {
   let seq = 0;
 
   const post = async (fields) => parse(await fetch('index.php', { method: 'POST', body: new URLSearchParams(fields), credentials: 'same-origin' }));
+  // The game's actions are small forms now (create a folder, move blueprints, delete a folder, the page list), with hidden fields of their
+  // own (player_id, current_folder_id, a one-time quote per blueprint, ...): the form is sent as the browser would send it, with changes.
+  const sendForm = async (form, set) => {
+    const fd = new FormData(form);
+    Object.keys(set || {}).forEach((k) => fd.set(k, set[k]));
+    if (/^get$/i.test(form.method)) return parse(await fetch('index.php?' + new URLSearchParams(fd), { credentials: 'same-origin' }));
+    return parse(await fetch('index.php', { method: 'POST', body: fd, credentials: 'same-origin' }));
+  };
 
   const showNote = (text, bad) => {
     const c = cell(document);
@@ -68,17 +77,19 @@ export function initInventing() {
       try { history.replaceState(null, '', 'index.php?cmd=inventing&folder_id=' + st.folder); } catch (e) { /* ignore */ }
       showNote(note, bad);
     } catch (e) {
-      if (my === seq) location.href = typeof req === 'string' ? req : 'index.php?cmd=inventing&folder_id=' + (req.folder_id || st.folder); // let the browser do it
+      if (my === seq) navigate(typeof req === 'string' ? req : 'index.php?cmd=inventing&folder_id=' + (req.folder_id || st.folder)); // let the browser do it
     } finally {
       if (my === seq) busy(false);
     }
   }
-  const refresh = (note, bad) => load({ cmd: 'inventing', folder_id: st.folder, page: st.page }, note, bad);
+  const listUrl = (page) => 'index.php?cmd=inventing&folder_id=' + st.folder + '&page=' + (page === undefined ? st.page : page);
+  const refresh = (note, bad) => load(listUrl(), note, bad);
 
   async function createFolder(name) {
     busy(true);
     try {
-      const doc = await post({ cmd: 'inventing', subcmd: 'docreatefolder', folder_name: name });
+      const form = document.getElementById('assembly-create-folder');
+      const doc = form ? await sendForm(form, { folder_name: name }) : await post({ cmd: 'inventing', subcmd: 'docreatefolder', folder_name: name });
       await refresh(alertText(doc) || 'Folder created.', alertBad(doc));
     } catch (e) { busy(false); showNote('The folder could not be created.', true); }
   }
@@ -86,7 +97,7 @@ export function initInventing() {
   // Deleting a folder (the game's own link, which asks with a browser confirmation): a dialog asks, the request is sent in the
   // background, the folder list is refreshed and the game's message box is shown. If the folder you were in is the one that
   // went, the unassigned folder opens (what the game does).
-  function askDelete(name, url, id) {
+  function askDelete(name, form, id) {
     const body = mel('div');
     body.textContent = 'Are you sure you wish to delete the folder "' + name + '"?';
     mModal('Delete folder', body, [{
@@ -95,8 +106,8 @@ export function initInventing() {
       fn: async () => {
         busy(true);
         let alerts;
-        try { alerts = gAlerts(await parse(await fetch(url, { credentials: 'same-origin' }))); } catch (e) { busy(false); showNote('The folder could not be deleted.', true); return; }
-        await load(st.folder === id ? 'index.php?cmd=inventing&folder_id=-1' : { cmd: 'inventing', folder_id: st.folder, page: st.page });
+        try { alerts = gAlerts(await sendForm(form)); } catch (e) { busy(false); showNote('The folder could not be deleted.', true); return; }
+        await load(st.folder === id ? 'index.php?cmd=inventing&folder_id=-1' : listUrl());
         if (alerts.length) alertModal(alerts); else showNote('Folder deleted.');
       },
     }, { text: 'Cancel' }]);
@@ -110,13 +121,14 @@ export function initInventing() {
     const c = cell(document);
     const checked = [...c.querySelectorAll('input[name="recipe_selected[]"]:checked')];
     if (!checked.length) { showNote('Tick the blueprints to move first.', true); return; }
+    const form = document.getElementById('assembly-move-blueprints');
     const sel = c.querySelector('select[name="target_folder_id"]');
     const fields = new URLSearchParams({ cmd: 'inventing', subcmd: 'domoverecipes' });
     checked.forEach((i) => fields.append('recipe_selected[]', i.value));
     fields.append('target_folder_id', sel ? sel.value : '-1');
     busy(true);
     try {
-      const doc = await post(fields);
+      const doc = form ? await sendForm(form) : await post(fields);
       await refresh(alertText(doc) || 'Blueprints moved.', alertBad(doc));
     } catch (e) { busy(false); showNote('The blueprints could not be moved.', true); }
   }
@@ -151,9 +163,20 @@ export function initInventing() {
       askDelete(name, href, (href.match(/folder_id=(-?\d+)/) || [])[1]);
       return;
     }
+    const xb = t.closest('button[type="submit"]');
+    const xf = xb && xb.form;
+    if (xf && xf.querySelector('input[name="subcmd"][value*="delete" i]') && xf.querySelector('input[name="folder_id"]')) { // the [x] of a folder
+      e.preventDefault();
+      e.stopPropagation(); // not the game's own confirmation
+      const cellEl = xf.closest('td') || xf;
+      const cl = cellEl.cloneNode(true);
+      cl.querySelectorAll('form').forEach((f) => f.remove());
+      askDelete(cl.textContent.replace(/\s+/g, ' ').trim() || 'this folder', xf, xf.querySelector('input[name="folder_id"]').value);
+      return;
+    }
     const b = t.closest('input[type="button"], input[type="submit"]');
     if (!b) return;
-    if (b.type === 'button' && /^Add New Folder$/i.test(b.value)) {
+    if (/^Add New Folder$/i.test(b.value)) {
       e.preventDefault();
       e.stopPropagation(); // not the game's own handler, which opens its form
       const nm = c.querySelector('input[name="folder_name"]');
@@ -163,7 +186,7 @@ export function initInventing() {
       moveBlueprints();
     } else if (b.type === 'submit' && /^Go$/i.test(b.value) && b.parentNode.querySelector('select[name="page"]')) {
       e.preventDefault(); // the page list
-      load({ cmd: 'inventing', folder_id: st.folder, page: b.parentNode.querySelector('select[name="page"]').value });
+      load(listUrl(b.parentNode.querySelector('select[name="page"]').value));
     }
   }, true);
 }

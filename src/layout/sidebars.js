@@ -2,6 +2,7 @@ import { pageParts } from '../core/page.js';
 import { store } from '../core/storage.js';
 import { https } from '../core/util.js';
 import { FI_URL } from '../pages/factioninv.js';
+import { withToken } from '../core/net.js';
 import { mel } from './dom.js';
 
 // The sidebars of the Modern layout, made of divs: every widget (Main Menu, Questions, Game Stats, Skills, ...) is a div with a
@@ -181,7 +182,7 @@ export function buildSidebars() {
             if (/cmd=guild&subcmd=manage$/.test(e.getAttribute('href') || '')) {
               const fi = mel('div', 'mm-l');
               const a = mel('a');
-              a.href = FI_URL;
+              a.href = withToken(FI_URL);
               a.textContent = 'Faction Inventory';
               fi.append(a);
               items.append(fi);

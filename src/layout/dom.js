@@ -53,3 +53,13 @@ export function proxify(n) {
 }
 
 export const proxyKids = (td, box) => { td.childNodes.forEach((k) => box.append(proxify(k))); return box; };
+
+// The game's texts (a quest's story, a message) now come with a backslash before a quote (\' and \"), as if written for a script. Show the
+// quote alone: in the text of everything under `root` (the markup is left as it is).
+export function unslash(root) {
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  for (let n = w.nextNode(); n; n = w.nextNode()) {
+    if (n.nodeValue.indexOf('\\') >= 0) n.nodeValue = n.nodeValue.replace(/\\(['"])/g, '$1');
+  }
+  return root;
+}

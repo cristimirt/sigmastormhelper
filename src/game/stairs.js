@@ -38,7 +38,7 @@ function marks(router, area, cells, cols) {
   }
   const out = [];
   cells.forEach((c, i) => {
-    if (!c.bg || c.bg.indexOf('/stairways/') === -1) return;
+    if (!c.bg || !/stairways\//.test(c.bg)) return;
     const x = i % cols;
     const y = Math.floor(i / cols);
     const dest = router && router.byName[to[x + ',' + y]];
