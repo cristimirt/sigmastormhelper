@@ -25,6 +25,12 @@ export function initSettings() {
     'table.ssh-game .ssh-helper-row{display:none;}' +
     '.ssh-set{width:540px;margin:0 auto;}.ssh-set h4{margin:14px 0 6px;padding:2px 0;border-bottom:1px solid #4a4a4a;color:#ffb36b;font-size:11px;letter-spacing:1px;text-transform:uppercase;}' +
     '.ssh-set label,.ssh-set .lb{display:block;margin:4px 0;color:#cfcfcf;}.ssh-set .lb small{color:#8b8b8b;}' +
+    // a check box is a gray toggle switch (the box itself stays, so reading and saving it is as before)
+    '.ssh-set label{display:flex;align-items:center;gap:8px;cursor:pointer}' +
+    '.ssh-set input[type=checkbox]{-webkit-appearance:none;appearance:none;flex:none;position:relative;width:28px;height:15px;margin:0;padding:0;box-sizing:border-box;border:1px solid #4a4d4d;border-radius:8px;background:#141616;cursor:pointer;transition:background .15s,border-color .15s}' +
+    '.ssh-set input[type=checkbox]::after{content:"";position:absolute;top:2px;left:2px;width:9px;height:9px;border-radius:50%;background:#6c7070;transition:left .15s,background .15s}' +
+    '.ssh-set input[type=checkbox]:checked{background:#3a3d3d;border-color:#8a8f8f}.ssh-set input[type=checkbox]:checked::after{left:15px;background:#d0d4d4}' +
+    '.ssh-set input[type=checkbox]:hover{border-color:#c2c6c6}' +
     '.ssh-set input[type=text],.ssh-set input[type=number],.ssh-set textarea{background:#181a1b;color:#fff;border:1px solid #848484;padding:2px;font:11px Verdana,sans-serif;}' +
     '.ssh-set textarea{width:100%;height:90px;box-sizing:border-box;}.ssh-set .btns{margin:12px 0;text-align:center;}' +
     '.ssh-set .btns input{margin:0 4px;}.ssh-set .note{color:#8fd18f;margin-left:8px;}';
@@ -35,6 +41,7 @@ export function initSettings() {
   head.parentNode.insertBefore(tabs, head.nextSibling);
   const F = [
     ['h', 'Map and movement'],
+    ['modernMap', 'check', 'Modern map', "The helper's map (zoom, click to walk, Path Finder, stairs marks, action list) on the world page. Turn it off to use the game's own map. Takes effect after reloading the page."],
     ['route', 'check', 'Route preview and click to walk', 'Hover a tile to see the route, click to walk it. Press any key or click the map to stop.'],
     ['fastWalk', 'check', 'Fast walk', 'Sends every step your energy pays for one after another, without waiting for each page; the map shows the walk at once and the page updates when you arrive. A creature cannot stop a fast walk on the way.'],
     ['stopOnCreatures', 'check', 'Stop walking when there are creatures on a tile', 'Only when Fast walk is off.'],

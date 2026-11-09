@@ -11,6 +11,7 @@ import { buildFrame, unbuildFrame } from './frame.js';
 import { buildSidebars, unbuildSidebars } from './sidebars.js';
 import { buildWorldPage, unbuildWorldPage } from './worldpage.js';
 import { THEMES, mCss, onProfile } from './theme.js';
+import { postHref } from '../core/net.js';
 
 // Dim the whole profile content while it is being replaced (gear changed: the stats move too).
 export function profBusy(on) {
@@ -56,6 +57,19 @@ function onProfClick(e) {
   if (!t || typeof t.closest !== 'function' || e.button || e.ctrlKey || e.metaKey || e.shiftKey) return;
   const ua = t.closest('.inv .slot a[href]'); // clicking an equipped item takes it off
   if (ua && BP.box && /subcmd=unequipitem/.test(ua.getAttribute('href') || '')) { e.preventDefault(); bpUse(ua); return; }
+  // the same two things as buttons of the game's POST forms (an equipped item, a component)
+  const ub = t.closest('.inv .slot button[form^="item-action"]');
+  const fu = ub && document.getElementById(ub.getAttribute('form'));
+  if (fu && BP.box && /unequipitem/.test((fu.elements.namedItem('subcmd') || {}).value || '')) {
+    e.preventDefault();
+    const x = document.createElement('a');
+    x.setAttribute('href', postHref(fu));
+    bpUse(x);
+    return;
+  }
+  const cb = t.closest('.comp button[form^="component-action"]');
+  const fc = cb && document.getElementById(cb.getAttribute('form'));
+  if (fc && BP.box) { e.preventDefault(); compDestroy(postHref(fc)); return; }
   const ca = t.closest('.comp a[href]');
   if (!ca) return;
   const h = ca.getAttribute('href') || '';

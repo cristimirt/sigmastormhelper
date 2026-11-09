@@ -1,9 +1,12 @@
+import { postHref } from '../core/net.js';
 import { refreshDur, updateHeader } from '../banner.js';
 import { SSH } from '../core/constants.js';
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
+import { unslash } from '../layout/dom.js';
 import { alertModal, gAlerts, mModal } from '../layout/modal.js';
 import { closeLog, placeResults, refreshWorld } from './combat.js';
+import { navigate } from '../core/net.js';
 
 // A panel on the page itself (not in the map), draggable anywhere; it scrolls with the page.
 function ensurePanel() {
@@ -101,7 +104,7 @@ export function submitAction(clone) {
   f.submit();
   };
   // The Bank button posts cmd=bank. A GET to the same address shows the same page, with the page in the address (reloadable, linkable).
-  if (form.method === 'post' && fields.length === 1 && fields[0][0] === 'cmd' && fields[0][1] === 'bank') { location.href = 'index.php?cmd=bank'; return; }
+  if (form.method === 'post' && fields.length === 1 && fields[0][0] === 'cmd' && fields[0][1] === 'bank') { navigate('index.php?cmd=bank'); return; }
   if (form.method === 'post' && fields.some((f) => f[0] === 'subcmd' && f[1] === 'questaction')) { doQuest(form.action, fields, submitForm); return; }
   if (form.method === 'post' && fields.some((f) => f[0] === 'subcmd' && f[1] === 'heal')) { doHeal(form.action, fields, submitForm); return; }
   if (form.method === 'post' && fields.some((f) => f[0] === 'cmd' && f[1] === 'portal') && !fields.some((f) => f[0] === 'subcmd')) { doPortal(form.action, fields, submitForm); return; }
@@ -183,7 +186,7 @@ async function doPortal(action, fields, fallback) {
       document.querySelectorAll('#ssh-mm .x').forEach((x) => x.click());
       SSH.go(r.to, undefined, (html) => {
         const alerts = html ? gAlerts(new DOMParser().parseFromString(html, 'text/html')) : [];
-        if (alerts.length) alertModal(alerts); else location.href = 'index.php?cmd=world';
+        if (alerts.length) alertModal(alerts); else navigate('index.php?cmd=world');
       });
     });
     tr.children[3].append(b);
@@ -279,10 +282,12 @@ async function doQuest(action, fields, fallback) {
 // ---- Mechanic: show the repair bill in the action list and repair everything in the background.
 function parseMech(html) {
   const doc = new DOMParser().parseFromString(html, 'text/html');
-  const btn = [...doc.querySelectorAll('input[type="button"]')].find((b) => /Repair All/i.test(b.value));
+  // "Repair All (1,234 credits)" is a submit button of a small POST form now (id mechanic-all); the repair of one item is a form too
+  const btn = [...doc.querySelectorAll('input[type="button"], input[type="submit"]')].find((b) => /Repair All/i.test(b.value));
+  const form = doc.getElementById('mechanic-all') || (btn && btn.form);
   const cf = [...doc.querySelectorAll('table.sidebars font')].find((f) => /^[\d,]+$/.test(f.textContent.trim()));
   const t = btn ? (btn.value.match(/\((\d[\d,]*)\s*credits?\)/i) || [])[1] : null;
-  return { total: t ? parseInt(t.replace(/,/g, ''), 10) : null, items: doc.querySelectorAll('a[href*="repairitem"]').length, mine: cf ? parseInt(cf.textContent.replace(/,/g, ''), 10) : null, can: !!btn };
+  return { total: t ? parseInt(t.replace(/,/g, ''), 10) : null, items: doc.querySelectorAll('a[href*="repairitem"], form[id^="mechanic-repair-"]').length, href: form ? postHref(form) : 'index.php?cmd=blacksmith&subcmd=repairall', mine: cf ? parseInt(cf.textContent.replace(/,/g, ''), 10) : null, can: !!btn };
 }
 
 const HEAL_ICON = 'https://cdn.sigmastorm.com/skin/icon_action_heal.gif';
@@ -333,6 +338,7 @@ function renderMech(m, html) {
   const ok = d.mine === null || d.mine >= d.total;
   m.box.innerHTML = 'Cost to repair all (' + d.items + ' item' + (d.items === 1 ? '' : 's') + '): <b style="color:' + (ok ? '#7fe08a' : '#ff6b6b') + '">' + d.total.toLocaleString('en-US') + '</b>' + have;
   m.btn.dataset.state = ok ? 'ok' : 'off';
+  m.btn.dataset.href = d.href;
   m.btn.title = ok ? 'Repair all items (' + d.total.toLocaleString('en-US') + ' credits)' : 'Not enough credits';
 }
 
@@ -357,7 +363,7 @@ export async function doRepair(btn) {
   btn.dataset.state = 'wait';
   box.innerHTML = '<span class="ssh-spin"></span> Repairing...';
   try {
-    const html = await (await fetch('index.php?cmd=blacksmith&subcmd=repairall', { credentials: 'same-origin' })).text();
+    const html = await (await fetch(btn.dataset.href || 'index.php?cmd=blacksmith&subcmd=repairall', { credentials: 'same-origin' })).text();
     updateHeader(html);
     refreshDur(0);
     const after = await (await fetch('index.php?cmd=blacksmith', { credentials: 'same-origin' })).text();
@@ -390,11 +396,25 @@ export function renderActions(text) {
   const t = ad && ad.nextElementSibling && ad.nextElementSibling.tagName === 'TABLE' ? ad.nextElementSibling : null;
   if (t && t.querySelector('a, input[type="image"], input[type="submit"], button')) {
     bd.innerHTML = t.outerHTML.replace(/display:\s*none;?/g, '').replace(/ id="attackLink(\d+)"/g, ' data-atk="$1"');
+    // the attack buttons are small POST forms now (id attackForm1, attackForm2, ...): each becomes the link it used to be, to an address that
+    // stands for the form (fetch sends it as the POST)
+    bd.querySelectorAll('form').forEach((f) => {
+      if (!f.querySelector('input[name="creature_id"]')) return;
+      const n = (f.id.match(/^attackForm(\d+)$/) || [])[1];
+      const a = document.createElement('a');
+      a.setAttribute('href', postHref(f));
+      a.setAttribute('data-atk', n || 'x');
+      a.innerHTML = (f.querySelector('button, input[type="image"]') || f).innerHTML || '';
+      const img = f.querySelector('img');
+      if (img && !a.querySelector('img')) a.append(img.cloneNode(true));
+      f.replaceWith(a);
+    });
     // Some creatures (Elite ones, for example) have an attack link without a shortcut number: still fight them in the background.
     bd.querySelectorAll('a[href*="cmd=combat"]:not([data-atk])').forEach((l) => l.setAttribute('data-atk', 'x'));
   } else {
     bd.innerHTML = '<div class="none">Nothing to do here.</div>';
   }
+  unslash(bd);
   placeResults(bd);
   loadMechanic(bd);
 }

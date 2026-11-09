@@ -4,6 +4,7 @@ import { https } from '../core/util.js';
 import { mel } from '../layout/dom.js';
 import { gAlerts, mModal } from '../layout/modal.js';
 import { parseItem } from '../tooltips/compare.js';
+import { withToken } from '../core/net.js';
 
 // Faction Inventory: every item of the faction in one list - the tagged items the members carry (the game's "Tagged Item Report")
 // and the items in the faction store - with the numbers of each item, filters, sorting, and buttons to recall them. The list of items
@@ -37,18 +38,23 @@ const alertBad = (al) => al.some((t) => /ERROR|WARNING/i.test((t.querySelector('
 
 // The tagged items the members carry: a table with a row of the member's name, then one row per item (its picture holds the item's
 // numbers, its name is the link that recalls it; green means the member wears it).
+// The game now makes every recall (and every take) a small POST form with the item in its fields: `post` has them (the token and the
+// one-time value are added when it is sent), `href` only says that the item can be acted on.
+const fieldsOf = (form) => [...form.elements].filter((e) => e.name && !/^(_csrf|_operation)$/.test(e.name) && e.type !== 'submit' && e.type !== 'image' && e.type !== 'button').map((e) => [e.name, e.value]);
+const pic = (im) => https(new URL(im.getAttribute('src') || '', location.href).href); // the pictures come from asset.php now (a relative address)
+
 function readReport(doc) {
   const out = [];
   let who = '';
-  doc.querySelectorAll('td[bgcolor="#112322"], a[href*="subcmd2=recall"]').forEach((e) => {
+  doc.querySelectorAll('td[bgcolor="#112322"], form[id^="faction-recall"]').forEach((e) => {
     if (e.tagName === 'TD') { who = e.textContent.replace(/ /g, ' ').trim(); return; }
     const im = e.closest('tr').querySelector('img[onmouseover*="ajaxLoadItem"]');
     const m = im && (im.getAttribute('onmouseover') || '').match(ITEM);
     if (!m) return;
     const f = e.querySelector('font');
     out.push({
-      k: 'p' + m[2], kind: 'p', item: +m[1], inv: +m[2], type: +m[3], pid: +m[4], icon: https(im.getAttribute('src') || ''),
-      name: e.textContent.replace(/\s+/g, ' ').trim(), where: who, eq: !!f && /00ff00/i.test(f.getAttribute('color') || ''), href: e.getAttribute('href'),
+      k: 'p' + m[2], kind: 'p', item: +m[1], inv: +m[2], type: +m[3], pid: +m[4], icon: pic(im),
+      name: e.textContent.replace(/\s+/g, ' ').trim(), where: who, eq: !!f && /00ff00/i.test(f.getAttribute('color') || ''), href: e.id, post: fieldsOf(e),
     });
   });
   return out;
@@ -57,13 +63,13 @@ function readReport(doc) {
 // One page of the faction store (on the Manage page): pictures with a link that takes the item.
 function readStore(doc) {
   const out = [];
-  doc.querySelectorAll('a[href*="subcmd2=takeitem"]').forEach((a) => {
-    const im = a.querySelector('img[onmouseover*="ajaxLoadItem"]');
+  doc.querySelectorAll('form[id^="faction-take"]').forEach((a) => {
+    const im = a.querySelector('[onmouseover*="ajaxLoadItem"]');
     const m = im && (im.getAttribute('onmouseover') || '').match(ITEM);
     if (!m) return;
     const q = a.closest('td').querySelector('font[size="1"]');
     const n = q ? parseInt(q.textContent.replace(/ /g, ' '), 10) : 1;
-    out.push({ k: 's' + m[2], kind: 's', item: +m[1], inv: +m[2], type: +m[3], pid: +m[4], icon: https(im.getAttribute('src') || ''), name: '', where: STORE, eq: false, href: a.getAttribute('href'), qty: n > 1 ? n : 1 });
+    out.push({ k: 's' + m[2], kind: 's', item: +m[1], inv: +m[2], type: +m[3], pid: +m[4], icon: pic(im), name: '', where: STORE, eq: false, href: a.id, post: fieldsOf(a), qty: n > 1 ? n : 1 });
   });
   return out;
 }
@@ -140,7 +146,7 @@ function readPlayer(html, name) {
     title: g(new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s+(.{0,80}?)\\s+Last Activity')),
     last: g(/Last Activity:\s*(.*?)\s*(?:Joined:|Class:)/),
     cls: g(/Class:\s*(.*?)\s*Gender:/),
-    level: g(/Gender:\s*\S+\s*Level:\s*(\d+)/) || g(/Level:\s*(\d+)/),
+    level: g(/Gender:\s*\S+\s*Level:\s*(\d+)/) || g(/\bLevel:\s*(\d+)/),
     pvp: g(/PvP Rating:\s*([\d,]+)/),
   };
   raw.title = raw.title.replace(/^[^A-Za-z0-9]+/, ''); // the page's script text leaves a "=" in front
@@ -186,7 +192,7 @@ export function initFactionInv() {
   root.id = 'ssh-fi';
   root.innerHTML =
     '<div class="fi-h"><b>Faction Inventory</b><span class="fi-n" id="fi-n"></span>' +
-    '<span class="fi-r"><a href="' + MANAGE + '">Manage Faction</a> &middot; <a href="#" id="fi-ref">Refresh</a></span></div>' +
+    '<span class="fi-r"><a href="' + withToken(MANAGE) + '">Manage Faction</a> &middot; <a href="#" id="fi-ref">Refresh</a></span></div>' +
     '<div class="fi-bar" id="fi-st"></div>' +
     '<div class="fi-f">' +
     '<div class="fi-row"><label>Search <input type="text" id="fi-q" placeholder="name, member, type..." autocomplete="off"></label>' +
@@ -404,9 +410,9 @@ export function initFactionInv() {
 
   // ---- recalling and taking
   async function send(i) {
-    const doc = parse(await (await fetch(i.href, { credentials: 'same-origin' })).text());
+    const doc = parse(await (await fetch('index.php', { method: 'POST', body: new URLSearchParams(i.post), credentials: 'same-origin' })).text());
     const al = gAlerts(doc);
-    const again = i.kind === 'p' && !!doc.querySelector('a[href*="subcmd2=recall"][href*="id=' + i.inv + '"]'); // the report still lists it
+    const again = i.kind === 'p' && !!doc.getElementById('faction-recall-' + i.inv); // the report still lists it
     return { ok: !alertBad(al) && !again, msg: alertText(al) };
   }
   const drop = (i) => { const at = items.indexOf(i); if (at >= 0) items.splice(at, 1); sel.delete(i.k); delete det[i.k]; };

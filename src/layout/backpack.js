@@ -1,5 +1,6 @@
 import { updateHeader } from '../banner.js';
 import { SSH } from '../core/constants.js';
+import { postHref } from '../core/net.js';
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
 import { csFields, csOpen } from './combatsets.js';
@@ -39,14 +40,17 @@ export function bpParse(rows) {
   let prev = null;
   for (const tr of itab ? itab.rows : []) {
     if (tr.querySelector('input[type="checkbox"]')) {
-      [...tr.cells].forEach((td, i) => { const ck = td.querySelector('input'); if (ck && prev && prev[i]) prev[i].inv = ck.value; });
+      // the value of a checkbox is "<inventory id>:<one-time key>" now: the id alone names the item, the whole value is what the game's forms take
+      [...tr.cells].forEach((td, i) => { const ck = td.querySelector('input'); if (ck && prev && prev[i]) { prev[i].val = ck.value; prev[i].inv = ck.value.split(':')[0]; } });
       prev = null;
     } else {
       prev = [...tr.cells].map((td) => {
         const im = td.querySelector('img');
         if (!im) { if (td.getAttribute('width') === '45') d.slots.push(null); return null; } // an empty slot: kept, so the free space shows (spacer cells are not slots)
         const a = td.querySelector('a');
-        const it = { inv: '', src: im.getAttribute('src'), tip: im.getAttribute('onmouseover') || '', href: a ? a.getAttribute('href') : '', count: ((td.querySelector('font') || {}).textContent || '').replace(/ /g, ' ').trim() };
+        const btn = td.querySelector('button[form]'); // use / equip is a button of a POST form now
+        const frm = btn && td.ownerDocument.getElementById(btn.getAttribute('form'));
+        const it = { inv: '', src: im.getAttribute('src'), tip: im.getAttribute('onmouseover') || '', href: frm ? postHref(frm) : a ? a.getAttribute('href') : '', count: ((td.querySelector('font') || {}).textContent || '').replace(/ /g, ' ').trim() };
         const m = ((it.href || '') + ' ' + it.tip).match(/inventory_id=(\d+)|ajaxLoadItem\(\s*\d+\s*,\s*(\d+)/);
         if (m) it.inv = m[1] || m[2];
         d.items.push(it);
@@ -57,6 +61,8 @@ export function bpParse(rows) {
   }
   const pg = mq(rows, 'b').find((b) => /^Page$/i.test(b.textContent.trim()));
   if (pg && pg.closest('center')) pg.closest('center').querySelectorAll('a').forEach((a) => d.pages.push({ n: a.textContent.trim(), href: a.getAttribute('href') }));
+  const actor = rows[0] && rows[0].ownerDocument.querySelector('#profile-backpack input[name="actor_id"]');
+  d.actor = actor ? actor.value : '';
   const sel = mq(rows, 'select').find((s) => s.name === 'folder_id');
   if (sel) d.opts = [...sel.options].map((o) => ({ value: o.value, text: o.text }));
   else d.opts = d.folders.map((f) => ({ value: f.id, text: f.name }));
@@ -308,13 +314,16 @@ async function bpPost(fields) {
 function bpFields(kind, ids, to, qty) {
   const f = new URLSearchParams();
   f.append('cmd', 'profile');
+  const val = (i) => { const it = BP.data.items.find((x) => x.inv === i); return it && it.val ? it.val : i; };
+  if (BP.data.actor) f.append('actor_id', BP.data.actor);
   if (kind === 'destroy') {
     f.append('subcmd', 'dodropitems');
-    ids.forEach((i) => f.append('removeIndex[]', i));
+    f.append('folder_id', BP.data.cur);
+    ids.forEach((i) => f.append('removeIndex[]', val(i)));
     return f;
   }
   f.append('subcmd', 'backpackaction');
-  ids.forEach((i) => f.append('folderItem[]', i));
+  ids.forEach((i) => f.append('folderItem[]', val(i)));
   f.append('folder_id', to);
   f.append('split_amount', qty);
   f.append('submit', { go: 'Go', combine: 'Combine Selected', split: 'Split Selected' }[kind]);
@@ -450,7 +459,7 @@ export function pfBack(rows) {
       return;
     }
     const ua = t.closest('.bp-c a[href]');
-    if (ua && /subcmd=(use|equip)item/.test(ua.getAttribute('href') || '')) {
+    if (ua && /subcmd=(use|equip)item|ssh_post=1/.test(ua.getAttribute('href') || '')) { // use, equip, extract, ...: any item action is a POST form now
       if (!e.button && !e.ctrlKey && !e.metaKey && !e.shiftKey) { e.preventDefault(); bpUse(ua); }
       return;
     }

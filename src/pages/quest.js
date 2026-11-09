@@ -11,7 +11,8 @@ const CSS = '.ssh-q{width:640px;margin:0 auto;background-position:0 0}' +
   '.ssh-q .q-title{text-align:center;padding:20px}' +
   '.ssh-q .q-steps{width:500px;margin:0 auto;padding:0 20px 20px;box-sizing:content-box}' +
   '.ssh-q .q-step{padding:2px}' +
-  '.ssh-q .q-sep{height:1px;background:#212323}';
+  '.ssh-q .q-sep{height:1px;background:#212323}' +
+  '.ssh-q .q-note{text-align:center;padding:30px 20px 40px}';
 
 const src = (td) => https(td.getAttribute('background') || '');
 const url = (u) => (u ? 'url("' + u + '")' : 'none');
@@ -21,7 +22,9 @@ export function initQuest() {
   const table = head && head.closest('table');
   const foot = table && table.querySelector('td[background*="large_content_footer"]');
   const steps = table && table.querySelector('table[width="500"]');
-  if (!table || !foot || !steps || document.querySelector('.ssh-q')) return;
+  // a quest that has not been started has no steps, only the game's alert (a box with a head line): its text is shown as a plain line
+  const alert = !steps && [...document.querySelectorAll('table[width="500"]')].find((t) => !t.querySelector('table') && /ALERT/i.test(t.textContent));
+  if (!table || !foot || !(steps || alert) || document.querySelector('.ssh-q')) return;
   const rows = [...table.rows].filter((r) => r.closest('table') === table);
   const back = table.querySelector('a[href*="questbook"]');
   const title = rows.map((r) => r.cells[0]).find((c) => c && c !== head && c !== foot && !c.querySelector('table') && !c.contains(back) && c.textContent.trim());
@@ -43,8 +46,14 @@ export function initQuest() {
     t.append(...title.childNodes);
     q.append(t);
   }
-  const list = mel('div', 'q-steps');
-  [...steps.rows].forEach((r) => {
+  const list = mel('div', steps ? 'q-steps' : 'q-note');
+  if (alert) {
+    const c = alert.cloneNode(true);
+    c.querySelectorAll('b').forEach((b) => b.remove());
+    list.textContent = c.textContent.replace(/\s+/g, ' ').trim();
+    alert.remove();
+  }
+  if (steps) [...steps.rows].forEach((r) => {
     const c = r.cells[0];
     if (!c) return;
     const d = mel('div', c.getAttribute('height') === '1' ? 'q-sep' : 'q-step');

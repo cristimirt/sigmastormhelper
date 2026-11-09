@@ -13,6 +13,7 @@ import { refreshWorld } from './combat.js';
 // button is left out: the map can be zoomed out to show all of it. Quick Buff keeps the game's own dialog.
 
 const BAG = 'index.php?cmd=profile&subcmd=dropitems&fromworld=1';
+const FORMS = { 'world-create-squad': 'assault', 'world-medipack': 'heal', 'world-repair-kit': 'repair' }; // the forms of the game's quick buttons
 
 // The colour of a count: ok (green), low (yellow), out (red).
 const bagLevel = (used, max) => (used >= max ? 'out' : used > max * 0.75 ? 'low' : 'ok');
@@ -23,16 +24,24 @@ export function buildQuickBar(src) {
   const bar = mel('div', 'wp-q');
   [...src.querySelectorAll('td[align="center"]')].forEach((td) => {
     const a = td.querySelector('a[href]');
-    const img = a && a.querySelector('img');
-    if (!a || !img) return;
-    const href = a.getAttribute('href') || '';
-    const kind = /subcmd=dropitems/.test(href) ? 'bag' : /cmd=guild/.test(href) ? 'assault' : /openQuickBuffDialog/.test(href) ? 'buff'
-      : /worldmedipack/.test(href) ? 'heal' : /worldrepair/.test(href) ? 'repair' : '';
+    const btn = td.querySelector('button[form]'); // the assault, the medipack and the repair kit are submit buttons of POST forms now
+    const img = (a || btn) && (a || btn).querySelector('img');
+    if (!img) return;
+    const href = a ? a.getAttribute('href') || '' : '';
+    const fid = btn ? btn.getAttribute('form') : '';
+    const frm = fid ? src.ownerDocument.getElementById(fid) : null;
+    const kind = FORMS[fid] || (/subcmd=dropitems/.test(href) ? 'bag' : /cmd=guild/.test(href) ? 'assault' : /openQuickBuffDialog/.test(href) ? 'buff'
+      : /worldmedipack/.test(href) ? 'heal' : /worldrepair/.test(href) ? 'repair' : '');
     if (!kind) return; // the area map, and anything the game adds that is not known
     const b = mel('a', 'wp-qb');
     b.dataset.q = kind;
     if (kind === 'buff') b.setAttribute('href', href); // the game's own dialog
-    else { b.setAttribute('href', '#'); b.dataset.href = href.replace(/mode=worldrepairkit/, 'mode=worldrepair'); } // the game's link names the repair kit's mode wrongly
+    else if (frm) { // the fields of the game's form (the token and the one-time value are added when it is sent)
+      const post = [...frm.elements].filter((e) => e.name && !/^(_csrf|_operation)$/.test(e.name) && e.type !== 'submit' && e.type !== 'button').map((e) => [e.name, e.value.replace(/^worldrepairkit$/, 'worldrepair')]);
+      b.setAttribute('href', '#');
+      b.dataset.post = JSON.stringify(post);
+      b.dataset.href = 'index.php?' + new URLSearchParams(post).toString();
+    } else { b.setAttribute('href', '#'); b.dataset.href = href.replace(/mode=worldrepairkit/, 'mode=worldrepair'); } // the game's link names the repair kit's mode wrongly
     b.title = (img.getAttribute('title') || '').replace(/\s+/g, ' ').trim();
     const im = mel('img');
     im.src = https(img.getAttribute('src'));
@@ -158,13 +167,13 @@ const pageText = (doc) => {
 };
 
 // A quick action (assault, medipack, repair kit): the same request as the game's link, in the background; its message in a dialog.
-export async function quickAction(href, label) {
+export async function quickAction(href, label, post) {
   if (S.busy || S.pending) return;
   S.pending++;
   busy(true);
   let ok = false;
   try {
-    const html = await (await fetch(new URL(href, location.href).href, { credentials: 'same-origin' })).text();
+    const html = await (await (post ? fetch('index.php', { method: 'POST', body: new URLSearchParams(post), credentials: 'same-origin' }) : fetch(new URL(href, location.href).href, { credentials: 'same-origin' }))).text();
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const alerts = gAlerts(doc);
     if (alerts.length) { if (/worldmedipack|worldrepair/.test(href)) toast(alerts); else alertModal(alerts); }
@@ -213,11 +222,12 @@ export async function refreshBagCount() {
 }
 
 // Clicks on the bar, and the game's shortcut keys for the same things (B backpack, G assault, M medipack, F repair kit).
+const post = (b) => (b.dataset.post ? JSON.parse(b.dataset.post) : undefined);
 const DO = {
   bag: () => bagDialog(),
-  assault: (b) => quickAction(b.dataset.href, 'Quick Assault'),
-  heal: (b) => quickAction(b.dataset.href, 'Medipack'),
-  repair: (b) => quickAction(b.dataset.href, 'Repair Kit'),
+  assault: (b) => quickAction(b.dataset.href, 'Quick Assault', post(b)),
+  heal: (b) => quickAction(b.dataset.href, 'Medipack', post(b)),
+  repair: (b) => quickAction(b.dataset.href, 'Repair Kit', post(b)),
 };
 const KEYS = { b: 'bag', g: 'assault', m: 'heal', f: 'repair' };
 

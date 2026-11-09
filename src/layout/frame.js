@@ -15,7 +15,10 @@ let built = null; // { table, page, cells: [header, left, center, right], conten
 function frameContent(center) {
   const table = [...center.children].find(isContentFrame);
   if (!table) return null;
-  const [r0, r1, r2] = table.rows;
+  const r0 = table.rows[0];
+  const r1 = table.rows[1];
+  const r2 = table.rows[table.rows.length - 1];
+  const extra = [...table.rows].slice(2, -1); // rows the game puts between the columns and the bottom picture (an alert): they belong to the page
   const url = (u) => (u ? 'url("' + https(new URL(u, location.href).href) + '")' : 'none');
   const imgOf = (cell) => { const i = cell && cell.querySelector('img'); return i ? i.getAttribute('src') : ''; };
   const cf = mel('div', 'ssh-cf');
@@ -33,14 +36,20 @@ function frameContent(center) {
   mid.append(l, body, r);
   cf.append(top, mid, bot);
   body.append(...r1.cells[1].childNodes);
+  extra.forEach((r) => body.append(...r.cells[0].childNodes));
   table.replaceWith(cf);
   return { table, cf, cell: r1.cells[1], body };
 }
 
 export function buildFrame() {
   const m = document.getElementById('mainContentDiv');
-  if (built || !m || !m.rows || m.rows.length < 4 || m.rows[1].cells.length < 3) return false;
-  const [r0, r1, r2, r3] = m.rows;
+  // the game's page table has four rows (header, columns, bottom caps, banner); a page like "this mission has not been started" has three
+  // (no caps row) and a right column that is only a picture: the frame is built the same way, the caps are left out
+  if (built || !m || !m.rows || m.rows.length < 3 || m.rows[1].cells.length < 3) return false;
+  const r0 = m.rows[0];
+  const r1 = m.rows[1];
+  const r2 = m.rows.length >= 4 ? m.rows[2] : null;
+  const r3 = m.rows[m.rows.length - 1];
   const page = mel('div');
   page.id = 'ssh-page';
   const part = (cls) => { const d = mel('div', cls); page.append(d); return d; };
@@ -58,8 +67,10 @@ export function buildFrame() {
   const content = frameContent(center);
   // the pictures the game puts on the cells of the bottom rows
   const bgOf = (c) => https(c.style.backgroundImage && c.style.backgroundImage !== 'none' ? c.style.backgroundImage : c.getAttribute('background') ? 'url("' + c.getAttribute('background') + '")' : '');
-  lb.style.backgroundImage = bgOf(r2.cells[0]);
-  rb.style.backgroundImage = bgOf(r2.cells[r2.cells.length - 1]);
+  if (r2) {
+    lb.style.backgroundImage = bgOf(r2.cells[0]);
+    rb.style.backgroundImage = bgOf(r2.cells[r2.cells.length - 1]);
+  }
   banner.style.backgroundImage = bgOf(r3.cells[0]);
   m.replaceWith(page);
   built = { table: m, page, cells, content };
@@ -109,6 +120,6 @@ export function frameCss(contentBg) {
     P + ' .ssh-banner{grid-column:1/-1;height:85px;background-repeat:no-repeat}' +
     // The game's pages put a 640x54 header picture (bank_header.jpg, ...) and footer picture on a cell that is 54 px high plus 20 px of
     // padding above and below, so the picture was drawn twice (it repeats). One picture, in its own 54 px; the footer is the helper's own.
-    P + ' .cf-body td[background*="_header.jpg"],' + P + ' .cf-body td[background*="/skin/header_"],' + P + ' .cf-body td[background*="large_content_footer"]{padding-top:0!important;padding-bottom:0!important;height:54px;background-repeat:no-repeat!important;background-position:center top!important}' +
-    (S.base ? P + ' .cf-body td[background*="large_content_footer"]{background-image:url("' + S.base + 'media/large_content_footer.png")!important}' : '');
+    P + ' .ssh-center td[background*="_header.jpg"],' + P + ' .ssh-center td[background*="/skin/header_"],' + P + ' .ssh-center td[background*="large_content_footer"]{padding-top:0!important;padding-bottom:0!important;height:54px;background-repeat:no-repeat!important;background-position:center top!important}' +
+    (S.base ? P + ' .ssh-center td[background*="large_content_footer"]{background-image:url("' + S.base + 'media/large_content_footer.png")!important}' : '');
 }

@@ -20,6 +20,7 @@ const gameTable = (body) => [...body.querySelectorAll('table[background*="large_
 export function buildWorldPage() {
   const p = pageParts();
   if (!p || !p.modern) return null;
+  if (S.cfg.modernMap === false) return null; // the setting "Modern map" is off: the game's own world page and map stay
   p.body.querySelectorAll('#ssh-wp').forEach((e) => e.remove());
   const table = gameTable(p.body);
   const low = table && table.querySelector('#mapDiv').closest('table'); // the table of the strips and panels under the map

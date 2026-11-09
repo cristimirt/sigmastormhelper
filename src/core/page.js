@@ -3,8 +3,8 @@
 // -> { header, left, center, right, body, modern } or null when the page has no such frame (a login page, say). body is where
 // the page's own content is: the middle cell of the content frame (a table in the game's page, a div in the Modern layout).
 
-// The game's content frame: an outer table of a top picture, two border columns around the content cell, and a bottom picture.
-export const isContentFrame = (t) => !!t && t.tagName === 'TABLE' && t.rows.length === 3 && t.rows[1].cells.length === 3 && /inner_bg/.test(t.rows[1].cells[1].getAttribute('background') || '');
+// The game's content frame (a page with an alert of its own has an extra row after the columns): an outer table of a top picture, two border columns around the content cell, and a bottom picture.
+export const isContentFrame = (t) => !!t && t.tagName === 'TABLE' && t.rows.length >= 3 && t.rows[1].cells.length === 3 && /inner_bg/.test(t.rows[1].cells[1].getAttribute('background') || '');
 
 function bodyOf(center) {
   const f = center.querySelector(':scope > .ssh-cf > .cf-mid > .cf-body');
