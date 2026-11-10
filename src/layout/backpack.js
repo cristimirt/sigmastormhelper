@@ -274,6 +274,7 @@ function compUpdate(rows) {
   if (!nb) return;
   nb.classList.add('bd');
   old.replaceWith(nb);
+  if (rows[0] && rows[0].ownerDocument !== document) BP.compDoc = rows[0].ownerDocument; // the new buttons' forms are in the page it was read from
 }
 
 export async function compLoad(href) {
@@ -404,6 +405,7 @@ export async function bpPopup(host, onChange) {
   // the components under the bag, as on the profile page (a click destroys one, the page links page through them)
   const cs = secFromDoc(doc, 'components');
   const comp = cs && pfComp(cs.rows);
+  BP.compDoc = doc; // the page the component buttons' forms are in
   if (comp) {
     comp.classList.add('bd');
     const sec = mel('div', 'sec s-components');
@@ -411,6 +413,10 @@ export async function bpPopup(host, onChange) {
     host.append(sec);
   }
   host.addEventListener('click', (e) => {
+    // a component is a button of a POST form now: the form is in the fetched page (not in this one), so its fields are read from there
+    const cb = e.target && typeof e.target.closest === 'function' ? e.target.closest('.comp button[form^="component-action"]') : null;
+    const fc = cb && BP.compDoc && BP.compDoc.getElementById(cb.getAttribute('form'));
+    if (fc && !e.button && !e.ctrlKey && !e.metaKey && !e.shiftKey) { e.preventDefault(); compDestroy(postHref(fc)); return; }
     const ca = e.target && typeof e.target.closest === 'function' ? e.target.closest('.comp a[href]') : null;
     if (!ca || e.button || e.ctrlKey || e.metaKey || e.shiftKey) return;
     const h = ca.getAttribute('href') || '';
