@@ -63,9 +63,10 @@ export function bpParse(rows) {
   if (pg && pg.closest('center')) pg.closest('center').querySelectorAll('a').forEach((a) => d.pages.push({ n: a.textContent.trim(), href: a.getAttribute('href') }));
   const actor = rows[0] && rows[0].ownerDocument.querySelector('#profile-backpack input[name="actor_id"]');
   d.actor = actor ? actor.value : '';
-  const sel = mq(rows, 'select').find((s) => s.name === 'folder_id');
-  if (sel) d.opts = [...sel.options].map((o) => ({ value: o.value, text: o.text }));
-  else d.opts = d.folders.map((f) => ({ value: f.id, text: f.name }));
+  // the folder box of the move form (folderSelectBox): its values are "<folder id>:<one-time key>" now, and the whole value is what the form sends
+  const sel = mq(rows, 'select').find((s) => /^(folder_id|folderSelectBox)$/.test(s.name));
+  if (sel) d.opts = [...sel.options].map((o) => ({ value: o.value, id: o.value.split(':')[0], text: o.text }));
+  else d.opts = d.folders.map((f) => ({ value: f.id, id: f.id, text: f.name }));
   d.help = mq(rows, 'a').filter((a) => a.textContent.trim() === '?').map((a) => a.outerHTML);
   return d;
 }
@@ -190,7 +191,7 @@ function bpRender() {
     '<div class="r"><input type="button" class="custombutton bp-del" data-a="destroy" value="Destroy Selected"></div>';
   const to = bar.querySelector('.bp-to');
   d.opts.forEach((o) => { const op = document.createElement('option'); op.value = o.value; op.textContent = o.text; to.append(op); });
-  const other = d.opts.find((o) => o.value !== d.cur);
+  const other = d.opts.find((o) => o.id !== d.cur);
   if (other) to.value = other.value;
   if (d.help[0]) bar.querySelector('.h1').innerHTML = '[' + d.help[0] + ']';
   if (d.help[1]) bar.querySelector('.h2').innerHTML = '[' + d.help[1] + ']';
@@ -273,6 +274,7 @@ function compUpdate(rows) {
   if (!nb) return;
   nb.classList.add('bd');
   old.replaceWith(nb);
+  if (rows[0] && rows[0].ownerDocument !== document) BP.compDoc = rows[0].ownerDocument; // the new buttons' forms are in the page it was read from
 }
 
 export async function compLoad(href) {
@@ -324,7 +326,7 @@ function bpFields(kind, ids, to, qty) {
   }
   f.append('subcmd', 'backpackaction');
   ids.forEach((i) => f.append('folderItem[]', val(i)));
-  f.append('folder_id', to);
+  f.append('folderSelectBox', to);
   f.append('split_amount', qty);
   f.append('submit', { go: 'Go', combine: 'Combine Selected', split: 'Split Selected' }[kind]);
   return f;
@@ -335,7 +337,7 @@ async function bpAct(kind) {
   if (!ids.length) return;
   const to = BP.box.querySelector('.bp-to').value;
   const qty = BP.box.querySelector('.bp-qty').value.trim();
-  if (kind === 'go' && to === BP.data.cur) { bpMsg('Pick another folder to move the items to.', true); return; }
+  if (kind === 'go' && to.split(':')[0] === BP.data.cur) { bpMsg('Pick another folder to move the items to.', true); return; }
   if (kind === 'split' && !/^\d+$/.test(qty)) { bpMsg('Enter how many to split off.', true); BP.box.querySelector('.bp-qty').focus(); return; }
   const note = await bpPost(bpFields(kind, ids, to, qty));
   if (note !== null) await bpLoad(BP.url, note || 'Done.');
@@ -403,6 +405,7 @@ export async function bpPopup(host, onChange) {
   // the components under the bag, as on the profile page (a click destroys one, the page links page through them)
   const cs = secFromDoc(doc, 'components');
   const comp = cs && pfComp(cs.rows);
+  BP.compDoc = doc; // the page the component buttons' forms are in
   if (comp) {
     comp.classList.add('bd');
     const sec = mel('div', 'sec s-components');
@@ -410,6 +413,10 @@ export async function bpPopup(host, onChange) {
     host.append(sec);
   }
   host.addEventListener('click', (e) => {
+    // a component is a button of a POST form now: the form is in the fetched page (not in this one), so its fields are read from there
+    const cb = e.target && typeof e.target.closest === 'function' ? e.target.closest('.comp button[form^="component-action"]') : null;
+    const fc = cb && BP.compDoc && BP.compDoc.getElementById(cb.getAttribute('form'));
+    if (fc && !e.button && !e.ctrlKey && !e.metaKey && !e.shiftKey) { e.preventDefault(); compDestroy(postHref(fc)); return; }
     const ca = e.target && typeof e.target.closest === 'function' ? e.target.closest('.comp a[href]') : null;
     if (!ca || e.button || e.ctrlKey || e.metaKey || e.shiftKey) return;
     const h = ca.getAttribute('href') || '';
