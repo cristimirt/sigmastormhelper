@@ -1,10 +1,11 @@
 import { TILE } from '../core/constants.js';
 import { DATA } from '../core/data.js';
+import { fetchText, navigate } from '../core/net.js';
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
+import { parseHtml, sleep } from '../core/util.js';
 import { applyHtml, go, read } from './loading.js';
 import { applyZoom, renderWorld } from './map.js';
-import { navigate } from '../core/net.js';
 
 const tileIdAt = (area, x, y) => {
   const a = S.areas.get(area);
@@ -137,7 +138,6 @@ S.hover = null;
 
 S.walking = false;
 
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 export function stopWalk(msg) {
   S.cancel = true;
@@ -191,8 +191,8 @@ async function sendSteps(seg) {
       if (el) el.textContent = String(Math.max(0, energy));
     }
     const k = i - 1;
-    reqs.push(fetch(href, { credentials: 'same-origin' }).then((r) => r.text()).then((html) => {
-      const loc = read(new DOMParser().parseFromString(html, 'text/html')).loc;
+    reqs.push(fetchText(href).then((html) => {
+      const loc = read(parseHtml(html)).loc;
       const ok = !!loc && loc.area === area && loc.x === x && loc.y === y;
       results[k] = { html, ok };
       if (!ok) bad = true;
@@ -203,7 +203,7 @@ async function sendSteps(seg) {
   const sent = reqs.length;
   let html = sent && results.length === sent && results.every((r) => r && r.ok) ? results[sent - 1].html : '';
   try {
-    if (!html) html = await (await fetch('index.php?cmd=world', { credentials: 'same-origin' })).text(); // where are we really?
+    if (!html) html = await fetchText('index.php?cmd=world'); // where are we really?
     if (!(await applyHtml(html))) navigate('index.php?cmd=world');
   } catch (e) { navigate('index.php?cmd=world'); }
   v && v.classList.remove('ssh-fast');

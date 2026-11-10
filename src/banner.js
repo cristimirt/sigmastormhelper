@@ -1,13 +1,15 @@
+import { fetchText } from './core/net.js';
+import { pageParts } from './core/page.js';
 import { S } from './core/state.js';
 import { store } from './core/storage.js';
-import { fmt, num, txt } from './core/util.js';
-import { pageParts } from './core/page.js';
+import { fmt, num, parseHtml, txt } from './core/util.js';
 import { modernHeader, syncModernNumbers } from './layout/header.js';
+import { fetchItem } from './tooltips/compare.js';
 
 // Update the top bar (HP, energy, credits, XP) from the combat page right away.
 export function updateHeader(html) {
   try {
-    const nxt = pageParts(new DOMParser().parseFromString(html, 'text/html'));
+    const nxt = pageParts(parseHtml(html));
     const cur = pageParts();
     if (cur && nxt) {
       setHeaderFrom(cur, nxt);
@@ -196,8 +198,8 @@ export async function refreshDur(maxAge) {
   if (S.durBusy) { S.durAgain = true; return; } // a check is running (maybe from before this fight): read once more when it is done
   S.durBusy = true;
   try {
-    const html = await (await fetch('index.php?cmd=profile', { credentials: 'same-origin' })).text();
-    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const html = await fetchText('index.php?cmd=profile');
+    const doc = parseHtml(html);
     const items = new Map();
     doc.querySelectorAll('[onmouseover*="ajaxLoadItem"]').forEach((e) => {
       const o = e.getAttribute('onmouseover') || '';
@@ -207,7 +209,7 @@ export async function refreshDur(maxAge) {
     let cur = 0;
     let max = 0;
     await Promise.all([...items.values()].map(async (r) => {
-      const t = txt(await (await fetch('fetchitem.php?item_id=' + r[1] + '&inv_id=' + r[2] + '&t=' + r[3] + '&p=' + r[4] + '&uid=' + Date.now(), { credentials: 'same-origin' })).text());
+      const t = txt(await fetchItem(r[1], r[2], r[3], r[4]));
       const q = t.match(/Durability:\s*(\d+)\s*\/\s*(\d+)/);
       if (q) { cur += +q[1]; max += +q[2]; }
     }));

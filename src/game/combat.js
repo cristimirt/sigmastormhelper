@@ -1,7 +1,8 @@
 import { grabVars } from '../banner.js';
 import { hotkeyOn, TYPE_COLOR, typeOf } from '../core/creatures.js';
+import { fetchText } from '../core/net.js';
 import { S } from '../core/state.js';
-import { esc } from '../core/util.js';
+import { esc, fmt, parseHtml } from '../core/util.js';
 import { alertModal, gAlerts } from '../layout/modal.js';
 import { read, show, swapIn } from './loading.js';
 
@@ -98,15 +99,15 @@ function numberSlots(bd) {
 }
 
 export function parseCombat(html) {
-  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const doc = parseHtml(html);
   const sc = [...doc.scripts].map((t) => t.textContent).find((t) => /combat animator/.test(t));
   if (!sc) return null;
-  const num = (n) => { const m = sc.match(new RegExp('var ' + n + '\\s*=\\s*(-?\\d+)')); return m ? parseInt(m[1], 10) : 0; };
+  const intVar = (n) => { const m = sc.match(new RegExp('var ' + n + '\\s*=\\s*(-?\\d+)')); return m ? parseInt(m[1], 10) : 0; };
   const str = (n) => { const m = sc.match(new RegExp('var ' + n + '\\s*=\\s*"((?:[^"\\\\]|\\\\.)*)"')); return m ? m[1] : ''; };
   const arr = (n) => { const o = []; for (const m of sc.matchAll(new RegExp('\\b' + n + '\\[(\\d+)\\]\\s*=\\s*(?:"((?:[^"\\\\]|\\\\.)*)"|(-?\\d+))', 'g'))) o[+m[1]] = m[2] !== undefined ? m[2].replace(/\\(.)/g, '$1') : parseInt(m[3], 10); return o; };
   const c = {
-    type: num('combatType'), winner: num('winner'), xp: num('xpGain'), gold: num('goldGain'), surge: num('surgeGain'), surgeName: str('surgeName'),
-    tax: num('guildTaxGain'), level: num('levelUp'),
+    type: intVar('combatType'), winner: intVar('winner'), xp: intVar('xpGain'), gold: intVar('goldGain'), surge: intVar('surgeGain'), surgeName: str('surgeName'),
+    tax: intVar('guildTaxGain'), level: intVar('levelUp'),
     name: arr('name'), startHP: arr('startHP'), hp: arr('currentHP'), startAmmo: arr('startAmmo'), ammo: arr('currentAmmo'),
     report: arr('report'), color: arr('reportColor'), items: [],
   };
@@ -135,7 +136,6 @@ export function parseCombat(html) {
 }
 
 export function resultHtml(c) {
-  const fmt = (n) => Number(n).toLocaleString('en-US');
   const part = (label, n, extra) => '<span style="color:' + (n < 0 ? '#FF5a5a' : '#97D6E2') + '">' + label + ': ' + fmt(n) + (extra || '') + '</span>';
   const parts = [part('XP', c.xp), part('Credits', c.gold, c.tax > 0 ? ' [' + fmt(c.tax) + ']' : '')];
   if (c.surge) parts.push(part(esc(c.surgeName || 'Surge'), c.surge));
@@ -182,7 +182,7 @@ export function openLog(r) {
 
 // The game answered an attack with a message instead of a fight (not enough energy, ...): show it in a dialog. False when there is none.
 export function attackAlert(html) {
-  const alerts = gAlerts(new DOMParser().parseFromString(html, 'text/html'));
+  const alerts = gAlerts(parseHtml(html));
   if (!alerts.length) return false;
   alertModal(alerts);
   return true;
@@ -200,9 +200,9 @@ S.refreshSeq = 0;
 export async function refreshWorld() {
   const seq = ++S.refreshSeq;
   const url = new URL('index.php?cmd=world', location.href).href;
-  const wtext = await (await fetch(url, { credentials: 'same-origin' })).text();
+  const wtext = await fetchText(url);
   grabVars(wtext);
-  const doc = new DOMParser().parseFromString(wtext, 'text/html');
+  const doc = parseHtml(wtext);
   if (S.pending || seq !== S.refreshSeq) return true; // another fight started meanwhile: that one will refresh
   const info = read(doc);
   if (!info.loc || !doc.getElementById('mapDiv') || !swapIn(doc)) return false;

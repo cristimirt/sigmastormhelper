@@ -1,16 +1,17 @@
 import { decorateHeader, grabVars, setHeaderFrom } from '../banner.js';
-import { pageParts } from '../core/page.js';
-import { buildWorldPage } from '../layout/worldpage.js';
 import { SSH } from '../core/constants.js';
+import { fetchText, navigate } from '../core/net.js';
+import { pageParts } from '../core/page.js';
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
+import { parseHtml } from '../core/util.js';
+import { buildWorldPage } from '../layout/worldpage.js';
+import { initPathfinder } from '../pathfinder/panel.js';
 import { renderActions } from './actionlist.js';
 import { renderWorld } from './map.js';
 import { parseAreaMap, parseAreaUrl, parseLoc, parseMoves } from './parsing.js';
 import { learnFrom } from './pathfinding.js';
-import { initPathfinder } from '../pathfinder/panel.js';
 import { attachViewer } from './viewer.js';
-import { navigate } from '../core/net.js';
 
 async function ensureArea() {
   if (S.areas.has(S.loc.area)) return true;
@@ -21,7 +22,7 @@ async function ensureArea() {
       S.areas.set(S.loc.area, cached.a);
       return true;
     }
-    const html = await (await fetch(S.areaUrl, { credentials: 'same-origin' })).text();
+    const html = await fetchText(S.areaUrl);
     const a = parseAreaMap(html);
     if (!a) return false;
     S.areas.set(S.loc.area, a);
@@ -85,7 +86,7 @@ export async function show(info, prev) {
 // Puts the text of a world page in place of the current one (header, map, actions). False when it is not a normal world page.
 export async function applyHtml(html) {
   grabVars(html);
-  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const doc = parseHtml(html);
   const info = read(doc);
   const pw = S.viewer && S.viewer.querySelector('#ssh-world');
   const pm = S.viewer && S.viewer.querySelector('#ssh-me');

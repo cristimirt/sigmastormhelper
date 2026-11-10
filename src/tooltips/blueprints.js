@@ -1,6 +1,7 @@
+import { fetchText } from '../core/net.js';
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
-import { esc } from '../core/util.js';
+import { esc, parseHtml } from '../core/util.js';
 import { compareParts, fetchItem, loadItem, pairCss, tipLook } from './compare.js';
 
 const BP_V = 1;
@@ -12,7 +13,7 @@ async function bpItem(a) {
   const c = store.get(key, null);
   if (c && c.v === BP_V) return c;
   const html = await fetchItem(a[0], a[1], a[2], a[3]);
-  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const doc = parseHtml(html);
   const td = doc.querySelector('td');
   let lines = [];
   if (td) {
@@ -26,7 +27,7 @@ async function bpItem(a) {
 }
 
 function parseRecipe(html) {
-  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const doc = parseHtml(html);
   const c = doc.getElementById('mainContentDiv') || doc.body;
   const out = { v: BP_V, credits: null, items: [], comps: [], target: null, mine: null };
   const cf = [...doc.querySelectorAll('table.sidebars font')].find((f) => /^[\d,]+$/.test(f.textContent.trim()));
@@ -70,7 +71,7 @@ function bpStrip(d) {
 }
 
 async function bpRefresh(id) {
-  const html = await (await fetch('index.php?cmd=inventing&subcmd=viewrecipe&recipe_id=' + id, { credentials: 'same-origin' })).text();
+  const html = await fetchText('index.php?cmd=inventing&subcmd=viewrecipe&recipe_id=' + id);
   const d = parseRecipe(html);
   d.id = id;
   if (!d.target) throw new Error('no blueprint data');

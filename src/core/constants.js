@@ -7,7 +7,7 @@ export const dropEarly = () => { const e = document.getElementById('ssh-early');
 
 export const SSH = (window.__ssh = {});
 
-export const VERSION = '1.0';
+export const VERSION = '1.1.0';
 
 export const TILE = 65; // size of one map tile in px (native)
 
@@ -18,3 +18,8 @@ export const ZOOM_MIN = 0.35;
 export const ZOOM_MAX = 1.8;
 
 export const dropEarlyM = () => { const e = document.getElementById('ssh-early-m'); if (e) e.remove(); };
+
+export const SKIN = 'https://cdn.sigmastorm.com/skin/'; // the game's skin pictures
+
+// The arguments of the game's item tooltip call: ajaxLoadItem(item, inventory, type, player)
+export const ITEM = /ajaxLoadItem\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/;

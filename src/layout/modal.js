@@ -1,4 +1,5 @@
 import { withToken } from '../core/net.js';
+import { alertBad, alertLine } from '../core/util.js';
 import { mel, unslash } from './dom.js';
 
 // The game's own messages in a response page: boxes with a head line like "INFORMATION ALERT".
@@ -51,12 +52,12 @@ export function toast(alerts) {
   const v = document.getElementById('ssh-map');
   if (!v) { alertModal(alerts); return; }
   const flat = (t) => { const d = document.createElement('div'); d.innerHTML = richHtml(t.innerHTML.replace(/<br\s*\/?>/gi, ' ')); return d.textContent; }; // the message as one line, without its markup
-  const text = alerts.map((t) => flat(t).replace(/\s+/g, ' ').replace(/^\s*(INFORMATION|ERROR|WARNING|SUCCESS)?\s*ALERT\s*/i, '').trim()).filter(Boolean).join(' ');
+  const text = alerts.map((t) => alertLine(flat(t))).filter(Boolean).join(' ');
   if (!text) return;
   v.querySelectorAll('#ssh-toast').forEach((e) => e.remove());
   const n = mel('div');
   n.id = 'ssh-toast';
-  if (alerts.some((t) => /ERROR|WARNING/i.test((t.querySelector('b') || {}).textContent || ''))) n.className = 'bad';
+  if (alertBad(alerts)) n.className = 'bad';
   n.textContent = text;
   v.append(n);
   clearTimeout(toastT);

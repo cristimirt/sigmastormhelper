@@ -1,6 +1,8 @@
 import { SSH } from '../core/constants.js';
 import { DATA } from '../core/data.js';
+import { fetchText } from '../core/net.js';
 import { store } from '../core/storage.js';
+import { esc, num, parseHtml } from '../core/util.js';
 
 export const skillInfo = (id) => store.get('skills', {})[id] || DATA.skills[id] || null;
 
@@ -39,15 +41,14 @@ function parseSkill(doc) {
 }
 
 export async function loadSkill(id) {
-  const html = await (await fetch('index.php?cmd=skills&tree_id=0&skill_id=' + id, { credentials: 'same-origin' })).text();
-  const s = parseSkill(new DOMParser().parseFromString(html, 'text/html'));
+  const html = await fetchText('index.php?cmd=skills&tree_id=0&skill_id=' + id);
+  const s = parseSkill(parseHtml(html));
   if (s) { const l = store.get('skills', {}); l[id] = s; store.set('skills', l); }
   return s;
 }
 
 // "+0.2% Base Attack per point." at level 10 -> "+2% Base Attack."; "0.1% per point of the items level" -> "1% of the items level".
 export function scaleDesc(desc, level) {
-  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   // "50% (+0.25% per point) chance": a base value plus a bonus per point
   const base = (s) => s.replace(/(\d+(?:\.\d+)?)%\s*\(\s*\+\s*(\d+(?:\.\d+)?)%\s*per point\s*\)/gi, (m, b, p) => '<b>' + Math.round((parseFloat(b) + parseFloat(p) * level) * 100) / 100 + '</b>%');
   return base(esc(desc)).replace(/([+-]?)(\d+(?:\.\d+)?)(\s*%?)((?:(?!per point)[^.;\d])*?)\s*\bper point\b/gi, (m, sign, num, pct, words) => {

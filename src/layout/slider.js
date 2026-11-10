@@ -1,3 +1,4 @@
+import { digits } from '../core/util.js';
 import { mel } from './dom.js';
 
 // A slider in the colours of the game's panels (dark inset track with a cyan fill, grey metal handle), tied to a number box: moving
@@ -8,8 +9,6 @@ import { mel } from './dom.js';
 //   s.remove();
 //
 // options: min (default 0), max, step (default 1), after (an element to place the slider after; default: the box's cell), width (px).
-
-const num = (s) => +String(s || '').replace(/[^\d]/g, '') || 0;
 
 function css() {
   if (document.getElementById('ssh-slider-css')) return;
@@ -43,12 +42,12 @@ export function addSlider(box, opt = {}) {
     r.min = String(min);
     r.max = String(max);
     r.disabled = max <= min;
-    r.value = String(Math.min(max, Math.max(min, num(box.value))));
+    r.value = String(Math.min(max, Math.max(min, digits(box.value))));
     fill();
   };
   fit();
   r.addEventListener('input', () => { box.value = +r.value === min ? '' : r.value; fill(); });
-  box.addEventListener('input', () => { r.value = String(Math.min(max, Math.max(min, num(box.value)))); fill(); });
+  box.addEventListener('input', () => { r.value = String(Math.min(max, Math.max(min, digits(box.value)))); fill(); });
   wrap.append(r);
   if (opt.after) opt.after.after(wrap);
   else (box.closest('td') || box.parentElement).append(wrap);

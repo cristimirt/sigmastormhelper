@@ -1,4 +1,5 @@
 import { fixHellforge } from '../core/imgfix.js';
+import { https, parseHtml } from '../core/util.js';
 // The game's tile tooltips still point their pictures at hosts that are gone (old IP addresses, fileserver.huntedcow.com):
 // the same files are on the CDN. Also applied when a tooltip is shown, because areas are kept in the browser.
 // The text of a JavaScript string literal (the game writes the tooltip of a tile as Tip("...") with \" \/ < and so on in it).
@@ -50,7 +51,7 @@ export function parseAreaUrl(doc) {
 
 // The "Open Area Map" page: one big table, a 65x65 cell per tile with the tile image as background.
 export function parseAreaMap(html) {
-  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const doc = parseHtml(html);
   const outer = [...doc.querySelectorAll('table')].find(
     (t) => t.rows.length > 3 && t.rows[0].cells.length > 3 && t.rows[0].cells[0].hasAttribute('background')
   );

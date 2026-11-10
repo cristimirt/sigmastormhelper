@@ -1,6 +1,6 @@
 import { pageParts } from '../core/page.js';
 import { S } from '../core/state.js';
-import { https } from '../core/util.js';
+import { cssUrl } from '../core/util.js';
 import { buildQuickBar, bindQuickLinks } from '../game/quicklinks.js';
 import { attachViewer } from '../game/viewer.js';
 import { mel, proxify } from './dom.js';
@@ -13,7 +13,6 @@ import { mel, proxify } from './dom.js';
 
 // the picture on a title / bar cell: a style (background: url(...)) or the background attribute
 const bgOf = (el) => ((el.getAttribute('style') || '').match(/url\(["']?([^)"']*)["']?\)/) || [])[1] || el.getAttribute('background') || '';
-const url = (u) => (u ? 'url("' + https(u) + '")' : 'none');
 
 const gameTable = (body) => [...body.querySelectorAll('table[background*="large_content_bg"]')].find((t) => t.querySelector('#mapDiv'));
 
@@ -31,12 +30,12 @@ export function buildWorldPage() {
   const root = mel('div');
   root.id = 'ssh-wp';
   const title = mel('div', 'wp-t');
-  title.style.backgroundImage = url(bgOf(table.rows[0].cells[0]));
+  title.style.backgroundImage = cssUrl(bgOf(table.rows[0].cells[0]));
   const map = mel('div', 'wp-m');
   const lowBox = mel('div', 'wp-low');
   const foot = mel('div', 'wp-f');
   // the footer picture is the HD one that comes with the helper (the game's own when the helper's site is not known)
-  foot.style.backgroundImage = S.base ? url(S.base + 'media/large_content_footer.png') : url(bgOf(table.rows[table.rows.length - 1].cells[0]));
+  foot.style.backgroundImage = S.base ? cssUrl(S.base + 'media/large_content_footer.png') : cssUrl(bgOf(table.rows[table.rows.length - 1].cells[0]));
 
   // anything else the game puts above the map (a message, say) comes along
   const extra = mel('div', 'wp-x');
@@ -51,7 +50,7 @@ export function buildWorldPage() {
     const src = lc.querySelector('table[style*="' + k + '"]');
     if (!src) return;
     const strip = mel('div', 'wp-strip ' + (k === 'quicklinks_bg' ? 'ql' : 'ab'));
-    strip.style.backgroundImage = url(bgOf(src));
+    strip.style.backgroundImage = cssUrl(bgOf(src));
     [...src.querySelectorAll('td')].filter((td) => !td.querySelector('td') && (td.querySelector('a, img') || td.textContent.trim())).forEach((td) => {
       const it = mel('div', 'wp-i');
       td.childNodes.forEach((n) => it.append(proxify(n)));
@@ -67,7 +66,7 @@ export function buildWorldPage() {
     const td = rt && rt.querySelector('td[background*="' + k + '"]');
     if (!td) return null;
     const b = mel('div', 'wp-bar ' + cls);
-    b.style.backgroundImage = url(td.getAttribute('background'));
+    b.style.backgroundImage = cssUrl(td.getAttribute('background'));
     return b;
   };
   const loc = bar('location_header', 'loc');

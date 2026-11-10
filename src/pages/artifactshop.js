@@ -1,4 +1,5 @@
-import { navigate } from '../core/net.js';
+import { fetchText, navigate } from '../core/net.js';
+import { alertBad, parseHtml } from '../core/util.js';
 import { gAlerts, mModal, richHtml } from '../layout/modal.js';
 
 // The faction's Artifact Shop: every item has its own small POST form with a Buy button, one purchase per click. A number box next to each
@@ -17,15 +18,13 @@ const css = () => {
   document.head.append(s);
 };
 
-const headOf = (t) => ((t.querySelector('b') || {}).textContent || '').trim();
-
 // One purchase: the form is sent, and the answer is read: the game's messages and the same form again (new quote).
 async function buyOnce(form) {
   const body = new URLSearchParams(new FormData(form));
-  const html = await (await fetch(form.getAttribute('action') || 'index.php', { method: 'POST', body, credentials: 'same-origin' })).text();
-  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const html = await fetchText(form.getAttribute('action') || 'index.php', { method: 'POST', body });
+  const doc = parseHtml(html);
   const alerts = gAlerts(doc);
-  return { alerts, next: doc.getElementById(form.id), bad: alerts.some((t) => /ERROR|WARNING/i.test(headOf(t))) };
+  return { alerts, next: doc.getElementById(form.id), bad: alertBad(alerts) };
 }
 
 function showResult(done, want, alerts) {

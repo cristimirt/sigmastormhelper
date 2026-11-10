@@ -1,5 +1,5 @@
-import { CREATURE_TYPES } from './core/creatures.js';
 import { VERSION } from './core/constants.js';
+import { CREATURE_TYPES } from './core/creatures.js';
 import { pageParts } from './core/page.js';
 import { CFG_DEFAULT, S } from './core/state.js';
 import { store } from './core/storage.js';
