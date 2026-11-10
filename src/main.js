@@ -13,6 +13,7 @@ import { read, show } from './game/loading.js';
 import { initLive } from './layout/live.js';
 import { initLayout } from './layout/profile.js';
 import { rememberScripts } from './layout/sidebars.js';
+import { initArtifactShop } from './pages/artifactshop.js';
 import { initBank } from './pages/bank.js';
 import { initFactionInv } from './pages/factioninv.js';
 import { initInventing } from './pages/inventing.js';
@@ -48,6 +49,7 @@ async function init() {
   initLive();
   if (/[?&]cmd=settings/.test(location.search)) { initSettings(); return; }
   if (/[?&]cmd=guild/.test(location.search) && /[?&]subcmd=inventory/.test(location.search) && /[?&]subcmd2=report/.test(location.search) && S.cfg.factionInv) { initFactionInv(); return; }
+  if (document.querySelector('form[id^="artifact-buy-"]')) { initArtifactShop(); return; } // the faction's Artifact Shop
   if (/[?&]cmd=bank/.test(location.search) || document.getElementById('deposit_amount')) { initBank(); return; } // also the page a deposit or an action-list button posts to
   if (/[?&]cmd=questbook/.test(location.search) && /[?&]subcmd=viewquest/.test(location.search)) { initQuest(); return; }
   if (/[?&]cmd=inventing/.test(location.search) && !/[?&]subcmd=[^&]/.test(location.search)) { initRecipes(); initInventing(); return; }

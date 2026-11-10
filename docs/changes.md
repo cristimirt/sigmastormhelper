@@ -38,6 +38,8 @@ The helper only changes how pages look and how they are used in your own browser
 - **Pages the game sends with broken markup** (the mission page of a quest that has not been started) are put back in the usual structure before the helper reads them, in both layouts; the quest page shows the "not started" line as plain text.
 - **The game's messages** ("You need at least 20 energy ...") show their line breaks and links as they are meant (links get the token), and the upgrade-level pictures of item tooltips load from the CDN.
 - **Quest pages** are made of divs, and the header picture shows once.
+- **Artifact Shop** (faction): a number box next to each Buy button; Buy sends the purchase that many times, one after the other, and stops at the first message of the game that is an error or a warning.
+- **Map tooltips** show the tile pictures again (the saved areas are read again once, since they were saved without the pictures); moving backpack items to another folder works with the game's new folder box.
 
 ### Action list and combat (world page)
 

@@ -17,7 +17,7 @@ async function ensureArea() {
   if (!S.areaUrl) return false;
   try {
     const cached = store.get('area:' + S.loc.area, null);
-    if (cached && cached.v === 2 && cached.a) {
+    if (cached && cached.v === 3 && cached.a) {
       S.areas.set(S.loc.area, cached.a);
       return true;
     }
@@ -25,7 +25,7 @@ async function ensureArea() {
     const a = parseAreaMap(html);
     if (!a) return false;
     S.areas.set(S.loc.area, a);
-    store.set('area:' + S.loc.area, { v: 2, a });
+    store.set('area:' + S.loc.area, { v: 3, a });
     return true;
   } catch (e) {
     return false;
