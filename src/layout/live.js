@@ -6,6 +6,8 @@ import { renderStairs, setLevelFrom } from '../game/stairs.js';
 import { pageParts } from '../core/page.js';
 import { S } from '../core/state.js';
 import { alertModal, gAlerts } from './modal.js';
+import { parseHtml } from '../core/util.js';
+import { fetchText } from '../core/net.js';
 
 const EVERY = 10000;
 let timer = 0;
@@ -54,8 +56,8 @@ export async function refreshLive() {
   busy = true;
   const t0 = Date.now();
   try {
-    const html = await (await fetch('index.php?cmd=profile', { credentials: 'same-origin' })).text();
-    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const html = await fetchText('index.php?cmd=profile');
+    const doc = parseHtml(html);
     const p = pageParts();
     const hovered = p && p.header && p.header.matches(':hover');
     if (!S.busy && !hovered && !(S.hdrT > t0)) updateHeader(html);
@@ -78,7 +80,7 @@ async function sendChat(form) {
   input.disabled = true;
   try {
     const res = await fetch(new URL(form.getAttribute('action') || 'index.php', location.href).href, { method: 'POST', body, credentials: 'same-origin' });
-    const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+    const doc = parseHtml(await res.text());
     // the game's "Message sent to faction chat!" is not shown; any other message (an error) is, and the text stays in the box
     const alerts = gAlerts(doc).filter((a) => !/message sent/i.test(a.textContent));
     if (alerts.length) alertModal(alerts);

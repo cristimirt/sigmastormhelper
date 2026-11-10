@@ -1,4 +1,6 @@
 import { updateHeader } from '../banner.js';
+import { fetchDoc, fetchText } from '../core/net.js';
+import { alertBad, parseHtml } from '../core/util.js';
 import { bpNote } from './backpack.js';
 import { mel } from './dom.js';
 import { alertModal, gAlerts, mModal } from './modal.js';
@@ -92,8 +94,7 @@ export function csFields(kind, id, name) {
 
 // Message boxes of a response page: their text, and whether any of them is an error.
 const csAlerts = (doc) => {
-  const a = gAlerts(doc);
-  return { text: bpNote(doc), bad: a.some((t) => /ERROR|WARNING/i.test((t.querySelector('b') || {}).textContent || '')) };
+  return { text: bpNote(doc), bad: alertBad(gAlerts(doc)) };
 };
 
 export function csOpen(testSets) {
@@ -111,13 +112,13 @@ export function csOpen(testSets) {
   q('.cb-w').append(combo.el);
   combo.set(testSets || csSets(document) || []);
   const reload = async (keepText) => {
-    const sets = csSets(new DOMParser().parseFromString(await (await fetch('index.php?cmd=profile', { credentials: 'same-origin' })).text(), 'text/html'));
+    const sets = csSets(await fetchDoc('index.php?cmd=profile'));
     if (sets) combo.set(sets, keepText);
     return sets;
   };
   const post = async (fields) => {
-    const html = await (await fetch('index.php', { method: 'POST', body: fields, credentials: 'same-origin' })).text();
-    return { html, doc: new DOMParser().parseFromString(html, 'text/html') };
+    const html = await fetchText('index.php', { method: 'POST', body: fields });
+    return { html, doc: parseHtml(html) };
   };
   const close = mModal('Combat sets', body, [{ text: 'Close' }]);
   if (!testSets) reload().catch(() => {}); // the list on the page may be older than the server's

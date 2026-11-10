@@ -1,3 +1,4 @@
+import { digits, parseHtml } from './util.js';
 // The game's new request rules (its own scripts: /js/security.js and /js/world-controls.js):
 //  - every request to index.php carries the page's CSRF token (<meta name="csrf-token">) as `_csrf`; a request without it gets
 //    "Request verification failed" (403) for most pages. The game takes the token off the address bar once the page has loaded.
@@ -7,6 +8,7 @@
 // So: every request to index.php that has no token gets the page's own (in the address for a GET, among the fields for a POST), every POST
 // gets a fresh `_operation`, and the old move / stairs addresses are sent as the POST the game sends. Requests the game made itself (they
 // have the fields) are left as they are. `navigate()` is the same for the places where the helper sends the browser to an address.
+
 const TOKEN = '_csrf';
 const OP = '_operation';
 
@@ -145,3 +147,7 @@ export function navigate(href) {
   } catch (e) { /* the plain way */ }
   location.href = href;
 }
+
+// A page of the game as text, or as a document (the same session; the request goes through the wrapped fetch above).
+export const fetchText = async (url, init) => (await fetch(url, { credentials: 'same-origin', ...init })).text();
+export const fetchDoc = async (url, init) => parseHtml(await fetchText(url, init));

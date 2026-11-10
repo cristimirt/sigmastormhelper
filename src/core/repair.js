@@ -1,8 +1,8 @@
+import { SKIN } from './constants.js';
 // A few of the game's responses come with broken markup (the mission page of a quest that has not been started closes its tables in the
 // wrong places): the content frame loses its right border and bottom picture, the right sidebar ends up after the page table, and the
 // bottom rows of the page table are missing. The helper (and the Original layout) need the usual structure, so it is rebuilt here, once,
 // before anything reads the page: the same cells and pictures, in the places the other pages have them.
-const SKIN = 'https://cdn.sigmastorm.com/skin/';
 
 export function repairPage(doc) {
   const d = doc || document;

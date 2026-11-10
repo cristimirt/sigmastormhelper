@@ -3,8 +3,8 @@ import { DATA } from '../core/data.js';
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
 import { pfUpdate } from '../pathfinder/panel.js';
-import { renderStairs } from './stairs.js';
 import { renderTrail } from './footprints.js';
+import { renderStairs } from './stairs.js';
 
 const KEEP = 80; // px of the map that always stay in the window when it is dragged
 

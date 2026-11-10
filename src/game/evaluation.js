@@ -1,5 +1,7 @@
+import { fetchText } from '../core/net.js';
 import { S } from '../core/state.js';
-import { esc, txt } from '../core/util.js';
+import { esc, parseHtml, txt } from '../core/util.js';
+import { fetchItem } from '../tooltips/compare.js';
 
 const MAX_TURNS = 20; // a turn = one attack from each side, the player first
 
@@ -28,8 +30,8 @@ function parseCreature(frame) {
 // Player stats from the profile page, plus the damage type of the equipped weapon.
 async function playerStats() {
   if (S.me && Date.now() - S.me.t < 30000) return S.me;
-  const html = await (await fetch('index.php?cmd=profile', { credentials: 'same-origin' })).text();
-  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const html = await fetchText('index.php?cmd=profile');
+  const doc = parseHtml(html);
   const c = (doc.getElementById('mainContentDiv') || doc.body);
   const t = flat(c);
   const g = (k) => fnum(t.match(new RegExp('\\b' + k + ':[\\s\u00a6]*(-?[\\d,.]+)')));
@@ -61,7 +63,7 @@ async function playerStats() {
     if (m && /Unequip/.test(o)) eq.push(m);
   });
   await Promise.all(eq.map(async (m) => {
-    const it = txt(await (await fetch('fetchitem.php?item_id=' + m[1] + '&inv_id=' + m[2] + '&t=' + m[3] + '&p=' + m[4] + '&uid=' + Date.now(), { credentials: 'same-origin' })).text());
+    const it = txt(await fetchItem(m[1], m[2], m[3], m[4]));
     const d = it.match(/Weapon Type:\s*[A-Za-z ]*?Damage Type:\s*([A-Za-z]+)/) || it.match(/Weapon Data.*?Damage Type:\s*([A-Za-z]+)/);
     if (d && !type) type = d[1].toLowerCase();
   }));

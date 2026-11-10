@@ -1,3 +1,5 @@
+import { fetchText } from '../core/net.js';
+import { parseHtml } from '../core/util.js';
 // Gear comparing: the tooltip of an item that is not worn is shown next to the tooltip of the worn item of the same kind
 // (Weapon, Helmet, Weapon Add-On, ...), and its numbers are coloured and followed by the difference, e.g. "+27 (+13)".
 // Item data is the game's own fetchitem.php answer.
@@ -66,7 +68,7 @@ const DOWN = '#ff6b5a';
 // rows of each number and `last` the row new numbers go after. Only the three stat tables are read, so the set bonuses and the
 // requirements further down do not count.
 export function parseItem(html) {
-  const d = new DOMParser().parseFromString(html, 'text/html');
+  const d = parseHtml(html);
   const b = d.querySelector('b');
   const ty = d.querySelector('font[color="yellow" i]');
   const it = { name: b ? b.textContent.trim() : '', type: ty ? ty.textContent.trim() : '', stats: {}, rows: {}, last: {}, none: {}, doc: d };
@@ -110,18 +112,18 @@ async function wornIds() {
   const here = wornFrom(document);
   if (here.length) return here;
   if (!wornCache || Date.now() - wornCache.t > 120000) {
-    const p = fetch('index.php?cmd=profile', { credentials: 'same-origin' }).then((r) => r.text())
-      .then((h) => wornFrom(new DOMParser().parseFromString(h, 'text/html')));
+    const p = fetchText('index.php?cmd=profile')
+      .then((h) => wornFrom(parseHtml(h)));
     wornCache = { t: Date.now(), p };
     p.catch(() => { wornCache = null; });
   }
   return wornCache.p;
 }
 
-const fmt = (n) => (n > 0 ? '+' : '') + (Math.round(n * 100) / 100);
+const signed = (n) => (n > 0 ? '+' : '') + (Math.round(n * 100) / 100);
 
 function paint(td, text, d) {
-  td.innerHTML = '<font color="' + (d > 0 ? UP : DOWN) + '">' + text + ' (' + fmt(d) + ')&nbsp;</font>';
+  td.innerHTML = '<font color="' + (d > 0 ? UP : DOWN) + '">' + text + ' (' + signed(d) + ')&nbsp;</font>';
 }
 
 // The hovered item's numbers coloured against the worn item's, with the difference in brackets; numbers only the worn item

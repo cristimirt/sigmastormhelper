@@ -1,8 +1,8 @@
+import { fetchDoc, withToken } from '../core/net.js';
 import { pageParts } from '../core/page.js';
 import { store } from '../core/storage.js';
 import { https } from '../core/util.js';
 import { FI_URL } from '../pages/factioninv.js';
-import { withToken } from '../core/net.js';
 import { mel } from './dom.js';
 
 // The sidebars of the Modern layout, made of divs: every widget (Main Menu, Questions, Game Stats, Skills, ...) is a div with a
@@ -269,7 +269,7 @@ export function rememberScripts() {
 // The page has already taken them away when the helper starts (the copy is then empty): read them from the page's own text again.
 async function loadSpare() {
   if (spare.length) return;
-  try { spare = pick(new DOMParser().parseFromString(await (await fetch(location.href, { credentials: 'same-origin' })).text(), 'text/html')); } catch (e) { /* no copy: the box stays as it is */ }
+  try { spare = pick(await fetchDoc(location.href)); } catch (e) { /* no copy: the box stays as it is */ }
 }
 function runSpare(want) {
   spare.filter((x) => want(x)).forEach((x) => {

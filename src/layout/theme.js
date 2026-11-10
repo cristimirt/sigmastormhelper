@@ -1,11 +1,11 @@
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
-import { bannerCss } from './header.js';
+import { quickCss } from '../game/quicklinks.js';
 import { frameCss } from './frame.js';
+import { bannerCss } from './header.js';
 import { pfDragCss } from './pfdrag.js';
 import { sidebarCss } from './sidebars.js';
 import { worldCss } from './worldpage.js';
-import { quickCss } from '../game/quicklinks.js';
 
 // Layout "orig" leaves the page alone. Layout "modern" builds the page again from the original markup with grid/flex.
 // The original stays in the page, hidden, and is the source of truth: form controls in the new layout are proxies that

@@ -1,10 +1,10 @@
+import { SKIN } from '../core/constants.js';
 import { S } from '../core/state.js';
 import { copyOn } from './dom.js';
 
 // The top banner for the Modern layout, built again with absolutely placed divs. The game's own table (kept in the page,
 // hidden) is the source of the data and of the links and tooltips, which are copied; the pieces are placed on the exact
 // slots of the banner picture (1000 x 150), which the game's table layout misses by a few pixels.
-const SKIN = 'https://cdn.sigmastorm.com/skin/';
 
 // the black slots of top_banner_x4.jpg: x, y, width, height
 const SLOT = {

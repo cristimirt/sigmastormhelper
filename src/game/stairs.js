@@ -5,6 +5,7 @@ import { TILE } from '../core/constants.js';
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
 import { getRouter } from '../pathfinder/panel.js';
+import { fetchText } from '../core/net.js';
 
 const svg = (body) => 'url("data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 65 65">' + body + '</svg>') + '")';
 const GO = svg('<ellipse cx="32.5" cy="40" rx="23" ry="9" fill="#000" opacity=".55"/>' +
@@ -54,7 +55,7 @@ export async function renderStairs() {
   if (!S.cfg.stairMarks) { box.textContent = ''; drawn = ''; return; }
   if (!S.plevel && !asked) {
     asked = true;
-    try { if (setLevelFrom(await (await fetch('index.php?cmd=profile', { credentials: 'same-origin' })).text())) drawn = ''; } catch (e) { /* no level: nothing is locked */ }
+    try { if (setLevelFrom(await fetchText('index.php?cmd=profile'))) drawn = ''; } catch (e) { /* no level: nothing is locked */ }
   }
   const router = await getRouter();
   const key = S.loc.area + '|' + S.plevel + '|' + (router ? 1 : 0);

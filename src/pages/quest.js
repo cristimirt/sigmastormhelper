@@ -1,5 +1,5 @@
 import { S } from '../core/state.js';
-import { https } from '../core/util.js';
+import { cssUrl, https } from '../core/util.js';
 import { mel } from '../layout/dom.js';
 
 // A quest in the Mission Book: the game draws it with tables inside tables (a header picture, the "Back to Mission Book" link, the
@@ -15,7 +15,6 @@ const CSS = '.ssh-q{width:640px;margin:0 auto;background-position:0 0}' +
   '.ssh-q .q-note{text-align:center;padding:30px 20px 40px}';
 
 const src = (td) => https(td.getAttribute('background') || '');
-const url = (u) => (u ? 'url("' + u + '")' : 'none');
 
 export function initQuest() {
   const head = [...document.querySelectorAll('td[background]')].find((td) => /\/skin\/header_/.test(td.getAttribute('background')));
@@ -32,9 +31,9 @@ export function initQuest() {
   st.textContent = CSS;
   document.head.append(st);
   const q = mel('div', 'ssh-q');
-  q.style.backgroundImage = url(src(table));
+  q.style.backgroundImage = cssUrl(src(table));
   const hd = mel('div', 'q-head');
-  hd.style.backgroundImage = url(src(head));
+  hd.style.backgroundImage = cssUrl(src(head));
   q.append(hd);
   if (back) {
     const b = mel('div', 'q-back');
@@ -62,7 +61,7 @@ export function initQuest() {
   });
   q.append(list);
   const ft = mel('div', 'q-foot');
-  ft.style.backgroundImage = url(S.base ? S.base + 'media/large_content_footer.png' : src(foot));
+  ft.style.backgroundImage = cssUrl(S.base ? S.base + 'media/large_content_footer.png' : src(foot));
   q.append(ft);
   table.replaceWith(q);
 }

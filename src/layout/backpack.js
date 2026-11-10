@@ -1,8 +1,9 @@
 import { updateHeader } from '../banner.js';
 import { SSH } from '../core/constants.js';
-import { postHref } from '../core/net.js';
+import { fetchDoc, fetchText, postHref } from '../core/net.js';
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
+import { alertBad, alertText, parseHtml } from '../core/util.js';
 import { csFields, csOpen } from './combatsets.js';
 import { mel, mq } from './dom.js';
 import { alertModal, gAlerts, mModal } from './modal.js';
@@ -208,7 +209,7 @@ async function bpLoad(url, note, bad) {
   let ok = false;
   try {
     const res = await fetch(url, { credentials: 'same-origin' });
-    const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+    const doc = parseHtml(await res.text());
     const d = bpFromDoc(doc);
     if (!d) throw new Error('no backpack');
     if (my !== BP.req) return false;
@@ -232,10 +233,10 @@ async function bpLoad(url, note, bad) {
 }
 
 export function bpNote(doc) {
-  return gAlerts(doc).map((t) => t.textContent.replace(/\s+/g, ' ').replace(/^\s*(INFORMATION|ERROR|WARNING|SUCCESS)?\s*ALERT\s*/i, '').trim()).join(' ').slice(0, 240);
+  return alertText(gAlerts(doc)).slice(0, 240);
 }
 
-const bpBad = (doc) => gAlerts(doc).some((t) => /ERROR|WARNING/i.test((t.querySelector('b') || {}).textContent || ''));
+const bpBad = (doc) => alertBad(gAlerts(doc));
 
 // Use an item without leaving the page: consumables and resources reload the bag (and the components); gear
 // reloads the whole profile content, since the stats change too. The game's message, if any, is shown in the line above the bag.
@@ -246,14 +247,14 @@ export async function bpUse(a) {
   if (gear) profBusy(true); // the whole content is about to be replaced
   let html = '';
   try {
-    html = await (await fetch(href, { credentials: 'same-origin' })).text();
+    html = await fetchText(href);
   } catch (e) {
     bpBusy(false);
     profBusy(false);
     bpMsg('The request failed.', true);
     return;
   }
-  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const doc = parseHtml(html);
   const note = bpNote(doc);
   const bad = bpBad(doc);
   updateHeader(html);
@@ -279,7 +280,7 @@ function compUpdate(rows) {
 
 export async function compLoad(href) {
   try {
-    const doc = new DOMParser().parseFromString(await (await fetch(href, { credentials: 'same-origin' })).text(), 'text/html');
+    const doc = await fetchDoc(href);
     const cs = secFromDoc(doc, 'components');
     if (cs) compUpdate(cs.rows);
   } catch (e) { bpMsg('Could not load the components.', true); }
@@ -290,7 +291,7 @@ export async function compDestroy(href) {
   bpBusy(true);
   let doc = null;
   try {
-    doc = new DOMParser().parseFromString(await (await fetch(href, { credentials: 'same-origin' })).text(), 'text/html');
+    doc = await fetchDoc(href);
   } catch (e) {
     bpBusy(false);
     bpMsg('The request failed.', true);
@@ -304,7 +305,7 @@ async function bpPost(fields) {
   bpBusy(true);
   try {
     const res = await fetch('index.php', { method: 'POST', body: fields, credentials: 'same-origin' });
-    return bpNote(new DOMParser().parseFromString(await res.text(), 'text/html'));
+    return bpNote(parseHtml(await res.text()));
   } catch (e) {
     bpBusy(false);
     bpMsg('The request failed.', true);
@@ -392,7 +393,7 @@ export async function bpPopup(host, onChange) {
   let box = null;
   let doc = null;
   try {
-    doc = new DOMParser().parseFromString(await (await fetch('index.php?cmd=profile', { credentials: 'same-origin' })).text(), 'text/html');
+    doc = await fetchDoc('index.php?cmd=profile');
     const s = secFromDoc(doc, 'backpack');
     BP.restored = false;
     box = s ? pfBack(s.rows) : null;

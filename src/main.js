@@ -4,7 +4,6 @@ import { decorateHeader, grabVars, refreshDur } from './banner.js';
 import { SSH, dropEarly, dropEarlyM } from './core/constants.js';
 import { loadData } from './core/data.js';
 import { installImgFix } from './core/imgfix.js';
-import { installCsrf } from './core/net.js';
 import { pageParts } from './core/page.js';
 import { repairPage } from './core/repair.js';
 import { S } from './core/state.js';
@@ -22,6 +21,7 @@ import { initSettings, movePanels, trimTail } from './settings.js';
 import { initRecipes } from './tooltips/blueprints.js';
 import { serverOffset } from './tooltips/energy.js';
 import { initTips } from './tooltips/tips.js';
+import { installCsrf } from './core/net.js';
 
 // The game's top bar asks for Open Sans from a server that does not allow it (the browser blocks it): the copy that comes with the helper
 // is used for that name instead (it is declared after the game's, so it wins).

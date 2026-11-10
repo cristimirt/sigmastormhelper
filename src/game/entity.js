@@ -1,10 +1,10 @@
 import { refreshDur, updateHeader } from '../banner.js';
+import { fetchText, navigate, postHref } from '../core/net.js';
 import { S } from '../core/state.js';
-import { esc, txt } from '../core/util.js';
+import { esc, parseHtml, txt } from '../core/util.js';
 import { renderActions } from './actionlist.js';
 import { attackAlert, fillResult, isSep, logBody, parseCombat, refreshWorld, resultHtml } from './combat.js';
 import { fillEvaluation } from './evaluation.js';
-import { navigate, postHref } from '../core/net.js';
 
 // Creature details in a pop-up (the game's "View Entity" page), with the same background fight.
 S.entRes = [];
@@ -56,9 +56,9 @@ export async function openEntity(href) {
   pop.innerHTML = '<div class="ebox"><div class="ehandle" title="Drag to move"></div><div class="eclose" data-eclose="1" title="Close">&#10006;</div><div class="eload" style="padding:60px;text-align:center"><span class="ssh-spin"></span></div></div>';
   document.body.appendChild(pop);
   try {
-    const html = await (await fetch(new URL(href, location.href).href, { credentials: 'same-origin' })).text();
+    const html = await fetchText(new URL(href, location.href).href);
     if (!document.getElementById('ssh-ent')) return; // closed meanwhile
-    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const doc = parseHtml(html);
     const m = doc.getElementById('mainContentDiv');
     const frame = m && (m.querySelector('table[background*="large_content_bg"]') || (m.rows[1] && m.rows[1].cells[1] && m.rows[1].cells[1].querySelector(':scope > table')));
     // the attack is a small POST form now (an address that stands for it is used); before it was a button that went to an address
@@ -114,7 +114,7 @@ export async function entityAttack(btn) {
   if (res && res.parentElement) { const td = res.parentElement; const w = td.getBoundingClientRect().width; if (w) { td.style.width = w + 'px'; td.style.maxWidth = w + 'px'; } } // keep the column as wide as it was
   if (res) { res.style.display = 'block'; res.innerHTML = '<span class="ssh-spin" title="Fighting..."></span> Fighting...'; }
   try {
-    const html = await (await fetch(new URL(href, location.href).href, { credentials: 'same-origin' })).text();
+    const html = await fetchText(new URL(href, location.href).href);
     const c = parseCombat(html);
     if (!c || c.type !== 0) {
       if (attackAlert(html)) {
@@ -170,7 +170,7 @@ export async function doAttack(a) {
   if (img) img.outerHTML = '<span class="ssh-spin" title="Fighting..."></span>';
   let leave = false;
   try {
-    const html = await (await fetch(new URL(href, location.href).href, { credentials: 'same-origin' })).text();
+    const html = await fetchText(new URL(href, location.href).href);
     const c = parseCombat(html);
     if (!c || c.type !== 0) {
       if (attackAlert(html)) {

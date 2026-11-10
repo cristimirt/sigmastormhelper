@@ -1,6 +1,8 @@
 import { refreshDur, updateHeader } from '../banner.js';
+import { ITEM } from '../core/constants.js';
+import { fetchDoc } from '../core/net.js';
 import { S } from '../core/state.js';
-import { https } from '../core/util.js';
+import { https, parseHtml } from '../core/util.js';
 import { BP, bpFromDoc, bpPopup } from '../layout/backpack.js';
 import { mel } from '../layout/dom.js';
 import { alertModal, gAlerts, mModal, toast } from '../layout/modal.js';
@@ -82,7 +84,6 @@ export function buildQuickBar(src) {
 const itemInfo = new Map();
 let mpBusy = false;
 const REPAIR = /repair (bot|belt|drone|kit)|diagnostic kit/i;
-const ITEM = /ajaxLoadItem\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/;
 async function infoOf(m) {
   if (!itemInfo.has(m[1])) {
     const html = await loadItem(m[1], m[2], m[3], m[4]);
@@ -97,7 +98,7 @@ export async function refreshSupplies() {
   mpBusy = true;
   try {
     const get = async (url) => {
-      const doc = new DOMParser().parseFromString(await (await fetch(url, { credentials: 'same-origin' })).text(), 'text/html');
+      const doc = await fetchDoc(url);
       return { doc, d: bpFromDoc(doc) };
     };
     const { doc: pdoc, d: first } = await get('index.php?cmd=profile');
@@ -174,7 +175,7 @@ export async function quickAction(href, label, post) {
   let ok = false;
   try {
     const html = await (await (post ? fetch('index.php', { method: 'POST', body: new URLSearchParams(post), credentials: 'same-origin' }) : fetch(new URL(href, location.href).href, { credentials: 'same-origin' }))).text();
-    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const doc = parseHtml(html);
     const alerts = gAlerts(doc);
     if (alerts.length) { if (/worldmedipack|worldrepair/.test(href)) toast(alerts); else alertModal(alerts); }
     else if (!doc.getElementById('mapDiv')) { // no message and not the world page: show what the game answered
@@ -210,7 +211,7 @@ function bagDialog() {
 // How full the backpack is, from the world page (its Quick Links say it): written on the bag button.
 export async function refreshBagCount() {
   try {
-    const doc = new DOMParser().parseFromString(await (await fetch('index.php?cmd=world', { credentials: 'same-origin' })).text(), 'text/html');
+    const doc = await fetchDoc('index.php?cmd=world');
     const strip = doc.querySelector('table[style*="quicklinks_bg"]');
     const m = strip && strip.textContent.match(/\[\s*(\d+)\s*\/\s*(\d+)\s*\]/);
     if (!m) return;

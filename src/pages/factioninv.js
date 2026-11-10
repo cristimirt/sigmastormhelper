@@ -1,10 +1,11 @@
+import { ITEM } from '../core/constants.js';
+import { fetchDoc, fetchText, withToken } from '../core/net.js';
 import { pageParts } from '../core/page.js';
 import { store } from '../core/storage.js';
-import { https } from '../core/util.js';
+import { alertBad, alertText, esc, https, parseHtml, sleep } from '../core/util.js';
 import { mel } from '../layout/dom.js';
 import { gAlerts, mModal } from '../layout/modal.js';
 import { fetchItem, parseItem } from '../tooltips/compare.js';
-import { withToken } from '../core/net.js';
 
 // Faction Inventory: every item of the faction in one list - the tagged items the members carry (the game's "Tagged Item Report")
 // and the items in the faction store - with the numbers of each item, filters, sorting, and buttons to recall them. The list of items
@@ -15,7 +16,6 @@ export const FI_URL = 'index.php?cmd=guild&subcmd=inventory&subcmd2=report';
 
 const REPORT = 'index.php?cmd=guild&subcmd=inventory&subcmd2=report';
 const MANAGE = 'index.php?cmd=guild&subcmd=manage';
-const ITEM = /ajaxLoadItem\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/;
 const STORE = 'Faction Store';
 const STALE = 24 * 3600 * 1000; // a cached item is read again after a day (its durability changes)
 const PER = [25, 50, 100, 250];
@@ -27,12 +27,6 @@ const CLASSES = ['Core', 'Psi', 'Battlesuit', 'Rad', 'Hardwired'];
 const NOCLASS = 'None';
 const RANK = { Common: 0, Uncommon: 1, Rare: 2, Unique: 3, Epic: 4, Legendary: 5, 'Super Elite': 6, Crystalline: 7 };
 
-const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const parse = (html) => new DOMParser().parseFromString(html, 'text/html');
-const get = async (url) => parse(await (await fetch(url, { credentials: 'same-origin' })).text());
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const alertText = (al) => al.map((t) => t.textContent.replace(/\s+/g, ' ').replace(/^\s*(INFORMATION|ERROR|WARNING|SUCCESS)?\s*ALERT\s*/i, '').trim()).filter(Boolean).join(' ');
-const alertBad = (al) => al.some((t) => /ERROR|WARNING/i.test((t.querySelector('b') || {}).textContent || ''));
 
 // ---- the lists of the game's pages
 
@@ -78,7 +72,7 @@ async function loadStore() {
   const all = [];
   const seen = new Set();
   for (let p = 0; p < 80; p++) {
-    const rows = readStore(await get(MANAGE + '&guildstore_page=' + p));
+    const rows = readStore(await fetchDoc(MANAGE + '&guildstore_page=' + p));
     const fresh = rows.filter((r) => !seen.has(r.k));
     if (!fresh.length) break;
     fresh.forEach((r) => { seen.add(r.k); all.push(r); });
@@ -140,7 +134,7 @@ function ago(s) {
 }
 
 function readPlayer(html, name) {
-  const t = parse(html).body.textContent.replace(/\s+/g, ' ');
+  const t = parseHtml(html).body.textContent.replace(/\s+/g, ' ');
   const g = (re) => { const m = t.match(re); return m ? m[1].trim() : ''; };
   const raw = {
     title: g(new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s+(.{0,80}?)\\s+Last Activity')),
@@ -157,7 +151,7 @@ const PLAYERS = new Map();
 function loadPlayer(pid, name) {
   let p = PLAYERS.get(pid);
   if (!p || Date.now() - p.t > 600000) {
-    p = { t: Date.now(), p: fetch('index.php?cmd=profile&player_id=' + pid, { credentials: 'same-origin' }).then((r) => r.text()).then((h) => readPlayer(h, name)) };
+    p = { t: Date.now(), p: fetchText('index.php?cmd=profile&player_id=' + pid).then((h) => readPlayer(h, name)) };
     p.p.catch(() => PLAYERS.delete(pid));
     PLAYERS.set(pid, p);
   }
@@ -276,7 +270,7 @@ export function initFactionInv() {
     status('<span class="ssh-spin"></span> Loading the lists...');
     try {
       const [rep, sto] = await Promise.all([
-        (pre && pre.length ? Promise.resolve(pre) : get(REPORT).then(readReport)).catch(() => null),
+        (pre && pre.length ? Promise.resolve(pre) : fetchDoc(REPORT).then(readReport)).catch(() => null),
         loadStore().catch(() => null),
       ]);
       if (!rep && !sto) { status('The lists could not be loaded. Are you in a faction, and allowed to see its items?', 'bad'); return; }
@@ -410,7 +404,7 @@ export function initFactionInv() {
 
   // ---- recalling and taking
   async function send(i) {
-    const doc = parse(await (await fetch('index.php', { method: 'POST', body: new URLSearchParams(i.post), credentials: 'same-origin' })).text());
+    const doc = await fetchDoc('index.php', { method: 'POST', body: new URLSearchParams(i.post) });
     const al = gAlerts(doc);
     const again = i.kind === 'p' && !!doc.getElementById('faction-recall-' + i.inv); // the report still lists it
     return { ok: !alertBad(al) && !again, msg: alertText(al) };

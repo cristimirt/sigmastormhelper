@@ -1,17 +1,18 @@
 import { decorateHeader, refreshDur, restoreHeader, updateHeader } from '../banner.js';
 import { dropEarlyM } from '../core/constants.js';
+import { fetchText, postHref } from '../core/net.js';
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
+import { parseHtml } from '../core/util.js';
 import { BP, bpUse, compDestroy, compLoad } from './backpack.js';
 import { csOpen } from './combatsets.js';
 import { mel, proxify } from './dom.js';
+import { buildFrame, unbuildFrame } from './frame.js';
 import { applyPfOrder, bindPfDrag, pfResetLink } from './pfdrag.js';
 import { pfSection, pfSections } from './sections.js';
-import { buildFrame, unbuildFrame } from './frame.js';
 import { buildSidebars, unbuildSidebars } from './sidebars.js';
-import { buildWorldPage, unbuildWorldPage } from './worldpage.js';
 import { THEMES, mCss, onProfile } from './theme.js';
-import { postHref } from '../core/net.js';
+import { buildWorldPage, unbuildWorldPage } from './worldpage.js';
 
 // Dim the whole profile content while it is being replaced (gear changed: the stats move too).
 export function profBusy(on) {
@@ -38,8 +39,8 @@ export async function refreshProfile() {
   const old = document.querySelector('table[data-ssh-orig]');
   const root = document.getElementById('ssh-prof');
   if (!old || !root) return false;
-  const html = await (await fetch(BP.url || 'index.php?cmd=profile', { credentials: 'same-origin' })).text();
-  const nt = new DOMParser().parseFromString(html, 'text/html').querySelector('table[background*="large_content_bg"]');
+  const html = await fetchText(BP.url || 'index.php?cmd=profile');
+  const nt = parseHtml(html).querySelector('table[background*="large_content_bg"]');
   if (!nt) return false;
   const fresh = document.adoptNode(nt);
   old.replaceWith(fresh);

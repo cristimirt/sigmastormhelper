@@ -2,9 +2,10 @@
 // shortest way from where you stand (stairs, world maps, portals). The route data is route.json of the website.
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
-import { esc } from '../core/util.js';
+import { floatPanel } from '../layout/floating.js';
 import { create } from './route.js';
 import { liveWalk, startsOnTile, stepMain, stepShort } from './steptext.js';
+import { esc } from '../core/util.js';
 
 const SITE = 'https://cristimirt.github.io/sspathfinder/';
 
@@ -134,12 +135,6 @@ function draw() {
   p.querySelector('.bd').innerHTML = bodyHtml();
 }
 
-function clampPanel(p) {
-  const doc = document.documentElement;
-  p.style.left = Math.max(0, Math.min(p.offsetLeft, doc.scrollWidth - p.offsetWidth)) + 'px';
-  p.style.top = Math.max(0, Math.min(p.offsetTop, doc.scrollHeight - 40)) + 'px';
-}
-
 function ensurePanel() {
   let p = document.getElementById('ssh-pf');
   if (p) return p;
@@ -207,38 +202,7 @@ function ensurePanel() {
   });
   input.value = st.dest;
   // draggable anywhere on the page, like the Action List
-  const pos = store.get('pfpos', null);
-  if (pos) {
-    p.style.left = pos.x + 'px';
-    p.style.top = pos.y + 'px';
-  } else {
-    const r = S.viewer.getBoundingClientRect();
-    p.style.left = Math.max(8, r.left + window.scrollX + 38) + 'px';
-    p.style.top = Math.max(8, r.top + window.scrollY + 76) + 'px';
-  }
-  let drag = null;
-  const hd = p.querySelector('.hd');
-  hd.addEventListener('pointerdown', (e) => {
-    if (e.target.closest('.x')) return;
-    drag = { dx: e.pageX - p.offsetLeft, dy: e.pageY - p.offsetTop };
-    hd.setPointerCapture(e.pointerId);
-    e.preventDefault();
-  });
-  hd.addEventListener('pointermove', (e) => {
-    if (!drag) return;
-    p.style.left = e.pageX - drag.dx + 'px';
-    p.style.top = e.pageY - drag.dy + 'px';
-    clampPanel(p);
-  });
-  const end = (e) => {
-    if (!drag) return;
-    drag = null;
-    try { hd.releasePointerCapture(e.pointerId); } catch (x) { /* already released */ }
-    store.set('pfpos', { x: p.offsetLeft, y: p.offsetTop });
-  };
-  hd.addEventListener('pointerup', end);
-  hd.addEventListener('pointercancel', end);
-  window.addEventListener('resize', () => clampPanel(p));
+  floatPanel(p, { key: 'pfpos', skip: '.x', home: (r) => ({ x: Math.max(8, r.left + window.scrollX + 38), y: Math.max(8, r.top + window.scrollY + 76) }) });
   return p;
 }
 

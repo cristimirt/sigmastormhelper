@@ -1,12 +1,12 @@
-import { postHref } from '../core/net.js';
 import { refreshDur, updateHeader } from '../banner.js';
 import { SSH } from '../core/constants.js';
+import { fetchText, navigate, postHref } from '../core/net.js';
 import { S } from '../core/state.js';
-import { store } from '../core/storage.js';
+import { alertBad, alertText, parseHtml } from '../core/util.js';
 import { unslash } from '../layout/dom.js';
+import { floatPanel } from '../layout/floating.js';
 import { alertModal, gAlerts, mModal } from '../layout/modal.js';
 import { closeLog, placeResults, refreshWorld } from './combat.js';
-import { navigate } from '../core/net.js';
 import { tableToDivs } from './rows.js';
 
 // A panel on the page itself (not in the map), draggable anywhere; it scrolls with the page.
@@ -17,49 +17,8 @@ function ensurePanel() {
   p.id = 'ssh-al';
   p.innerHTML = '<div class="hd">Action List<span class="rf" title="Refresh the list [R]">&#8635;</span></div><div class="bd"></div>';
   document.body.appendChild(p);
-  const pos = store.get('alpos', null);
-  if (pos) {
-    p.style.left = pos.x + 'px';
-    p.style.top = pos.y + 'px';
-  } else {
-    const r = S.viewer.getBoundingClientRect();
-    p.style.left = Math.max(8, r.right + window.scrollX - 278) + 'px';
-    p.style.top = Math.max(8, r.top + window.scrollY + 8) + 'px';
-  }
-  clampPanel();
-  let drag = null;
-  p.querySelector('.hd').addEventListener('pointerdown', (e) => {
-    if (e.target.closest('.rf')) return; // the refresh button is a button, not a handle
-    drag = { dx: e.pageX - p.offsetLeft, dy: e.pageY - p.offsetTop };
-    e.currentTarget.setPointerCapture(e.pointerId);
-    e.preventDefault();
-  });
-  p.querySelector('.hd').addEventListener('pointermove', (e) => {
-    if (!drag) return;
-    p.style.left = e.pageX - drag.dx + 'px';
-    p.style.top = e.pageY - drag.dy + 'px';
-    clampPanel();
-  });
-  const end = (e) => {
-    if (!drag) return;
-    drag = null;
-    try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (x) { /* already released */ }
-    store.set('alpos', { x: p.offsetLeft, y: p.offsetTop });
-  };
-  p.querySelector('.hd').addEventListener('pointerup', end);
-  p.querySelector('.hd').addEventListener('pointercancel', end);
-  window.addEventListener('resize', clampPanel);
+  floatPanel(p, { key: 'alpos', skip: '.rf', home: (r) => ({ x: Math.max(8, r.right + window.scrollX - 278), y: Math.max(8, r.top + window.scrollY + 8) }) });
   return p;
-}
-
-// Keeps the panel (at least its header) inside the window.
-function clampPanel() {
-  const p = document.getElementById('ssh-al');
-  if (!p) return;
-  const x = Math.min(Math.max(0, p.offsetLeft), Math.max(0, document.documentElement.scrollWidth - 60));
-  const y = Math.min(Math.max(0, p.offsetTop), Math.max(0, document.documentElement.scrollHeight - 30));
-  p.style.left = x + 'px';
-  p.style.top = y + 'px';
 }
 
 // The creature list of the page, shown in the floating action list.
@@ -133,8 +92,8 @@ async function doPortal(action, fields, fallback) {
   try {
     const body = new URLSearchParams();
     fields.forEach(([n, v]) => body.append(n, v));
-    const html = await (await fetch(new URL(action, location.href).href, { method: 'POST', body, credentials: 'same-origin' })).text();
-    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const html = await fetchText(new URL(action, location.href).href, { method: 'POST', body });
+    const doc = parseHtml(html);
     const tb = [...doc.querySelectorAll('table')].filter((t) => /Destination/.test(t.textContent) && /Min Level/.test(t.textContent) && t.rows.length > 2).pop();
     if (tb) {
       [...tb.rows].forEach((r) => {
@@ -186,7 +145,7 @@ async function doPortal(action, fields, fallback) {
       clearTimeout(t);
       document.querySelectorAll('#ssh-mm .x').forEach((x) => x.click());
       SSH.go(r.to, undefined, (html) => {
-        const alerts = html ? gAlerts(new DOMParser().parseFromString(html, 'text/html')) : [];
+        const alerts = html ? gAlerts(parseHtml(html)) : [];
         if (alerts.length) alertModal(alerts); else navigate('index.php?cmd=world');
       });
     });
@@ -213,8 +172,8 @@ async function doHeal(action, fields, fallback) {
   try {
     const body = new URLSearchParams();
     fields.forEach(([n, v]) => body.append(n, v));
-    const html = await (await fetch(new URL(action, location.href).href, { method: 'POST', body, credentials: 'same-origin' })).text();
-    alerts = gAlerts(new DOMParser().parseFromString(html, 'text/html'));
+    const html = await fetchText(new URL(action, location.href).href, { method: 'POST', body });
+    alerts = gAlerts(parseHtml(html));
     updateHeader(html);
     ok = true;
   } catch (e) {
@@ -238,8 +197,8 @@ function healLine() {
 // The game's message of a heal, written where the list says what the heal costs (the list is built again by then). False if there is
 // no such line or no message.
 function healNote(alerts) {
-  const text = alerts.map((t) => t.textContent.replace(/\s+/g, ' ').replace(/^\s*(INFORMATION|ERROR|WARNING|SUCCESS)?\s*ALERT\s*/i, '').trim()).filter(Boolean).join(' ');
-  const bad = alerts.some((t) => /ERROR|WARNING/i.test((t.querySelector('b') || {}).textContent || ''));
+  const text = alertText(alerts);
+  const bad = alertBad(alerts);
   const line = healLine();
   if (!text || !line) return false;
   line.dataset.heal = '1'; // the next heal writes its progress here too
@@ -260,7 +219,7 @@ async function doQuest(action, fields, fallback) {
     fields.forEach(([n, v]) => body.append(n, v));
     const res = await fetch(new URL(action, location.href).href, { method: 'POST', body, credentials: 'same-origin' });
     const html = await res.text();
-    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const doc = parseHtml(html);
     const alerts = [...doc.querySelectorAll('table')].filter((t) => /^\s*INFORMATION ALERT/i.test(t.textContent) && !t.querySelector('table'));
     if (!alerts.length) throw new Error('no message');
     closeLog();
@@ -282,7 +241,7 @@ async function doQuest(action, fields, fallback) {
 
 // ---- Mechanic: show the repair bill in the action list and repair everything in the background.
 function parseMech(html) {
-  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const doc = parseHtml(html);
   // "Repair All (1,234 credits)" is a submit button of a small POST form now (id mechanic-all); the repair of one item is a form too
   const btn = [...doc.querySelectorAll('input[type="button"], input[type="submit"]')].find((b) => /Repair All/i.test(b.value));
   const form = doc.getElementById('mechanic-all') || (btn && btn.form);
@@ -349,7 +308,7 @@ async function loadMechanic(bd) {
   m.btn.dataset.state = 'wait';
   m.box.innerHTML = '<span class="ssh-spin"></span> Checking repair cost...';
   try {
-    const html = await (await fetch('index.php?cmd=blacksmith', { credentials: 'same-origin' })).text();
+    const html = await fetchText('index.php?cmd=blacksmith');
     if (m.box.isConnected) renderMech(m, html);
   } catch (e) {
     if (m.box.isConnected) { m.box.textContent = 'Could not read the repair cost.'; m.btn.dataset.state = 'none'; }
@@ -364,10 +323,10 @@ export async function doRepair(btn) {
   btn.dataset.state = 'wait';
   box.innerHTML = '<span class="ssh-spin"></span> Repairing...';
   try {
-    const html = await (await fetch(btn.dataset.href || 'index.php?cmd=blacksmith&subcmd=repairall', { credentials: 'same-origin' })).text();
+    const html = await fetchText(btn.dataset.href || 'index.php?cmd=blacksmith&subcmd=repairall');
     updateHeader(html);
     refreshDur(0);
-    const after = await (await fetch('index.php?cmd=blacksmith', { credentials: 'same-origin' })).text();
+    const after = await fetchText('index.php?cmd=blacksmith');
     if (!box.isConnected) return;
     if (parseMech(after).can) { box.innerHTML = '<span style="color:#ff6b6b">Some items could not be repaired.</span>'; btn.dataset.state = 'ok'; }
     else { box.innerHTML = '<span style="color:#7fe08a">All items repaired.</span> Cost to repair all: <b>0</b>'; btn.dataset.state = 'none'; btn.title = 'Nothing to repair'; }

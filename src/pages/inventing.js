@@ -1,7 +1,8 @@
+import { fetchDoc, navigate } from '../core/net.js';
 import { pageParts } from '../core/page.js';
+import { alertBad, alertText } from '../core/util.js';
 import { mel } from '../layout/dom.js';
 import { alertModal, gAlerts, mModal } from '../layout/modal.js';
-import { navigate } from '../core/net.js';
 
 // The blueprint list (Inventing): switching folder, creating a folder and moving blueprints are sent in the background and
 // only the page's content is replaced, so the page never reloads. A new folder or a move refreshes the folder you are in
@@ -21,26 +22,20 @@ function readState(doc) {
   return { folder: m ? m[1] : '-1', page: sel ? sel.value : '0' };
 }
 
-const parse = async (res) => new DOMParser().parseFromString(await res.text(), 'text/html');
-
-// The game's message boxes of a response page as one line of text.
-const alertText = (doc) => gAlerts(doc).map((t) => t.textContent.replace(/\s+/g, ' ').replace(/^\s*(INFORMATION|ERROR|WARNING|SUCCESS)?\s*ALERT\s*/i, '').trim()).filter(Boolean).join(' ');
-const alertBad = (doc) => gAlerts(doc).some((t) => /ERROR|WARNING/i.test((t.querySelector('b') || {}).textContent || ''));
-
 export function initInventing() {
   if (initInventing.on || !cell(document)) return;
   initInventing.on = true;
   let st = readState(document);
   let seq = 0;
 
-  const post = async (fields) => parse(await fetch('index.php', { method: 'POST', body: new URLSearchParams(fields), credentials: 'same-origin' }));
+  const post = async (fields) => fetchDoc('index.php', { method: 'POST', body: new URLSearchParams(fields) });
   // The game's actions are small forms now (create a folder, move blueprints, delete a folder, the page list), with hidden fields of their
   // own (player_id, current_folder_id, a one-time quote per blueprint, ...): the form is sent as the browser would send it, with changes.
   const sendForm = async (form, set) => {
     const fd = new FormData(form);
     Object.keys(set || {}).forEach((k) => fd.set(k, set[k]));
-    if (/^get$/i.test(form.method)) return parse(await fetch('index.php?' + new URLSearchParams(fd), { credentials: 'same-origin' }));
-    return parse(await fetch('index.php', { method: 'POST', body: fd, credentials: 'same-origin' }));
+    if (/^get$/i.test(form.method)) return fetchDoc('index.php?' + new URLSearchParams(fd));
+    return fetchDoc('index.php', { method: 'POST', body: fd });
   };
 
   const showNote = (text, bad) => {
@@ -68,7 +63,7 @@ export function initInventing() {
     const c = cell(document);
     busy(true);
     try {
-      const doc = typeof req === 'string' ? await parse(await fetch(req, { credentials: 'same-origin' })) : await post(req);
+      const doc = typeof req === 'string' ? await fetchDoc(req) : await post(req);
       const nc = cell(doc);
       if (!nc || !nc.querySelector('img[src*="folder"]')) throw new Error('not the blueprint list');
       if (my !== seq) return;
@@ -90,7 +85,7 @@ export function initInventing() {
     try {
       const form = document.getElementById('assembly-create-folder');
       const doc = form ? await sendForm(form, { folder_name: name }) : await post({ cmd: 'inventing', subcmd: 'docreatefolder', folder_name: name });
-      await refresh(alertText(doc) || 'Folder created.', alertBad(doc));
+      await refresh(alertText(gAlerts(doc)) || 'Folder created.', alertBad(gAlerts(doc)));
     } catch (e) { busy(false); showNote('The folder could not be created.', true); }
   }
 
@@ -129,7 +124,7 @@ export function initInventing() {
     busy(true);
     try {
       const doc = form ? await sendForm(form) : await post(fields);
-      await refresh(alertText(doc) || 'Blueprints moved.', alertBad(doc));
+      await refresh(alertText(gAlerts(doc)) || 'Blueprints moved.', alertBad(gAlerts(doc)));
     } catch (e) { busy(false); showNote('The blueprints could not be moved.', true); }
   }
 

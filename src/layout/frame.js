@@ -1,6 +1,6 @@
 import { isContentFrame } from '../core/page.js';
 import { S } from '../core/state.js';
-import { https } from '../core/util.js';
+import { cssUrl, https } from '../core/util.js';
 import { mel } from './dom.js';
 
 // The page around the content for the Modern layout: a fixed background and the page as divs. The game's table (header, the
@@ -19,20 +19,19 @@ function frameContent(center) {
   const r1 = table.rows[1];
   const r2 = table.rows[table.rows.length - 1];
   const extra = [...table.rows].slice(2, -1); // rows the game puts between the columns and the bottom picture (an alert): they belong to the page
-  const url = (u) => (u ? 'url("' + https(new URL(u, location.href).href) + '")' : 'none');
   const imgOf = (cell) => { const i = cell && cell.querySelector('img'); return i ? i.getAttribute('src') : ''; };
   const cf = mel('div', 'ssh-cf');
   const top = mel('div', 'cf-top');
-  top.style.backgroundImage = url(imgOf(r0.cells[0]));
+  top.style.backgroundImage = cssUrl(imgOf(r0.cells[0]));
   const mid = mel('div', 'cf-mid');
   const l = mel('div', 'cf-l');
-  l.style.backgroundImage = url(imgOf(r1.cells[0])) + ',' + url(r1.cells[0].getAttribute('background'));
+  l.style.backgroundImage = cssUrl(imgOf(r1.cells[0])) + ',' + cssUrl(r1.cells[0].getAttribute('background'));
   const body = mel('div', 'cf-body');
-  body.style.backgroundImage = url(r1.cells[1].getAttribute('background'));
+  body.style.backgroundImage = cssUrl(r1.cells[1].getAttribute('background'));
   const r = mel('div', 'cf-r');
-  r.style.backgroundImage = url(imgOf(r1.cells[2])) + ',' + url(r1.cells[2].getAttribute('background'));
+  r.style.backgroundImage = cssUrl(imgOf(r1.cells[2])) + ',' + cssUrl(r1.cells[2].getAttribute('background'));
   const bot = mel('div', 'cf-bot');
-  bot.style.backgroundImage = url(imgOf(r2.cells[0]));
+  bot.style.backgroundImage = cssUrl(imgOf(r2.cells[0]));
   mid.append(l, body, r);
   cf.append(top, mid, bot);
   body.append(...r1.cells[1].childNodes);

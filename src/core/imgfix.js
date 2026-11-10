@@ -1,3 +1,4 @@
+import { https } from './util.js';
 // The game's pictures of upgraded items (the forge level stars in a tooltip, ...) still point at https://sigmastorm.com/hellforge/... (or just hellforge/..., as in the
 // tooltips), which does not exist any more: they are on the CDN now. Wherever such a picture shows up in the page (the game's own tooltips included), its
 // address is changed.
