@@ -14,6 +14,7 @@ import { initLayout } from './layout/profile.js';
 import { rememberScripts } from './layout/sidebars.js';
 import { initArtifactShop } from './pages/artifactshop.js';
 import { initBank } from './pages/bank.js';
+import { initBlacksmith } from './pages/blacksmith.js';
 import { initEvolve } from './pages/evolve.js';
 import { initFactionInv } from './pages/factioninv.js';
 import { initHome } from './pages/home.js';
@@ -53,6 +54,7 @@ async function init() {
   if (/[?&]cmd=guild/.test(location.search) && /[?&]subcmd=inventory/.test(location.search) && /[?&]subcmd2=report/.test(location.search) && S.cfg.factionInv) { initFactionInv(); return; }
   if (document.querySelector('table[background*="latestnews_bg"]')) { initHome(); return; } // the Home page
   if (document.querySelector('form[id^="evolution-stat-"]')) { initEvolve(); return; } // the Evolve page
+  if (document.querySelector('form[id^="mechanic-repair-"], form#mechanic-all')) { initBlacksmith(); return; } // the Blacksmith page
   if (document.querySelector('form[id^="artifact-buy-"]')) { initArtifactShop(); return; } // the faction's Artifact Shop
   if (/[?&]cmd=bank/.test(location.search) || document.getElementById('deposit_amount')) { initBank(); return; } // also the page a deposit or an action-list button posts to
   if (/[?&]cmd=questbook/.test(location.search) && /[?&]subcmd=viewquest/.test(location.search)) { initQuest(); return; }
