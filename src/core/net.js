@@ -36,7 +36,7 @@ export function postHref(form) {
 }
 
 const isIndex = (u) => u.origin === location.origin && /\/index\.php$/.test(u.pathname);
-const isTravel = (u) => u.searchParams.get('cmd') === 'world' && ['move', 'usestairs'].includes(u.searchParams.get('subcmd'));
+export const isTravel = (u) => u.searchParams.get('cmd') === 'world' && ['move', 'usestairs'].includes(u.searchParams.get('subcmd'));
 
 function withFields(body, tok) {
   if (body instanceof URLSearchParams) {

@@ -192,14 +192,13 @@ export function decorateHeader(tries) {
 }
 
 // Gear durability: the equipped items are listed on the character page; each item's tooltip data has "Durability: x / y".
-export async function refreshDur(maxAge) {
+export async function refreshDur(maxAge, page) {
   if (!S.cfg.durBar) return;
   if (S.dur && S.dur.t && Date.now() - S.dur.t < maxAge) return;
   if (S.durBusy) { S.durAgain = true; return; } // a check is running (maybe from before this fight): read once more when it is done
   S.durBusy = true;
   try {
-    const html = await fetchText('index.php?cmd=profile');
-    const doc = parseHtml(html);
+    const doc = page || parseHtml(await fetchText('index.php?cmd=profile')); // `page`: the character page that was just read
     const items = new Map();
     doc.querySelectorAll('[onmouseover*="ajaxLoadItem"]').forEach((e) => {
       const o = e.getAttribute('onmouseover') || '';

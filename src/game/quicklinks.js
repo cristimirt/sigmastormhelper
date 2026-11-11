@@ -93,7 +93,7 @@ async function infoOf(m) {
   return itemInfo.get(m[1]);
 }
 
-export async function refreshSupplies() {
+export async function refreshSupplies(page) {
   if (mpBusy) return;
   mpBusy = true;
   try {
@@ -101,7 +101,7 @@ export async function refreshSupplies() {
       const doc = await fetchDoc(url);
       return { doc, d: bpFromDoc(doc) };
     };
-    const { doc: pdoc, d: first } = await get('index.php?cmd=profile');
+    const { doc: pdoc, d: first } = page ? { doc: page, d: bpFromDoc(page) } : await get('index.php?cmd=profile'); // `page`: the character page that was just read
     if (!first) return;
     // the damage types of the equipped weapons: the worn items are the ones with an unequip link or no link, not the bag's and the components'
     const types = new Set();

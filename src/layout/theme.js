@@ -61,11 +61,12 @@ export function mCss() {
     // inventory
     P + '.invw{padding:5px 0 0}' +
     P + '.inv{display:grid;grid-template-columns:61px 150px 45px;justify-content:space-between;width:280px;height:281px;margin:0 0 0 7px;padding:0 5px;box-sizing:border-box;background-repeat:no-repeat}' +
-    P + '.lc{display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:24px}' +
-    P + '.doll{width:150px;height:250px;margin-top:12px;background-repeat:no-repeat}' +
-    P + '.rc{display:flex;flex-direction:column;gap:10px;margin-top:7px}' +
-    P + '.rc>:first-child{margin-bottom:-2px}' +
-    P + '.slot{flex:none;box-sizing:border-box;width:45px;height:45px;display:flex;align-items:flex-start;justify-content:center}' + P + '.slot.big{width:61px;height:167px}' + P + '.slot.sm{height:47px}' +
+    // the frames are in the game's picture (main_inventory_bg.jpg, 1 px lines): the left one at x 4..66 and y 22..188, the small one at x 12..58 and
+    // y 199..245, the five on the right at x 229..275, y 7, 60, 113, 166, 219 (46 px apart from line to line + 7), so the slots sit inside them
+    P + '.lc{display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:23px}' +
+    P + '.doll{width:150px;height:250px;margin-top:9px;background-repeat:no-repeat}' +
+    P + '.rc{display:flex;flex-direction:column;gap:8px;margin-top:8px}' +
+    P + '.slot{flex:none;box-sizing:border-box;width:45px;height:45px;display:flex;align-items:flex-start;justify-content:center}' + P + '.slot.big{width:61px;height:165px}' + P + '.slot.sm{height:45px}' +
     // backpack
     PB + '.bp{--z:1;position:relative;padding:8px 8px 10px}' +
     PB + '.bp.busy>*:not(.bp-msg){opacity:.45;pointer-events:none}' +

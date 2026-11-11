@@ -1,6 +1,6 @@
 import { grabVars } from '../banner.js';
 import { hotkeyOn, TYPE_COLOR, typeOf } from '../core/creatures.js';
-import { fetchText } from '../core/net.js';
+import { fetchText, navigate } from '../core/net.js';
 import { S } from '../core/state.js';
 import { esc, fmt, parseHtml } from '../core/util.js';
 import { alertModal, gAlerts } from '../layout/modal.js';
@@ -195,6 +195,25 @@ S.results = [];
 S.pending = 0;
 
 S.refreshSeq = 0;
+
+// The player lost the fight: the game takes them somewhere else on the map.
+export const playerDied = (c) => c.winner > 0 || (c.winner !== 0 && c.fhp[0] <= 0);
+
+S.died = false;
+
+// All the running fights are done. The header (HP, XP, energy, credits) was updated from each answer and the finished fights keep their
+// rows in the list (the list is only read again by the refresh icon or the R key); the gear, the bag and the supplies are read again by
+// the live check (live.js), which is told to look. Only a defeat reads the world again: the player is somewhere else now.
+export async function fightsDone() {
+  if (S.pending) return;
+  S.supDirty = true;
+  if (!S.died) return;
+  S.died = false;
+  S.results = [];
+  let ok = false;
+  try { ok = await refreshWorld(); } catch (e) { ok = false; }
+  if (!ok && !S.pending) navigate('index.php?cmd=world');
+}
 
 // Refresh the page state (stats, bag, creature list) once all running fights are done.
 export async function refreshWorld() {
