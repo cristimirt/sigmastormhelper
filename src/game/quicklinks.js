@@ -1,6 +1,6 @@
 import { refreshDur, updateHeader } from '../banner.js';
 import { ITEM } from '../core/constants.js';
-import { fetchDoc } from '../core/net.js';
+import { fetchDoc, fetchText } from '../core/net.js';
 import { S } from '../core/state.js';
 import { https, parseHtml } from '../core/util.js';
 import { BP, bpFromDoc, bpPopup } from '../layout/backpack.js';
@@ -93,7 +93,7 @@ async function infoOf(m) {
   return itemInfo.get(m[1]);
 }
 
-export async function refreshSupplies() {
+export async function refreshSupplies(page) {
   if (mpBusy) return;
   mpBusy = true;
   try {
@@ -101,7 +101,7 @@ export async function refreshSupplies() {
       const doc = await fetchDoc(url);
       return { doc, d: bpFromDoc(doc) };
     };
-    const { doc: pdoc, d: first } = await get('index.php?cmd=profile');
+    const { doc: pdoc, d: first } = page ? { doc: page, d: bpFromDoc(page) } : await get('index.php?cmd=profile'); // `page`: the character page that was just read
     if (!first) return;
     // the damage types of the equipped weapons: the worn items are the ones with an unequip link or no link, not the bag's and the components'
     const types = new Set();
@@ -118,6 +118,7 @@ export async function refreshSupplies() {
     let meds = 0;
     let kits = 0;
     let ammo = 0;
+    let ammoIt = null; // one stack of fitting refills: autoRefill uses it
     for (const f of first.folders) {
       const d = f.id === first.cur ? first : (await get('index.php?cmd=profile&folder_id=' + f.id)).d;
       if (!d) return;
@@ -132,7 +133,7 @@ export async function refreshSupplies() {
           const n = parseInt(it.count, 10) || 1;
           if (/medipack/i.test(info.name)) meds += n;
           if (REPAIR.test(info.name) || /repair/i.test(info.type)) kits += n; // whatever its level: choosing a fitting one is up to the player
-          if (info.ammo && types.has(info.ammo)) ammo += n;
+          if (info.ammo && types.has(info.ammo)) { ammo += n; if (!ammoIt) ammoIt = it; }
         }
       }
     }
@@ -140,6 +141,7 @@ export async function refreshSupplies() {
     S.repairKits = kits;
     S.ammoRefills = types.size ? ammo : null;
     S.ammoTypes = [...types];
+    S.ammoItem = ammoIt;
     paintSupplies();
   } catch (e) { /* the next refresh has it */ } finally { mpBusy = false; }
 }
@@ -156,8 +158,39 @@ function ammoPaint(i) {
   const n = i.querySelector('.mp');
   n.textContent = String(S.ammoRefills);
   n.dataset.lv = mpLevel(S.ammoRefills);
-  i.title = 'Ammo refills in the bag for your ' + S.ammoTypes.join(' / ') + ' weapon';
+  i.title = 'Ammo refills in the bag for your ' + S.ammoTypes.join(' / ') + ' weapon' + (S.weaponAmmo ? '\nAmmo in the weapon after the last fight: ' + S.weaponAmmo.cur + ' / ' + S.weaponAmmo.max : '');
 }
+
+// A message as a note on the map (the game's alert box is made for it, so the same note is used).
+function note(text, bad) {
+  const d = parseHtml('<table><tr><td><b>' + (bad ? 'WARNING' : 'INFORMATION') + ' ALERT</b></td></tr><tr><td></td></tr></table>');
+  d.querySelectorAll('td')[1].textContent = text;
+  toast(gAlerts(d));
+}
+
+// After every fight: when the weapon is down to 2 shots or less (a reload in the middle of a fight costs a turn, and the creature hits meanwhile),
+// an ammo refill from the bag is used at once, with the game's own link of the item. The setting "Refill the ammo after a fight" turns it off.
+let refilling = false;
+async function autoRefill() {
+  const w = S.weaponAmmo;
+  if (refilling || S.cfg.autoAmmo === false || !w || !(w.max > 0) || w.cur > 2) return;
+  refilling = true;
+  try {
+    if (S.ammoItem === undefined) await refreshSupplies(); // the bag was not read yet
+    const it = S.ammoItem;
+    if (!it || !it.href) { note('The weapon has ' + w.cur + ' ammo left and there is no ammo refill in the bag.', true); return; }
+    const html = await fetchText(it.href);
+    const doc = parseHtml(html);
+    const alerts = gAlerts(doc);
+    if (alerts.length) toast(alerts); else note('Ammo refill used (the weapon had ' + w.cur + ' left).', false);
+    updateHeader(html);
+    S.weaponAmmo = { cur: w.max, max: w.max }; // a refill restores full ammo
+    refreshSupplies();
+  } catch (e) {
+    note('The ammo refill could not be used.', true);
+  } finally { refilling = false; }
+}
+S.autoAmmo = autoRefill;
 
 const busy = (on) => document.querySelectorAll('.wp-q').forEach((q) => q.classList.toggle('busy', on));
 

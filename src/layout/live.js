@@ -1,15 +1,19 @@
-// Live sidebar: every 10 seconds (the same as the game's global chat), while the tab is the one in front, the character page is
-// read once and the banner (HP, energy, Skill Power ...) and the faction chat of the page are brought up to date from it.
+// Live sidebar: every 5 seconds, while the tab is the one in front, the character page is read once and the banner (HP, energy,
+// Skill Power ...), the faction chat and online members, the notices of the sidebars (a new log or message) and, when the bag or
+// the worn items changed, the gear durability, the bag count and the supplies are brought up to date from it.
 // The faction chat form is sent in the background (no page reload) and the chat is read again right after.
 import { refreshDur, updateHeader } from '../banner.js';
-import { renderStairs, setLevelFrom } from '../game/stairs.js';
+import { fetchText } from '../core/net.js';
 import { pageParts } from '../core/page.js';
 import { S } from '../core/state.js';
-import { alertModal, gAlerts } from './modal.js';
 import { parseHtml } from '../core/util.js';
-import { fetchText } from '../core/net.js';
+import { refreshBagCount, refreshSupplies } from '../game/quicklinks.js';
+import { renderStairs, setLevelFrom } from '../game/stairs.js';
+import { bpFromDoc } from './backpack.js';
+import { alertModal, gAlerts } from './modal.js';
+import { updateSidebars } from './sidebars.js';
 
-const EVERY = 10000;
+const EVERY = 5000;
 let timer = 0;
 let busy = false;
 let last = 0;
@@ -50,6 +54,32 @@ function updateChat(doc) {
   });
 }
 
+// What the character page says about the bag and the gear: the items of the folder shown (and their counts) and the worn items.
+function supplySig(doc) {
+  const d = bpFromDoc(doc);
+  const worn = [...doc.querySelectorAll('[onmouseover*="ajaxLoadItem"]')].map((e) => e.getAttribute('onmouseover') || '').filter((o) => /Unequip/.test(o)).map((o) => (o.match(/ajaxLoadItem\((\d+),\s*(\d+)/) || []).slice(1, 3).join('.'));
+  return JSON.stringify([d ? [d.cur, d.items.map((i) => i.inv + ':' + i.count)] : null, worn]);
+}
+
+// The gear durability, the bag count and the supplies (medipacks, repair kits, ammo) are read again when the character page shows a
+// change in the bag or the worn items, after the fights (S.supDirty, see fightsDone), and at least once a minute: they take more
+// requests than the page itself (the other folders and pages of the bag, the worn items' data, the world page's bag count).
+function checkSupplies(doc) {
+  const sg = supplySig(doc);
+  const first = S.supSig === undefined;
+  const changed = !first && sg !== S.supSig;
+  S.supSig = sg;
+  if (first) { S.supT = Date.now(); return; }
+  if (!changed && !S.supDirty && Date.now() - S.supT < 60000) return;
+  S.supDirty = false;
+  S.supT = Date.now();
+  refreshDur(0, doc);
+  if (document.querySelector('.wp-q')) { // the Quick Links bar of the world page
+    refreshSupplies(doc);
+    refreshBagCount();
+  }
+}
+
 // The banner is not replaced while the pointer is on it (its tooltip would vanish) or while the map is doing something.
 export async function refreshLive() {
   if (busy) return;
@@ -62,6 +92,8 @@ export async function refreshLive() {
     const hovered = p && p.header && p.header.matches(':hover');
     if (!S.busy && !hovered && !(S.hdrT > t0)) updateHeader(html);
     updateChat(doc);
+    try { updateSidebars(doc); } catch (e) { console.warn('[Sigmastorm Helper] sidebar update failed', e); }
+    try { checkSupplies(doc); } catch (e) { /* the next check has it */ }
     if (setLevelFrom(html)) renderStairs(); // a new level opens the stairs that were red
     last = Date.now();
   } catch (e) { /* offline or logged out: next time */ }

@@ -3,6 +3,7 @@ import { pageParts } from '../core/page.js';
 import { alertBad, alertText } from '../core/util.js';
 import { mel } from '../layout/dom.js';
 import { alertModal, gAlerts, mModal } from '../layout/modal.js';
+import { buildInventing } from './inventing-view.js';
 
 // The blueprint list (Inventing): switching folder, creating a folder and moving blueprints are sent in the background and
 // only the page's content is replaced, so the page never reloads. A new folder or a move refreshes the folder you are in
@@ -25,6 +26,7 @@ function readState(doc) {
 export function initInventing() {
   if (initInventing.on || !cell(document)) return;
   initInventing.on = true;
+  buildInventing(cell(document));
   let st = readState(document);
   let seq = 0;
 
@@ -68,6 +70,7 @@ export function initInventing() {
       if (!nc || !nc.querySelector('img[src*="folder"]')) throw new Error('not the blueprint list');
       if (my !== seq) return;
       c.innerHTML = nc.innerHTML;
+      buildInventing(c);
       st = readState(document);
       try { history.replaceState(null, '', 'index.php?cmd=inventing&folder_id=' + st.folder); } catch (e) { /* ignore */ }
       showNote(note, bad);
@@ -156,6 +159,24 @@ export function initInventing() {
       e.stopPropagation(); // not the game's own confirmation
       const name = (a.closest('td') || a).textContent.replace(/\[\s*x\s*\]/i, '').replace(/\s+/g, ' ').trim();
       askDelete(name, href, (href.match(/folder_id=(-?\d+)/) || [])[1]);
+      return;
+    }
+    const act = t.closest('[data-iv]'); // the controls of the Modern layout's copy (see inventing-view.js)
+    if (act) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (act.dataset.iv === 'del') {
+        const id = act.dataset.fid;
+        const fi = c.querySelector('form.assembly-delete-folder input[name="folder_id"][value="' + id + '"]');
+        const fn = act.closest('.iv-f') && act.closest('.iv-f').querySelector('.iv-fn');
+        if (fi && fi.form) askDelete((fn && fn.textContent) || 'this folder', fi.form, id);
+      } else if (act.dataset.iv === 'new') {
+        const nm = c.querySelector('input[name="folder_name"]');
+        askFolder(nm ? nm.maxLength : 0);
+      } else if (act.dataset.iv === 'page') {
+        const sl = act.parentNode.querySelector('select');
+        if (sl) load(listUrl(sl.value));
+      } else if (act.dataset.iv === 'move') moveBlueprints();
       return;
     }
     const xb = t.closest('button[type="submit"]');

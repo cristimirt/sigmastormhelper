@@ -31,6 +31,77 @@ function groups(holder) {
   return out;
 }
 
+// ctx = { take(node, to), undo: [functions] }: how a node moves (the build remembers where it was; a widget made later does not need to).
+const takeKidsOf = (ctx, from, to) => [...from.childNodes].forEach((n) => ctx.take(n, to));
+const plainCtx = () => ({ take: (n, to) => to.appendChild(n), undo: [] });
+
+// A layout table becomes divs: the table a div, each row a div (a flex row when it has several cells), each cell a div that keeps
+// its alignment, size and padding. The content of the cells moves; innermost tables first.
+// the text-align that applies where a table sits: the nearest cell (or the widget body) that says one
+const textAlignAt = (el) => {
+  for (let n = el.parentNode; n && n.nodeType === 1; n = n.parentNode) {
+    const a = n.tagName === 'TD' || n.tagName === 'TH' ? n.getAttribute('align') : n.style && n.style.textAlign;
+    if (a) return a;
+    if (n.classList && n.classList.contains('wb')) break;
+  }
+  return '';
+};
+function divTables(root, ctx) {
+  [...root.querySelectorAll('table')].reverse().forEach((tb) => {
+    const box = mel('div', 'dt' + (tb.className ? ' ' + tb.className : ''));
+    const w = tb.getAttribute('width');
+    if (w) box.style.width = /%/.test(w) ? w : w + 'px';
+    // a table with no align is centred by the text-align of where it sits (the browser's quirks mode does that for tables)
+    const al = tb.getAttribute('align');
+    if (al === 'center' || (!al && w && textAlignAt(tb) === 'center')) box.style.margin = '0 auto';
+    if (tb.getAttribute('bgcolor')) box.style.background = tb.getAttribute('bgcolor');
+    const pad = +tb.getAttribute('cellpadding') || 0;
+    [...tb.rows].forEach((tr) => {
+      const row = mel('div', 'dr');
+      const cells = [...tr.cells];
+      if (cells.length > 1) row.style.display = 'flex';
+      cells.forEach((td) => {
+        const c = mel('div', 'dc');
+        c.style.padding = pad + 'px';
+        if (td.getAttribute('align')) c.style.textAlign = td.getAttribute('align');
+        if (td.getAttribute('height')) c.style.height = td.getAttribute('height') + 'px';
+        if (td.getAttribute('bgcolor')) c.style.background = td.getAttribute('bgcolor');
+        const cw = td.getAttribute('width');
+        if (cells.length > 1) c.style.flex = cw ? '0 0 ' + (/%/.test(cw) ? cw : cw + 'px') : '1 1 0';
+        takeKidsOf(ctx, td, c);
+        row.append(c);
+      });
+      box.append(row);
+    });
+    tb.replaceWith(box);
+    ctx.undo.push(() => box.replaceWith(tb));
+  });
+}
+
+// the title bar: the picture the game puts on its title table (the Main Menu's one also holds a link)
+function makeHeadOf(w, headTable, ctx) {
+  const h = mel('div', 'wh ssh-wh');
+  h.style.backgroundImage = bgUrl(headTable);
+  h.style.height = (headTable.getAttribute('height') || 28) + 'px';
+  headTable.querySelectorAll('td').forEach((td) => takeKidsOf(ctx, td, h));
+  w.append(h);
+}
+function makeBodyOf(w, bodyTable, ctx) {
+  const b = mel('div', 'wb');
+  const td = bodyTable.rows[0] && bodyTable.rows[0].cells[0];
+  b.style.backgroundImage = bgUrl(bodyTable);
+  b.style.padding = (+bodyTable.getAttribute('cellpadding') || 0) + 'px';
+  b.style.textAlign = (td && td.getAttribute('align')) || 'left';
+  if (td) takeKidsOf(ctx, td, b);
+  divTables(b, ctx);
+  w.append(b);
+}
+function makeFoot(w, footTable) {
+  const f = mel('div', 'wf');
+  if (footTable) f.style.backgroundImage = bgUrl(footTable);
+  w.append(f);
+}
+
 let built = null; // { undo: [functions], order }
 
 export function buildSidebars() {
@@ -45,7 +116,6 @@ export function buildSidebars() {
     to.appendChild(node);
     undo.push(() => parent.insertBefore(node, next && next.parentNode === parent ? next : null));
   };
-  const takeKids = (from, to) => [...from.childNodes].forEach((n) => take(n, to));
   const drop = (node) => { // leaves the page for now
     const parent = node.parentNode;
     const next = node.nextSibling;
@@ -53,48 +123,7 @@ export function buildSidebars() {
     undo.push(() => parent.insertBefore(node, next && next.parentNode === parent ? next : null));
   };
 
-  // A layout table becomes divs: the table a div, each row a div (a flex row when it has several cells), each cell a div that keeps
-  // its alignment, size and padding. The content of the cells moves; innermost tables first.
-  // the text-align that applies where a table sits: the nearest cell (or the widget body) that says one
-  const textAlignAt = (el) => {
-    for (let n = el.parentNode; n && n.nodeType === 1; n = n.parentNode) {
-      const a = n.tagName === 'TD' || n.tagName === 'TH' ? n.getAttribute('align') : n.style && n.style.textAlign;
-      if (a) return a;
-      if (n.classList && n.classList.contains('wb')) break;
-    }
-    return '';
-  };
-  const divTables = (root) => {
-    [...root.querySelectorAll('table')].reverse().forEach((tb) => {
-      const box = mel('div', 'dt' + (tb.className ? ' ' + tb.className : ''));
-      const w = tb.getAttribute('width');
-      if (w) box.style.width = /%/.test(w) ? w : w + 'px';
-      // a table with no align is centred by the text-align of where it sits (the browser's quirks mode does that for tables)
-      const al = tb.getAttribute('align');
-      if (al === 'center' || (!al && w && textAlignAt(tb) === 'center')) box.style.margin = '0 auto';
-      if (tb.getAttribute('bgcolor')) box.style.background = tb.getAttribute('bgcolor');
-      const pad = +tb.getAttribute('cellpadding') || 0;
-      [...tb.rows].forEach((tr) => {
-        const row = mel('div', 'dr');
-        const cells = [...tr.cells];
-        if (cells.length > 1) row.style.display = 'flex';
-        cells.forEach((td) => {
-          const c = mel('div', 'dc');
-          c.style.padding = pad + 'px';
-          if (td.getAttribute('align')) c.style.textAlign = td.getAttribute('align');
-          if (td.getAttribute('height')) c.style.height = td.getAttribute('height') + 'px';
-          if (td.getAttribute('bgcolor')) c.style.background = td.getAttribute('bgcolor');
-          const cw = td.getAttribute('width');
-          if (cells.length > 1) c.style.flex = cw ? '0 0 ' + (/%/.test(cw) ? cw : cw + 'px') : '1 1 0';
-          takeKids(td, c);
-          row.append(c);
-        });
-        box.append(row);
-      });
-      tb.replaceWith(box);
-      undo.push(() => box.replaceWith(tb));
-    });
-  };
+  const ctx = { take, undo };
   // the game's style sheets inside its sidebar tables (the skills box, for one) belong to the page, not to the tables
   const keepStyles = (root) => root.querySelectorAll('style, link[rel="stylesheet"]').forEach((s) => take(s, document.head));
   // Its scripts too: the page runs them late (Cloudflare's Rocket Loader), and a script that is not in the page any more never runs
@@ -135,29 +164,8 @@ export function buildSidebars() {
     return w;
   };
 
-  // the title bar: the picture the game puts on its title table (the Main Menu's one also holds a link)
-  const makeHead = (w, headTable) => {
-    const h = mel('div', 'wh ssh-wh');
-    h.style.backgroundImage = bgUrl(headTable);
-    h.style.height = (headTable.getAttribute('height') || 28) + 'px';
-    headTable.querySelectorAll('td').forEach((td) => takeKids(td, h));
-    w.append(h);
-  };
-  const makeBody = (w, bodyTable) => {
-    const b = mel('div', 'wb');
-    const td = bodyTable.rows[0] && bodyTable.rows[0].cells[0];
-    b.style.backgroundImage = bgUrl(bodyTable);
-    b.style.padding = (+bodyTable.getAttribute('cellpadding') || 0) + 'px';
-    b.style.textAlign = (td && td.getAttribute('align')) || 'left';
-    if (td) takeKids(td, b);
-    divTables(b);
-    w.append(b);
-  };
-  const makeFoot = (w, footTable) => {
-    const f = mel('div', 'wf');
-    if (footTable) f.style.backgroundImage = bgUrl(footTable);
-    w.append(f);
-  };
+  const makeHead = (w, h) => makeHeadOf(w, h, ctx);
+  const makeBody = (w, bd) => makeBodyOf(w, bd, ctx);
 
   // the Main Menu: the button pictures are links; each opens a list of links (a div whose id the game's own menu function finds)
   const makeMenu = (side, inner) => {
@@ -322,6 +330,105 @@ export function unbuildSidebars() {
   document.querySelectorAll('.ssh-col').forEach((c) => c.remove());
   built.undo.reverse().forEach((u) => u());
   built = null;
+}
+
+// ---- Live update of the sidebars from a fetched page (every few seconds, see live.js): the widgets that come and go (the notice of a new
+// log or message ...) are added and removed, the changed ones are made again, and the faction's list of online members is brought up to
+// date (its chat is updated by live.js). The widgets the game always shows are left alone, except the faction's member list.
+const FIXED = new Set(['subhead_mainmenu', 'subhead_questions', 'subhead_gamestats', 'subhead_killlogs', 'subhead_skillbox', 'infobox_sigmabox', 'factioninfo_header', 'subhead_supportus']);
+const sig = (el) => el.textContent.replace(/\s+/g, ' ').trim();
+
+// The widgets of a page's sidebars in the game's own tables (a fetched page, or this one in the Original layout).
+function sideGroups(doc) {
+  const p = pageParts(doc);
+  const out = [];
+  if (!p) return out;
+  ['left', 'right'].forEach((side) => {
+    const inner = p[side] && p[side].querySelector('table[width="120"]');
+    if (!inner) return;
+    [...inner.querySelectorAll('td')].forEach((td) => {
+      if (td.closest('table') === inner) groups(td).forEach((g) => { if (g.id !== 'subhead_mainmenu') out.push({ ...g, side }); });
+    });
+  });
+  return out;
+}
+
+// The faction's list of online members: the table after the "Online Members" title.
+function membersOf(root) {
+  const b = [...root.querySelectorAll('b')].find((x) => /^Online Members/i.test(x.textContent.trim()));
+  const i = b && (b.closest('i') || b);
+  return i ? i.nextElementSibling : null;
+}
+
+function updateMembers(root, fetchedBody, modern) {
+  const cur = membersOf(root);
+  const nxt = fetchedBody && membersOf(fetchedBody);
+  if (!cur || !nxt || sig(cur) === sig(nxt)) return;
+  const copy = document.importNode(nxt, true);
+  if (modern) {
+    const tmp = mel('div');
+    tmp.append(copy);
+    divTables(tmp, plainCtx());
+    cur.replaceWith(tmp.firstChild);
+  } else cur.replaceWith(copy);
+}
+
+// A widget that is new: in the Modern layout a div in the column of its side (after the widget that comes before it in the saved
+// arrangement, else first), in the Original one its tables after the widget before it on the fetched page.
+function addWidget(g, all, modern) {
+  if (modern) {
+    const col = document.querySelector('.ssh-col[data-side="' + g.side + '"]');
+    if (!col) return;
+    const w = mel('div', 'ssh-w');
+    w.dataset.w = g.id;
+    const ctx = plainCtx();
+    makeHeadOf(w, g.head, ctx);
+    if (g.body) makeBodyOf(w, g.body, ctx);
+    makeFoot(w, g.foot);
+    const order = (store.get('sidebars', null) || {})[g.side] || [];
+    const before = order.slice(0, Math.max(0, order.indexOf(g.id))).reverse().map((id) => col.querySelector(':scope > .ssh-w[data-w="' + id + '"]')).find(Boolean);
+    if (before) before.after(w);
+    else col.insertBefore(w, col.querySelector(':scope > .ssh-w'));
+    return;
+  }
+  const mine = sideGroups(document);
+  const i = all.findIndex((x) => x.id === g.id);
+  const prev = all.slice(0, i).reverse().find((x) => x.side === g.side && mine.some((m) => m.id === x.id));
+  const anchor = prev ? mine.find((m) => m.id === prev.id) : null;
+  const first = mine.find((m) => m.side === g.side);
+  const parts = [g.head, g.body, g.foot].filter(Boolean).map((n) => document.importNode(n, true));
+  if (anchor) (anchor.foot || anchor.body || anchor.head).after(...parts);
+  else if (first) first.head.before(...parts);
+}
+
+export function updateSidebars(doc) {
+  const modern = !!built;
+  const theirs = sideGroups(doc);
+  if (!theirs.length) return; // not a page with sidebars (or the game answered something else)
+  const mine = modern ? [...document.querySelectorAll('.ssh-w')].map((el) => ({ id: el.dataset.w, el })) : sideGroups(document);
+  const find = (id) => mine.find((m) => m.id === id);
+  theirs.forEach((g) => {
+    const m = find(g.id);
+    if (g.id === 'factioninfo_header') {
+      if (m) updateMembers(modern ? m.el : m.body, g.body, modern);
+      return;
+    }
+    if (FIXED.has(g.id)) return;
+    if (!m) { addWidget(g, theirs, modern); return; }
+    if (!g.body) return;
+    if (modern) {
+      const old = m.el.querySelector('.wb');
+      if (old && sig(old) === sig(g.body)) return;
+      const tmp = mel('div');
+      makeBodyOf(tmp, g.body, plainCtx());
+      if (old) old.replaceWith(tmp.firstChild);
+    } else if (m.body && sig(m.body) !== sig(g.body)) m.body.replaceWith(document.importNode(g.body, true));
+  });
+  mine.forEach((m) => {
+    if (FIXED.has(m.id) || theirs.some((g) => g.id === m.id)) return;
+    if (modern) m.el.remove();
+    else [m.head, m.body, m.foot].forEach((n) => n && n.remove());
+  });
 }
 
 const save = () => {

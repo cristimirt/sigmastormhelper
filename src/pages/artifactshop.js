@@ -1,11 +1,15 @@
 import { fetchText, navigate } from '../core/net.js';
 import { alertBad, parseHtml } from '../core/util.js';
+import { mel } from '../layout/dom.js';
 import { gAlerts, mModal, richHtml } from '../layout/modal.js';
+import { tableToDivs } from '../layout/tablediv.js';
 
 // The faction's Artifact Shop: every item has its own small POST form with a Buy button, one purchase per click. A number box next to each
 // Buy button says how many to buy: the form is sent that many times, one after the other. Every answer carries the form again with a
 // fresh one-time quote and value, so the next request is made from the form in the answer. It stops at the first message of the game
 // that is an error or a warning (not enough of what it costs, ...), and tells how many were bought.
+// In the Modern layout the page is a copy made of divs (layout/tablediv.js); the game's table stays in the page, hidden, so the Original layout is untouched.
+// The number box is added to the forms of both, and the copy's forms work like the originals.
 
 const MAX = 100;
 
@@ -73,9 +77,8 @@ async function buy(form, want, inp, btn) {
   showResult(done, want, alerts);
 }
 
-export function initArtifactShop() {
-  css();
-  document.querySelectorAll('form[id^="artifact-buy-"]').forEach((form) => {
+function qtyBoxes(scope) {
+  scope.querySelectorAll('form[id^="artifact-buy-"]').forEach((form) => {
     const btn = form.querySelector('input[type="submit"]');
     if (!btn || form.querySelector('.ssh-qty')) return;
     const inp = document.createElement('input');
@@ -93,4 +96,22 @@ export function initArtifactShop() {
       buy(form, n, inp, btn);
     });
   });
+}
+
+export function initArtifactShop() {
+  css();
+  const first = document.querySelector('form[id^="artifact-buy-"]');
+  const table = first && first.closest('table[width="640"]');
+  if (table && !document.getElementById('ssh-as')) {
+    const st = mel('style');
+    st.textContent = 'html.ssh-modern [data-ssh-as]{display:none!important}#ssh-as{display:none}html.ssh-modern #ssh-as{display:block}';
+    document.head.append(st);
+    const root = mel('div');
+    root.id = 'ssh-as';
+    root.append(tableToDivs(table));
+    table.setAttribute('data-ssh-as', '1');
+    table.after(root);
+    qtyBoxes(root);
+  }
+  qtyBoxes(document);
 }

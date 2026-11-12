@@ -1,9 +1,8 @@
-import { refreshDur, updateHeader } from '../banner.js';
+import { updateHeader } from '../banner.js';
 import { fetchText, navigate, postHref } from '../core/net.js';
 import { S } from '../core/state.js';
 import { esc, parseHtml, txt } from '../core/util.js';
-import { renderActions } from './actionlist.js';
-import { attackAlert, fillResult, isSep, logBody, parseCombat, refreshWorld, resultHtml } from './combat.js';
+import { attackAlert, fightsDone, fillResult, isSep, logBody, parseCombat, playerDied, resultHtml } from './combat.js';
 import { fillEvaluation } from './evaluation.js';
 
 // Creature details in a pop-up (the game's "View Entity" page), with the same background fight.
@@ -125,6 +124,7 @@ export async function entityAttack(btn) {
       }
       leave = true; navigate(href); return;
     }
+    if (playerDied(c)) S.died = true;
     S.entRes.push(c);
     // Same as a fight started from the Action List: the result takes the creature's place in the list.
     const cid = (href.match(/creature_id=(\d+)/) || [])[1];
@@ -142,17 +142,13 @@ export async function entityAttack(btn) {
       btn.style.display = 'none';
     }
     updateHeader(html);
+    if (!playerDied(c) && S.autoAmmo) S.autoAmmo(); // the weapon is nearly empty: an ammo refill is used right away (quicklinks.js)
   } catch (e) {
     leave = true;
     navigate(href);
   } finally {
     S.pending--;
-    if (!S.pending && !leave) {
-      let ok = false;
-      try { ok = await refreshWorld(); } catch (e) { ok = false; }
-      if (!ok && !S.pending) renderActions();
-      refreshDur(0);
-    }
+    if (!S.pending && !leave) fightsDone();
   }
 }
 
@@ -182,12 +178,14 @@ export async function doAttack(a) {
       }
       leave = true; navigate(href); return;
     }
+    if (playerDied(c)) S.died = true;
     const r = { pos, quick, html: resultHtml(c), log: c };
     S.results.push(r);
     if (tr.isConnected) {
       fillResult(tr, r.html.replace('data-r="#"', 'data-r="' + (S.results.length - 1) + '"'));
     }
     updateHeader(html);
+    if (!playerDied(c) && S.autoAmmo) S.autoAmmo(); // the weapon is nearly empty: an ammo refill is used right away (quicklinks.js)
   } catch (e) {
     leave = true;
     const sp = tr.querySelector('.ssh-spin');
@@ -195,11 +193,6 @@ export async function doAttack(a) {
     navigate(href);
   } finally {
     S.pending--;
-    if (!S.pending && !leave) {
-      let ok = false;
-      try { ok = await refreshWorld(); } catch (e) { ok = false; }
-      if (!ok && !S.pending) renderActions();
-      refreshDur(0);
-    }
+    if (!S.pending && !leave) fightsDone();
   }
 }

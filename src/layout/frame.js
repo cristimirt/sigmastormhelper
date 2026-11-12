@@ -1,4 +1,4 @@
-import { isContentFrame } from '../core/page.js';
+import { findFrame, frameRow } from '../core/page.js';
 import { S } from '../core/state.js';
 import { cssUrl, https } from '../core/util.js';
 import { mel } from './dom.js';
@@ -13,12 +13,13 @@ let built = null; // { table, page, cells: [header, left, center, right], conten
 // The content frame as divs: .ssh-cf > .cf-top, .cf-mid (.cf-l, .cf-body, .cf-r), .cf-bot. The pictures are the game's own, read
 // from the table; the content of its middle cell (the page itself) moves into .cf-body.
 function frameContent(center) {
-  const table = [...center.children].find(isContentFrame);
+  const table = findFrame(center);
   if (!table) return null;
-  const r0 = table.rows[0];
-  const r1 = table.rows[1];
+  const mi = frameRow(table); // the row with the page (a spacer row above the top picture is left out)
+  const r0 = table.rows[mi - 1];
+  const r1 = table.rows[mi];
   const r2 = table.rows[table.rows.length - 1];
-  const extra = [...table.rows].slice(2, -1); // rows the game puts between the columns and the bottom picture (an alert): they belong to the page
+  const extra = [...table.rows].slice(mi + 1, -1); // rows the game puts between the columns and the bottom picture (an alert): they belong to the page
   const imgOf = (cell) => { const i = cell && cell.querySelector('img'); return i ? i.getAttribute('src') : ''; };
   const cf = mel('div', 'ssh-cf');
   const top = mel('div', 'cf-top');
@@ -106,6 +107,7 @@ export function frameCss(contentBg) {
     // it grows down to the bottom of the page, so the frame (its borders and its background) never ends above the sidebars' end
     P + ' .ssh-center{display:flex;flex-direction:column;margin-bottom:12px}' + // a small gap above the banner
     P + ' .ssh-cf{width:723px;flex:1;display:flex;flex-direction:column}' +
+    P + ' .ssh-center>section:has(>.ssh-cf){flex:1;display:flex;flex-direction:column}' + // the world page: the game wraps the frame in a section (with its small forms)
     P + ' .cf-top{height:14px;background-repeat:no-repeat;background-position:0 0}' +
     P + ' .cf-mid{display:grid;grid-template-columns:27px 669px 27px;flex:1}' +
     P + ' .cf-l{background-repeat:no-repeat,repeat-y;background-position:right top,0 0}' +

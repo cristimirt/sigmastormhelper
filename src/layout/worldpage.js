@@ -120,7 +120,7 @@ export const worldCss = (contentBg) => {
     // 192 px under the map, as the game's table leaves: the strips and panels sit at their own offsets in it
     W + '.wp-low{display:flex;align-items:flex-start;box-sizing:border-box;flex:1;min-height:192px;padding-left:33px}' +
     W + '.wp-left{width:341px;margin:27px 22px 0 0}' +
-    W + '.wp-strip{box-sizing:border-box;width:341px;height:60px;display:flex;align-items:flex-start;padding-top:20px;background-repeat:no-repeat;font:8pt tahoma,sans-serif;color:#fff}' +
+    W + '.wp-strip{box-sizing:border-box;width:341px;height:60px;display:flex;align-items:flex-start;padding-top:25px;background-repeat:no-repeat;font:8pt tahoma,sans-serif;color:#fff}' +
     // the game's table shrinks its 70 px cells to what fits: 50 px for the first, 44 px for the others, 5 px apart
     W + '.wp-strip.ql{gap:5px;padding-left:24px}' + W + '.wp-strip.ql .wp-i{width:44px}' + W + '.wp-strip.ql .wp-i:first-child{width:50px}' + W + '.wp-strip.ab{justify-content:center;gap:4px 6px;flex-wrap:wrap;height:auto;min-height:60px;padding-bottom:4px}' + W + '.wp-strip.ab .wp-i{width:48px}' +
     W + '.wp-i{text-align:center}' + W + '.wp-i img{border:0}' +

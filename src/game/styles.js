@@ -6,7 +6,8 @@ export function addStyle() {
   const st = document.createElement('style');
   st.id = 'ssh-style';
   const hide = HIDE_CSS;
-  st.textContent = hide + stairCss +
+  // the game's move status line ("Check move", "Reload World"): not wanted (its element stays in the page, the game's script uses it)
+  st.textContent = hide + stairCss + '#world-movement-status{display:none!important}' +
     '#ssh-map{position:relative;width:100%;height:500px;overflow:hidden;box-sizing:border-box;background:#000;' +
     'border:1px solid #3a3d3d;margin:0 0 8px;user-select:none;-webkit-user-select:none;}' +
     '#ssh-map.ssh-dragging,#ssh-map.ssh-dragging *{cursor:grabbing;}#ssh-tip{position:fixed;z-index:9500;display:none;padding:5px 8px;background:#101414;color:#e8e8e8;border:1px solid #5a5f5f;font:11px Arial,sans-serif;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.6);}#ssh-tip img{display:block;margin-top:4px;max-width:100%;}' +
@@ -72,7 +73,7 @@ export function addStyle() {
     '#ssh-al .r.sep>.c{padding:0;}#ssh-al .c>.w{min-width:0;}#ssh-al .c.full>.w{flex:1;min-width:0;}' +
     '@keyframes ssh-rot{to{transform:rotate(360deg)}}' +
     '.ssh-spin{display:inline-block;width:16px;height:16px;box-sizing:border-box;border:2px solid #4a5a5a;border-top-color:#9fe0ff;border-radius:50%;animation:ssh-rot .7s linear infinite;vertical-align:middle;}' +
-    '#ssh-al .rs{padding:5px 6px;line-height:1.45;}#ssh-al .rs .rt{font-weight:bold;font-size:12px;}#ssh-al .rs .win{color:#7fe08a;}#ssh-al .rs .lose{color:#ff6b6b;}' +
+    '#ssh-al .rs{padding:2px 6px 3px;line-height:1.45;}#ssh-al .rs .rt{font-weight:bold;font-size:12px;}#ssh-al .rs .win{color:#7fe08a;}#ssh-al .rs .lose{color:#ff6b6b;}' +
     '#ssh-al .rs .ln{font-weight:bold;}#ssh-al .rs .loot{margin-top:3px;}#ssh-al .rs .itm{cursor:help;font-weight:bold;}' +
     '#ssh-al .rs .gone{color:#8b8b8b;font-style:italic;margin-right:4px;}#ssh-al .rs .dx.arm{width:auto;padding:0 4px;background:#e0431a;}#ssh-al .rs .dx{display:inline-block;width:14px;height:14px;line-height:13px;text-align:center;background:#b3261e;color:#fff;font-weight:bold;font-size:11px;margin-right:4px;cursor:pointer;border:1px solid #6e1510;vertical-align:middle;text-decoration:none;}' +
     '#ssh-al .rs .rrow{display:flex;align-items:center;justify-content:space-between;gap:6px;}#ssh-al .rs .clog{flex:none;box-sizing:border-box;width:16px;height:16px;line-height:14px;text-align:center;background:#2c3232;border:1px solid #5a5f5f;color:#d8d8d8;cursor:pointer;font-size:10px;text-decoration:none;}' +
