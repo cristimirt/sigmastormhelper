@@ -142,6 +142,7 @@ export async function entityAttack(btn) {
       btn.style.display = 'none';
     }
     updateHeader(html);
+    if (!playerDied(c) && S.autoAmmo) S.autoAmmo(); // the weapon is nearly empty: an ammo refill is used right away (quicklinks.js)
   } catch (e) {
     leave = true;
     navigate(href);
@@ -184,6 +185,7 @@ export async function doAttack(a) {
       fillResult(tr, r.html.replace('data-r="#"', 'data-r="' + (S.results.length - 1) + '"'));
     }
     updateHeader(html);
+    if (!playerDied(c) && S.autoAmmo) S.autoAmmo(); // the weapon is nearly empty: an ammo refill is used right away (quicklinks.js)
   } catch (e) {
     leave = true;
     const sp = tr.querySelector('.ssh-spin');

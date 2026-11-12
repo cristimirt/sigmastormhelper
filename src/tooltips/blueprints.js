@@ -160,7 +160,8 @@ export function initRecipes() {
   document.addEventListener('mouseover', async (e) => {
     const img = e.target && typeof e.target.closest === 'function' ? e.target.closest('img[src*="recipes/"]') : null;
     if (!img) return;
-    const a = img.closest('tr') && img.closest('tr').querySelector('a[href*="recipe_id="]');
+    const row = img.closest('tr, .iv-r'); // a table row of the game, or a row of the Modern layout's list
+    const a = row && row.querySelector('a[href*="recipe_id="]');
     const id = a && (a.getAttribute('href').match(/recipe_id=(\d+)/) || [])[1];
     if (!id || cur === img) return;
     cur = img;

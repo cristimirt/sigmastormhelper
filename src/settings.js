@@ -63,6 +63,7 @@ export function initSettings() {
     ['stairMarks', 'check', 'Mark the stairs on the map', 'A green stairs picture on every stairs tile, a red "no entry" one when the area it leads to is for a higher level than yours (the stairs come from the Path Finder data). Takes effect after reloading the page.'],
     ['h', 'Items'],
     ['gearCompare', 'check', 'Compare gear in item tooltips', 'An item you are not wearing is shown next to the worn item of the same kind, with the differences coloured.'],
+    ['autoAmmo', 'check', 'Refill the ammo after a fight', 'When the equipped weapon has 2 ammo or less after a fight, an ammo refill from the bag is used at once (reloading in the middle of a fight costs a turn, and the creature attacks meanwhile). The ammo is read from every fight.'],
     ['h', 'Faction'],
     ['factionInv', 'check', 'Faction Inventory on the Tagged Item Report page', "Replaces the game's report with one list of every item of the faction (the ones the members carry and the ones in the store), with filters, sorting and buttons to recall or take them. Takes effect after reloading the page. Faction > Faction Inventory opens it."],
     ['h', 'Side panels'],

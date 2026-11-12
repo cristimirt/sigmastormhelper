@@ -4,6 +4,7 @@ import { fetchText, navigate } from '../core/net.js';
 import { S } from '../core/state.js';
 import { esc, fmt, parseHtml } from '../core/util.js';
 import { alertModal, gAlerts } from '../layout/modal.js';
+import { combatView } from './combatview.js';
 import { read, show, swapIn } from './loading.js';
 
 export const isSep = (row) => row.classList.contains('ssh-mech') || row.classList.contains('sep');
@@ -98,6 +99,70 @@ function numberSlots(bd) {
   });
 }
 
+// What the fight page says when the fight is over (its script writes the lines into the page, so they are not in the page's markup): the lines
+// of what was gained or lost, as { t: text, c: colour }, with the game's wording and colours.
+function gainsOf(c, stolen, rating, leader, members) {
+  const B = '#97D6E2';
+  const R = '#FF3D3D';
+  const out = [];
+  const add = (t, col) => out.push({ t, c: col });
+  const abs = Math.abs;
+  if (c.type === 0) {
+    if (c.xp > 0) add('You gain ' + c.xp + ' experience.', B);
+    if (c.xp < 0) add('You lost ' + abs(c.xp) + ' experience.', R);
+    if (c.gold > 0) add('You take ' + c.gold + ' credits from the entity.', B);
+    if (c.gold < 0) add('You lost ' + abs(c.gold) + ' credits from the defeat.', R);
+    if (c.tax > 0) add('Faction tax deducted ' + c.tax + ' credits to the faction bank.', B);
+    if (c.level > 0) add('Your level has increased!', B);
+    if (c.level < 0) add('Your level has decreased!', R);
+    if (c.surge > 0) add('You gain ' + c.surge + ' ' + c.surgeName + '.', B);
+  } else if (c.type === 1) {
+    const n = c.name;
+    if (c.xp > 0) add(n[1] + ' lost ' + abs(c.xp) + ' experience.', R);
+    if (c.level < 0) add(n[1] + "'s level has decreased!", R);
+    if (c.gold > 0) add(n[1] + ' lost ' + abs(c.gold) + ' credits of which ' + n[0] + ' stole ' + abs(stolen) + ' credits', R);
+    if (c.gold < 0) add(n[0] + ' lost ' + abs(c.gold) + ' credits of which ' + n[1] + ' snatched ' + abs(stolen) + ' credits (this was due to an activated Snatch skill.)', R);
+    if (rating !== 0) add(n[c.winner] + ' gained PvP rating of ' + rating + '.', R);
+  } else if (c.type === 2) {
+    if (c.xp > 0) {
+      add('Group Leader (' + leader + ') gained ' + Math.ceil(c.xp * 0.5) + ' xp.', R);
+      add('All other group members (' + members + ') gained ' + Math.ceil(c.xp * 0.1) + ' xp.', '#B9DCC9');
+    }
+    if (c.gold > 0) add('Faction gained ' + abs(c.gold) + ' credits.', '#FFDDBB');
+  }
+  return out;
+}
+
+// The pictures of the fight page (for the details pop-up, see combatview.js): the opponent's picture, the player's (a realm background, a weapon, and
+// the layers of the worn gear: the nested tables of the page, innermost = on top). Null when the page is not as known.
+function readLook(doc) {
+  try {
+    const s0 = doc.getElementById('side_0');
+    const s1 = doc.getElementById('side_1');
+    if (!s0 || !s1) return null;
+    const abs = (u) => (u ? new URL(u, location.href).href : '');
+    const urlOf = (el) => abs(el && (el.getAttribute('background') || ((el.getAttribute('style') || '').match(/url\(["']?([^)"']*)["']?\)/) || [])[1]));
+    const layers = [];
+    let realm = null;
+    for (let e = s0.parentElement; e && e !== doc.body; e = e.parentElement) {
+      const b = e.getAttribute('background');
+      if (!b || (e.tagName !== 'TABLE' && e.tagName !== 'TD')) continue;
+      if (e.tagName === 'TABLE' && /realms/.test(b)) { realm = e; break; }
+      layers.push(abs(b));
+    }
+    if (!realm) return null;
+    const weapon = [...realm.querySelectorAll('td[background]')].find((td) => !td.contains(s0));
+    return {
+      creature: urlOf(s1.closest('td')),
+      realm: abs(realm.getAttribute('background')),
+      weapon: weapon ? abs(weapon.getAttribute('background')) : '',
+      layers,
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
 export function parseCombat(html) {
   const doc = parseHtml(html);
   const sc = [...doc.scripts].map((t) => t.textContent).find((t) => /combat animator/.test(t));
@@ -108,7 +173,7 @@ export function parseCombat(html) {
   const c = {
     type: intVar('combatType'), winner: intVar('winner'), xp: intVar('xpGain'), gold: intVar('goldGain'), surge: intVar('surgeGain'), surgeName: str('surgeName'),
     tax: intVar('guildTaxGain'), level: intVar('levelUp'),
-    name: arr('name'), startHP: arr('startHP'), hp: arr('currentHP'), startAmmo: arr('startAmmo'), ammo: arr('currentAmmo'),
+    name: arr('combatNames').length ? arr('combatNames') : arr('name'), startHP: arr('startHP'), hp: arr('currentHP'), startAmmo: arr('startAmmo'), ammo: arr('currentAmmo'),
     report: arr('report'), color: arr('reportColor'), items: [],
   };
   // Work out the final HP / ammo by replaying the fight stages (defender loses HP, attacker spends ammo).
@@ -119,10 +184,15 @@ export function parseCombat(html) {
   c.fammo = [c.ammo[0], c.ammo[1]];
   dmg.forEach((d, i) => {
     if (d === undefined) return;
-    const att = (c.report[i] || '').indexOf(c.name[0] || '\u0000') === 0 ? 0 : 1;
+    const att = i % 2; // the game's own rule (side = 1 - stage % 2 is the one that is hit): the player attacks in the even stages
     if (sh[i] !== undefined) c.fhp[1 - att] = sh[i];
     if (sa[i] !== undefined) c.fammo[att] = sa[i];
   });
+  c.hpLost = Math.max(0, (c.hp[0] || 0) - c.fhp[0]); // the hit points the player lost in the fight
+  c.turns = dmg.reduce((n, d, i) => (d !== undefined && i % 2 === 0 ? n + 1 : n), 0); // how many times the player attacked
+  if (c.type === 0 && c.startAmmo[0] > 0) S.weaponAmmo = { cur: c.fammo[0], max: c.startAmmo[0] }; // the ammo the weapon has after this fight
+  c.look = readLook(doc);
+  c.gains = gainsOf(c, intVar('goldStolen'), intVar('pvpRatingChange'), str('groupLeader'), str('groupMembers')); // the page writes these lines with a script once the fight is over
   const item = doc.getElementById('itemDiv');
   if (item) {
     const names = [...item.innerHTML.matchAll(/looted the item '<font color="(#\w+)">([^<]+)<\/font>'/g)];
@@ -135,10 +205,18 @@ export function parseCombat(html) {
   return c;
 }
 
+const CDN_SKIN = 'https://cdn.sigmastorm.com/skin/';
+
 export function resultHtml(c) {
-  const part = (label, n, extra) => '<span style="color:' + (n < 0 ? '#FF5a5a' : '#97D6E2') + '">' + label + ': ' + fmt(n) + (extra || '') + '</span>';
-  const parts = [part('XP', c.xp), part('Credits', c.gold, c.tax > 0 ? ' [' + fmt(c.tax) + ']' : '')];
-  if (c.surge) parts.push(part(esc(c.surgeName || 'Surge'), c.surge));
+  // each figure is an icon (or XP) and a number, with a tooltip saying what it is
+  const ico = (src) => '<img src="' + esc(src) + '" alt="" style="width:14px;height:14px;vertical-align:-2px;margin-right:2px">';
+  const part = (label, n, tip, extra) => '<span title="' + esc(tip) + '" style="cursor:help;color:' + (n < 0 ? '#FF5a5a' : '#97D6E2') + '">' + label + fmt(n) + (extra || '') + '</span>';
+  const heart = '<svg viewBox="0 0 16 16" style="width:13px;height:13px;vertical-align:-2px;margin-right:2px"><path fill="#e0262e" d="M8 14.5S1 10 1 5.6C1 3.4 2.6 2 4.4 2c1.4 0 2.6.8 3.6 2.2C9 2.8 10.2 2 11.6 2 13.4 2 15 3.4 15 5.6 15 10 8 14.5 8 14.5z"/></svg>';
+  const classIcon = (document.querySelector('img[src*="/skin/classes/"]') || {}).src;
+  const parts = [part('XP ', c.xp, 'Experience'), part(ico(CDN_SKIN + 'gold_button.gif'), c.gold, 'Credits', c.tax > 0 ? ' [' + fmt(c.tax) + ']' : '')];
+  if (c.surge) parts.push(part(classIcon ? ico(classIcon) : esc((c.surgeName || 'Surge') + ' '), c.surge, c.surgeName || 'Skill power'));
+  parts.push('<span title="Hit points lost in the fight" style="cursor:help;color:' + (c.hpLost > 0 ? '#FF5a5a' : '#97D6E2') + '">' + heart + (c.hpLost > 0 ? '-' : '') + fmt(c.hpLost || 0) + '</span>',
+    '<span title="Combat turns (how many times you attacked)" style="cursor:help;color:#97D6E2">&#8635; ' + (c.turns || 0) + '</span>');
   if (c.level > 0) parts.push('<span style="color:#7fe08a">Level up!</span>');
   if (c.level < 0) parts.push('<span style="color:#FF5a5a">Level down!</span>');
   const outcome = c.winner === -1 ? 'Draw' : c.winner === 0 ? 'Victory' : 'Defeat';
@@ -175,8 +253,10 @@ export function openLog(r) {
   const stat = (n, i) => '<div class="stat"><span>' + esc(n) + '</span><span>HP ' + c.fhp[i] + ' / ' + c.startHP[i] + (c.startAmmo[i] ? ' &nbsp; Ammo ' + c.fammo[i] + ' / ' + c.startAmmo[i] : '') + '</span></div>';
   const pop = document.createElement('div');
   pop.id = 'ssh-pop';
-  pop.innerHTML = '<div class="box"><div class="ph"><div>Combat Log &ndash; ' + esc(c.name[0] || '') + ' vs ' + esc(c.name[1] || '') + '</div><span data-close="1" title="Close">&#10006;</span></div><div class="pb">' +
-    stat(c.name[0], 0) + stat(c.name[1], 1) + '<hr style="border:0;border-top:1px solid #333;margin:8px 0">' + rows + '</div></div>';
+  const view = combatView(c); // the fight as the game's page shows it, as divs
+  pop.innerHTML = '<div class="box' + (view ? ' cbv-box' : '') + '"><div class="ph"><div>Combat Log &ndash; ' + esc(c.name[0] || '') + ' vs ' + esc(c.name[1] || '') + '</div><span data-close="1" title="Close">&#10006;</span></div><div class="pb">' +
+    (view ? '' : stat(c.name[0], 0) + stat(c.name[1], 1) + '<hr style="border:0;border-top:1px solid #333;margin:8px 0">' + rows) + '</div></div>';
+  if (view) pop.querySelector('.pb').append(view);
   document.body.appendChild(pop);
 }
 

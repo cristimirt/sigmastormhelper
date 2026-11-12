@@ -14,7 +14,7 @@ export const S = {
 
 SSH.S = S;
 
-export const CFG_DEFAULT = { modernMap: true, route: true, fastWalk: true, stopOnCreatures: false, creatureColors: true, hotkeyChampion: false, hotkeyElite: false, hotkeyHK: true, hotkeyBehemoth: false, stepDelay: 320, slide: true, bannerNums: true, durBar: true, gearCompare: true, movePanels: true, factionInv: true, pathfinder: true, live: true, stairMarks: true, moveLog: false };
+export const CFG_DEFAULT = { modernMap: true, route: true, fastWalk: true, stopOnCreatures: false, creatureColors: true, hotkeyChampion: false, hotkeyElite: false, hotkeyHK: true, hotkeyBehemoth: false, stepDelay: 320, slide: true, bannerNums: true, durBar: true, gearCompare: true, movePanels: true, factionInv: true, pathfinder: true, live: true, stairMarks: true, autoAmmo: true, moveLog: false };
 
 S.cfg = Object.assign({}, CFG_DEFAULT, store.get('cfg', {}));
 if (S.cfg.noHkHotkey === true && !('hotkeyHK' in store.get('cfg', {}))) S.cfg.hotkeyHK = false; // the older setting "No attack hotkey for HK creatures"
