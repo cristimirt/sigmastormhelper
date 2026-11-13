@@ -34,6 +34,7 @@ import { initRecipes } from './tooltips/blueprints.js';
 import { serverOffset } from './tooltips/energy.js';
 import { initTips } from './tooltips/tips.js';
 import { installCsrf } from './core/net.js';
+import { recoverToken } from './core/recover.js';
 
 // The game's top bar asks for Open Sans from a server that does not allow it (the browser blocks it): the copy that comes with the helper
 // is used for that name instead (it is declared after the game's, so it wins).
@@ -89,6 +90,7 @@ async function init() {
 }
 
 export default async function start(ctx) {
+  recoverToken(); // before anything is loaded: a reload or a Back to an address without a token
   installCsrf();
   installImgFix();
   S.build = (ctx && ctx.build) || 'dev';
