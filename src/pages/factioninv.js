@@ -10,14 +10,14 @@ import { fetchItem, parseItem } from '../tooltips/compare.js';
 // Faction Inventory: every item of the faction in one list - the tagged items the members carry (the game's "Tagged Item Report")
 // and the items in the faction store - with the numbers of each item, filters, sorting, and buttons to recall them. The list of items
 // comes from two pages of the game; what an item is (type, rarity, level, bonuses, durability) comes from its own tooltip data
-// (fetchitem.php), read once and kept (a day) so that opening the page again is quick.
+// (fetchitem.php), read once and kept in the browser (see `det` below) so that opening the page again is quick.
 // The game's Tagged Item Report page: the helper shows this page there (unless the setting is off)
 export const FI_URL = 'index.php?cmd=guild&subcmd=inventory&subcmd2=report';
 
 const REPORT = 'index.php?cmd=guild&subcmd=inventory&subcmd2=report';
 const MANAGE = 'index.php?cmd=guild&subcmd=manage';
 const STORE = 'Faction Store';
-const STALE = 24 * 3600 * 1000; // a cached item is read again after a day (its durability changes)
+const KEEP = 60 * 24 * 3600 * 1000; // what is known about an item stays this long after it was last seen in the lists
 const PER = [25, 50, 100, 250];
 const ABBR = { Attack: 'Atk', Damage: 'Dmg', Defense: 'Def', Defence: 'Def', Armor: 'Arm', Armour: 'Arm', HP: 'HP' };
 const BYCOLOR = { '#40FFFF': 'Rare', '#FF40FF': 'Unique', '#FFFF40': 'Legendary', '#FFFFFF': 'Common' };
@@ -71,11 +71,12 @@ function readStore(doc) {
 async function loadStore() {
   const all = [];
   const seen = new Set();
-  for (let p = 0; p < 80; p++) {
-    const rows = readStore(await fetchDoc(MANAGE + '&guildstore_page=' + p));
-    const fresh = rows.filter((r) => !seen.has(r.k));
-    if (!fresh.length) break;
-    fresh.forEach((r) => { seen.add(r.k); all.push(r); });
+  // the pages are read four at a time (in order), up to the first one with nothing new
+  for (let p = 0; p < 80; p += 4) {
+    const pages = await Promise.all([0, 1, 2, 3].map((n) => fetchDoc(MANAGE + '&guildstore_page=' + (p + n)).then(readStore)));
+    let fresh = 0;
+    pages.forEach((rows) => rows.forEach((r) => { if (!seen.has(r.k)) { seen.add(r.k); all.push(r); fresh++; } }));
+    if (!fresh || pages.some((rows) => !rows.length)) break;
   }
   return all;
 }
@@ -173,7 +174,11 @@ export function initFactionInv() {
   const st = { q: '', where: '', min: '', max: '', eq: '', set: '', offT: new Set(), offC: new Set(), offR: new Set(), offQ: new Set(), sort: { k: 'l', d: -1 }, per: 50, page: 0, ...store.get('fi_ui', {}) };
   st.offT = new Set(); st.offC = new Set(); st.offR = new Set(); st.offQ = new Set(); st.page = 0;
   let items = [];
-  let det = store.get('fi3', {}); // k -> record
+  // What an item is (type, rarity, level, bonuses ...) does not change, so it is read once and kept in the browser, by the item and its place in
+  // the inventory (not by where it is now: a recalled or taken item is still known). Only the Refresh link reads everything again.
+  let det = store.get('fi4', {}); // 'item_inv' -> record
+  const old = store.get('fi3', null); // the cache of earlier versions (by 'p'/'s' and the inventory number)
+  const ck = (i) => i.item + '_' + i.inv;
   const sel = new Set();
   let busy = 0; // running loads
   let stop = false;
@@ -213,12 +218,17 @@ export function initFactionInv() {
 
   // ---- data
   const save = () => {
-    const keep = {};
-    items.forEach((i) => { if (det[i.k]) keep[i.k] = det[i.k]; });
-    det = keep;
-    store.set('fi3', det);
+    const now = Date.now();
+    items.forEach((i) => { const d = det[ck(i)]; if (d) d.seen = now; });
+    Object.keys(det).forEach((k) => { if (now - (det[k].seen || det[k].ts || 0) > KEEP) delete det[k]; });
+    store.set('fi4', det);
   };
-  const info = (i) => det[i.k];
+  // the cache of earlier versions: its records are taken over once
+  const adopt = () => {
+    if (!old) return;
+    items.forEach((i) => { if (!det[ck(i)] && old[i.k] && old[i.k].n) det[ck(i)] = old[i.k]; });
+  };
+  const info = (i) => det[ck(i)];
   const nameOf = (i) => { const d = info(i); return (d && d.n) || i.name || '...'; };
   const durOf = (i) => { const d = info(i); return d && d.m ? Math.round((d.d / d.m) * 100) : -1; };
   const bonusKeys = () => {
@@ -231,10 +241,10 @@ export function initFactionInv() {
 
   // Fetches what the items are, six at a time; the table fills in as the answers arrive.
   async function loadDetails(force) {
-    const todo = items.filter((i) => force || !det[i.k] || Date.now() - det[i.k].ts > STALE || det[i.k].v < 3 || (det[i.k].v === 3 && !det[i.k].c));
-    // the ones never read first, then the stale ones
-    todo.sort((a, b) => (det[a.k] ? 1 : 0) - (det[b.k] ? 1 : 0));
-    if (!todo.length) { status(''); return; }
+    const todo = items.filter((i) => force || !det[ck(i)] || det[ck(i)].v < 3 || (det[ck(i)].v === 3 && !det[ck(i)].c));
+    // the ones never read first
+    todo.sort((a, b) => (det[ck(a)] ? 1 : 0) - (det[ck(b)] ? 1 : 0));
+    if (!todo.length) { status(''); save(); return; }
     let done = 0;
     let fail = 0;
     let last = 0;
@@ -251,7 +261,7 @@ export function initFactionInv() {
         try {
           const html = await fetchItem(i.item, i.inv, i.type, i.pid);
           const r = readDetail(html);
-          if (r.n) det[i.k] = r; else fail++;
+          if (r.n) det[ck(i)] = r; else fail++;
         } catch (e) { fail++; }
         done++;
         paint();
@@ -277,6 +287,7 @@ export function initFactionInv() {
       pre = null;
       items = [...(rep || []), ...(sto || [])];
       sel.clear();
+      adopt();
       drawChips();
       drawTable();
       await loadDetails(force);
@@ -409,7 +420,7 @@ export function initFactionInv() {
     const again = i.kind === 'p' && !!doc.getElementById('faction-recall-' + i.inv); // the report still lists it
     return { ok: !alertBad(al) && !again, msg: alertText(al) };
   }
-  const drop = (i) => { const at = items.indexOf(i); if (at >= 0) items.splice(at, 1); sel.delete(i.k); delete det[i.k]; };
+  const drop = (i) => { const at = items.indexOf(i); if (at >= 0) items.splice(at, 1); sel.delete(i.k); };
 
   async function act(i, row) {
     const link = row && row.querySelector('.fi-do[data-do]:not([data-do="bp"])');
