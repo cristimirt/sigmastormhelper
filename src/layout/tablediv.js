@@ -1,3 +1,4 @@
+import { S } from '../core/state.js';
 import { cssUrl, https } from '../core/util.js';
 
 // A copy of a piece of the game's markup in which every table is made of divs (CSS grid), for the pages that are big sets of nested tables.
@@ -38,7 +39,11 @@ function cellStyle(td, pad) {
   const bg = td.getAttribute('bgcolor');
   if (bg) st.push('background-color:' + bg);
   const img = td.getAttribute('background');
-  if (img) st.push('background-image:' + cssUrl(img) + (/\/header_/.test(img) ? ';background-repeat:no-repeat' : '')); // a title bar picture is shorter than its cell: it is not repeated (the page's own background shows under it)
+  if (img) {
+    // the footer picture of the page is the HD one that comes with the helper (the game's own when the helper's site is not known)
+    const foot = S.base && /large_content_footer/.test(img);
+    st.push('background-image:' + (foot ? cssUrl(S.base + 'media/large_content_footer.png') : cssUrl(img)) + (foot || /\/header_/.test(img) ? ';background-repeat:no-repeat' : '') + (foot ? ';background-position:center top' : '')); // a title bar picture is shorter than its cell: it is not repeated (the page's own background shows under it)
+  }
   if (td.hasAttribute('nowrap')) st.push('white-space:nowrap');
   st.push('padding:' + pad + 'px');
   return st.join(';');

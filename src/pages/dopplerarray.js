@@ -1,6 +1,7 @@
 import { DATA } from '../core/data.js';
 import { withToken } from '../core/net.js';
 import { cssUrl, fmt, https } from '../core/util.js';
+import { S } from '../core/state.js';
 import { mel } from '../layout/dom.js';
 import { BM_CSS, behMenu } from './behmenu.js';
 
@@ -13,6 +14,7 @@ import { BM_CSS, behMenu } from './behmenu.js';
 const CSS = BM_CSS + 'html.ssh-modern [data-ssh-da]{display:none!important}#ssh-da{display:none}html.ssh-modern #ssh-da{display:block}' +
   '#ssh-da{padding:14px 20px 20px;box-sizing:border-box;width:640px;margin:0 auto;text-align:left;color:#fff}' +
   '#ssh-da .da-hd{height:54px;margin:-14px -20px 12px;background:center top no-repeat}' +
+  '#ssh-da .da-ft{height:54px;margin:14px -20px -20px;background:center top no-repeat}' +
   '#ssh-da a{color:#a7ffff;text-decoration:none}#ssh-da a:hover{color:#fff}' +
   '#ssh-da .da-txt{margin:0 0 12px}' +
   '#ssh-da .da-t{display:grid;grid-template-columns:minmax(130px,1.2fr) minmax(0,1.2fr) minmax(0,.8fr) minmax(150px,1.3fr);width:540px;max-width:100%;margin:0 auto}' +
@@ -100,5 +102,9 @@ export function initDoppler() {
     grid.append(first, rc, hpc, kc);
   });
   root.append(grid);
+  const ft = mel('div', 'da-ft'); // the footer picture (the helper's own HD one)
+  const fd = table.querySelector('td[background*="large_content_footer"]');
+  ft.style.backgroundImage = S.base ? cssUrl(S.base + 'media/large_content_footer.png') : cssUrl(fd ? fd.getAttribute('background') : '');
+  root.append(ft);
   table.after(root);
 }
