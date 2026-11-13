@@ -146,6 +146,8 @@ export function buildSidebars() {
     host.append(keep);
     undo.push(() => keep.remove());
     root.querySelectorAll('form').forEach((f) => {
+      // a form that holds its own visible fields (the faction chat with no messages yet is one) is left where it is
+      if ([...f.elements].some((e) => f.contains(e) && e.type !== 'hidden')) return;
       if (!f.id) f.id = 'ssh-form' + formNo++;
       [...f.elements].forEach((e) => {
         e.setAttribute('form', f.id);
@@ -194,6 +196,12 @@ export function buildSidebars() {
               a.textContent = 'Faction Inventory';
               fi.append(a);
               items.append(fi);
+              const da = mel('div', 'mm-l');
+              const b = mel('a');
+              b.href = withToken('index.php?cmd=guild&subcmd=dopplerarray');
+              b.textContent = 'Doppler Array';
+              da.append(b);
+              items.append(da);
             }
           });
           kids.forEach((n) => n.remove());
@@ -540,6 +548,7 @@ export const sidebarCss = () =>
   '.ssh-w .wh{box-sizing:border-box;width:133px;background-repeat:no-repeat;background-position:0 0;cursor:grab}' +
   '.ssh-w .wh img{display:block;border:0}' +
   '.ssh-w .wb{box-sizing:border-box;width:133px;background-repeat:repeat-y}' +
+  '.ssh-w #faction-chat-sidebar input[type="submit"]{margin-top:4px}' +
   '.ssh-w .wf{width:133px;height:17px;background-repeat:no-repeat}' +
   '.ssh-w .wm{width:133px;display:flex;flex-direction:column;align-items:flex-start}' +
   '.ssh-w .wm>a{display:block;margin:0}.ssh-w .wm>a img{display:block;border:0}' +

@@ -16,6 +16,8 @@ import { initArtifactShop } from './pages/artifactshop.js';
 import { initBank } from './pages/bank.js';
 import { initBlacksmith } from './pages/blacksmith.js';
 import { initCrafting } from './pages/crafting.js';
+import { behemothPage, initBehemoth } from './pages/behemoth.js';
+import { initDoppler, isDoppler } from './pages/dopplerarray.js';
 import { initEvolve } from './pages/evolve.js';
 import { initFactionInv } from './pages/factioninv.js';
 import { initGuildManage } from './pages/guildmanage.js';
@@ -32,6 +34,7 @@ import { initRecipes } from './tooltips/blueprints.js';
 import { serverOffset } from './tooltips/energy.js';
 import { initTips } from './tooltips/tips.js';
 import { installCsrf } from './core/net.js';
+import { recoverToken } from './core/recover.js';
 
 // The game's top bar asks for Open Sans from a server that does not allow it (the browser blocks it): the copy that comes with the helper
 // is used for that name instead (it is declared after the game's, so it wins).
@@ -65,6 +68,8 @@ async function init() {
   if (document.getElementById('engineering-upgrade') || document.querySelector('td[data-engineering-id]')) { initHellforge(); return; } // the Engineering page
   if (document.getElementById('augmentation-selected')) { initCrafting(); return; } // the Item Augmentation page
   if (document.querySelector('td[background*="header_factionmanage"]')) { initGuildManage(); return; } // the Manage Faction page
+  if (behemothPage()) { initBehemoth(behemothPage()); return; } // Behemoth Rewards / Behemoth Kills
+  if (isDoppler()) { initDoppler(); return; } // the Doppler Array
   if (isRecruit()) { initRecruit(); return; } // the faction's recruitment page
   if (isRelicList()) { initRelicList(); return; } // the list of all artifacts
   if (document.getElementById('relic-capture')) { initRelic(); return; } // an artifact's page
@@ -85,6 +90,7 @@ async function init() {
 }
 
 export default async function start(ctx) {
+  recoverToken(); // before anything is loaded: a reload or a Back to an address without a token
   installCsrf();
   installImgFix();
   S.build = (ctx && ctx.build) || 'dev';
