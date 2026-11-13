@@ -153,7 +153,7 @@
  },
  "19": {
   "n": "Traverse",
-  "d": "+0.1% chance to use no Energy when moving",
+  "d": "+0.1% per point chance to use no Energy when moving",
   "x": [
    "Energy: 25",
    "Duration: 60 min(s)"

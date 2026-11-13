@@ -22,7 +22,8 @@ const rowOf = (el) => el && el.closest('.dr, tr');
 
 // The rows of the chat: the rows before the input's row that hold the name of a player and what was said.
 function chatRows(root) {
-  const input = root.querySelector('input[name="msg"]');
+  // the faction chat's box (the page has another "msg" box: the global chat's)
+  const input = [...root.querySelectorAll('input[name="msg"]')].find((i) => i.form && i.form.elements.namedItem('from_rhs'));
   const mine = rowOf(input);
   if (!mine) return null;
   const rows = [...mine.parentNode.children].filter((r) => r !== mine && r.querySelector('a[href*="player_id"]') && r.querySelector('font'));
@@ -110,6 +111,10 @@ async function sendChat(form) {
   if (!input || !input.value.trim() || input.disabled) return;
   const body = new URLSearchParams(new FormData(form));
   input.disabled = true;
+  const spin = document.createElement('div'); // the little wheel under the button while the message goes
+  spin.style.cssText = 'text-align:center;padding-top:4px';
+  spin.innerHTML = '<span class="ssh-spin"></span>';
+  form.append(spin);
   try {
     const res = await fetch(new URL(form.getAttribute('action') || 'index.php', location.href).href, { method: 'POST', body, credentials: 'same-origin' });
     const doc = parseHtml(await res.text());
@@ -122,7 +127,9 @@ async function sendChat(form) {
   }
   input.disabled = false;
   input.focus();
-  refreshLive();
+  for (let n = 0; busy && n < 20; n++) await new Promise((r) => setTimeout(r, 150)); // a check that is running began before the message was sent
+  await refreshLive(); // what was said shows in the box before the wheel goes
+  spin.remove();
 }
 
 // A skill used from the Skills widget changes health, energy and gear: read them again once the game has answered.
@@ -140,6 +147,12 @@ export function initLive() {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && Date.now() - last > EVERY) refreshLive();
   });
+  document.addEventListener('keydown', (e) => { // Enter in the box sends it
+    const t = e.target;
+    if (e.key !== 'Enter' || !t || t.name !== 'msg' || !t.form || !t.form.elements.namedItem('from_rhs')) return;
+    e.preventDefault();
+    sendChat(t.form);
+  }, true);
   document.addEventListener('submit', (e) => {
     const f = e.target;
     if (!f || !f.elements || !f.elements.namedItem('subcmd') || f.elements.namedItem('subcmd').value !== 'dochat' || !f.elements.namedItem('from_rhs')) return;

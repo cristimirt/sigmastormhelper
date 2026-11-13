@@ -49,6 +49,8 @@ export async function loadSkill(id) {
 
 // "+0.2% Base Attack per point." at level 10 -> "+2% Base Attack."; "0.1% per point of the items level" -> "1% of the items level".
 export function scaleDesc(desc, level) {
+  // the game's text for Traverse leaves out the "per point" ("+0.1% chance to use no Energy when moving"), which is meant per point
+  desc = String(desc).replace(/^(\+?\d+(?:\.\d+)?%)\s+(chance to use no Energy when moving)/i, '$1 per point $2');
   // "50% (+0.25% per point) chance": a base value plus a bonus per point
   const base = (s) => s.replace(/(\d+(?:\.\d+)?)%\s*\(\s*\+\s*(\d+(?:\.\d+)?)%\s*per point\s*\)/gi, (m, b, p) => '<b>' + Math.round((parseFloat(b) + parseFloat(p) * level) * 100) / 100 + '</b>%');
   return base(esc(desc)).replace(/([+-]?)(\d+(?:\.\d+)?)(\s*%?)((?:(?!per point)[^.;\d])*?)\s*\bper point\b/gi, (m, sign, num, pct, words) => {

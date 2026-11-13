@@ -38,7 +38,7 @@ function cellStyle(td, pad) {
   const bg = td.getAttribute('bgcolor');
   if (bg) st.push('background-color:' + bg);
   const img = td.getAttribute('background');
-  if (img) st.push('background-image:' + cssUrl(img));
+  if (img) st.push('background-image:' + cssUrl(img) + (/\/header_/.test(img) ? ';background-repeat:no-repeat' : '')); // a title bar picture is shorter than its cell: it is not repeated (the page's own background shows under it)
   if (td.hasAttribute('nowrap')) st.push('white-space:nowrap');
   st.push('padding:' + pad + 'px');
   return st.join(';');

@@ -16,6 +16,8 @@ import { initArtifactShop } from './pages/artifactshop.js';
 import { initBank } from './pages/bank.js';
 import { initBlacksmith } from './pages/blacksmith.js';
 import { initCrafting } from './pages/crafting.js';
+import { behemothPage, initBehemoth } from './pages/behemoth.js';
+import { initDoppler, isDoppler } from './pages/dopplerarray.js';
 import { initEvolve } from './pages/evolve.js';
 import { initFactionInv } from './pages/factioninv.js';
 import { initGuildManage } from './pages/guildmanage.js';
@@ -65,6 +67,8 @@ async function init() {
   if (document.getElementById('engineering-upgrade') || document.querySelector('td[data-engineering-id]')) { initHellforge(); return; } // the Engineering page
   if (document.getElementById('augmentation-selected')) { initCrafting(); return; } // the Item Augmentation page
   if (document.querySelector('td[background*="header_factionmanage"]')) { initGuildManage(); return; } // the Manage Faction page
+  if (behemothPage()) { initBehemoth(behemothPage()); return; } // Behemoth Rewards / Behemoth Kills
+  if (isDoppler()) { initDoppler(); return; } // the Doppler Array
   if (isRecruit()) { initRecruit(); return; } // the faction's recruitment page
   if (isRelicList()) { initRelicList(); return; } // the list of all artifacts
   if (document.getElementById('relic-capture')) { initRelic(); return; } // an artifact's page
