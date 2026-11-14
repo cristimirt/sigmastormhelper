@@ -70,5 +70,14 @@ export function parseAreaMap(html) {
       });
     });
   });
-  return { cols: rows[0].cells.length, rows: rows.length, cells };
+  // What stands on a tile that is not part of the tile picture (a behemoth: a table with its own picture as the background, inside the cell).
+  // It changes (a behemoth comes and goes), unlike the tiles, so it is kept apart from them and read again now and then.
+  const ov = [];
+  rows.forEach((r, y) => [...r.cells].forEach((c, x) => {
+    c.querySelectorAll('table[background], img[src]').forEach((e) => {
+      const u = e.tagName === 'IMG' ? e.getAttribute('src') : e.getAttribute('background');
+      if (u && !/player_tile/.test(u)) ov.push({ i: y * rows[0].cells.length + x, u });
+    });
+  }));
+  return { cols: rows[0].cells.length, rows: rows.length, cells, ov };
 }

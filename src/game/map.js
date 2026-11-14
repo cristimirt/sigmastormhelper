@@ -24,11 +24,12 @@ export function renderWorld() {
       h += '<img class="t" draggable="false" style="left:' + x * TILE + 'px;top:' + y * TILE + 'px" src="' + c.bg + '"' +
         (c.tip ? ' data-tip="' + i + '"' : '') + '>';
     });
-    h += '<div id="ssh-fp"></div><div id="ssh-st"></div>';
+    h += '<div id="ssh-ov"></div><div id="ssh-fp"></div><div id="ssh-st"></div>';
     h += '<svg id="ssh-path" width="' + area.cols * TILE + '" height="' + area.rows * TILE + '"></svg>';
     h += '<div id="ssh-me"><img src="https://cdn.sigmastorm.com/skin/player_tile.gif" alt=""></div>';
     w.innerHTML = h;
   }
+  renderOverlays();
   renderPad();
   renderTrail();
   const me = w.querySelector('#ssh-me');
@@ -50,6 +51,19 @@ export function renderWorld() {
   applyZoom();
   renderStairs();
   pfUpdate();
+}
+
+// What stands on the tiles (a behemoth's picture), above the tiles and under the footprints; not part of the tooltip's target.
+export function renderOverlays() {
+  const area = S.areas.get(S.loc.area);
+  const box = S.viewer && S.viewer.querySelector('#ssh-ov');
+  if (!area || !box) return;
+  const list = area.ov || [];
+  const key = list.map((o) => o.i + o.u).join('|');
+  if (box.getAttribute('data-k') === key) return;
+  box.setAttribute('data-k', key);
+  // a behemoth shows its tooltip (events.js); the rest is not a target
+  box.innerHTML = list.map((o, n) => '<img class="t" draggable="false" data-ov="' + n + '" style="left:' + (o.i % area.cols) * TILE + 'px;top:' + Math.floor(o.i / area.cols) * TILE + 'px;pointer-events:' + (/titans\//.test(o.u) ? 'auto' : 'none') + '" src="' + o.u.replace(/"/g, '&quot;') + '">').join('');
 }
 
 // Direction pad: 8 buttons on the frame of the map, same directions as the game's arrows.

@@ -51,7 +51,7 @@ export function initSettings() {
     ['hotkeyChampion', 'check', 'Attack hotkeys for Champion creatures', 'The number keys also attack creatures whose name ends with (Champion). Without it they are attacked with a click only, and the keys go to the other creatures.'],
     ['hotkeyElite', 'check', 'Attack hotkeys for Elite creatures', 'The number keys also attack creatures whose name ends with (Elite).'],
     ['hotkeyHK', 'check', 'Attack hotkeys for HK creatures', 'The number keys also attack creatures whose name ends with (HK). Turn it off to attack them with a click only.'],
-    ['hotkeyBehemoth', 'check', 'Attack hotkeys for Behemoth creatures', 'The number keys also attack creatures whose name ends with (Behemoth).'],
+    ['hotkeyBehemoth', 'check', 'Attack hotkeys for Behemoth creatures', 'The number keys also attack creatures whose name ends with (Behemoth). The T key always attacks the behemoth of the Action List.'],
     ['stepDelay', 'number', 'Delay between steps (milliseconds)', 'Only when Fast walk is off. Lower is faster. Minimum 100.'],
     ['slide', 'check', 'Slide animation when moving'],
     ['moveLog', 'check', 'Log the timing of every move in the console', 'For testing: after each step the browser console (F12) shows when the move request finished, when the world page first showed the new tile and every world request that was sent while waiting.'],
