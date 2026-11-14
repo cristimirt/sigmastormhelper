@@ -57,7 +57,17 @@ function changesHtml(md) {
 
 // 1. the bundle
 const outDir = path.join(dist, 'resources', 'prod', buildNo);
+// "ssh-local": optional extras that are not published. local/index.js (a folder in .gitignore) is bundled when it exists; without it the
+// import is an empty module, so a clean checkout builds the same helper without them.
+const localExtras = {
+  name: 'ssh-local',
+  setup(b) {
+    b.onResolve({ filter: /^ssh-local$/ }, () => (fs.existsSync(p('local/index.js')) ? { path: p('local/index.js') } : { path: 'ssh-local', namespace: 'ssh-local-none' }));
+    b.onLoad({ filter: /.*/, namespace: 'ssh-local-none' }, () => ({ contents: 'export function install() {}', loader: 'js' }));
+  },
+};
 const res = await build({
+  plugins: [localExtras],
   entryPoints: [p('src/main.js')],
   bundle: true,
   format: 'esm',

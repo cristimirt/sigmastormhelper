@@ -24,7 +24,7 @@ export function renderWorld() {
       h += '<img class="t" draggable="false" style="left:' + x * TILE + 'px;top:' + y * TILE + 'px" src="' + c.bg + '"' +
         (c.tip ? ' data-tip="' + i + '"' : '') + '>';
     });
-    h += '<div id="ssh-ov"></div><div id="ssh-fp"></div><div id="ssh-st"></div>';
+    h += '<div id="ssh-fp"></div><div id="ssh-st"></div><div id="ssh-ov"></div>'; // a behemoth on a stairway covers the stairway's symbol; the player is above both
     h += '<svg id="ssh-path" width="' + area.cols * TILE + '" height="' + area.rows * TILE + '"></svg>';
     h += '<div id="ssh-me"><img src="https://cdn.sigmastorm.com/skin/player_tile.gif" alt=""></div>';
     w.innerHTML = h;
@@ -53,7 +53,7 @@ export function renderWorld() {
   pfUpdate();
 }
 
-// What stands on the tiles (a behemoth's picture), above the tiles and under the footprints; not part of the tooltip's target.
+// What stands on the tiles (a behemoth's picture), above the tiles, the footprints and the stairways, under the player; not part of the tooltip's target.
 export function renderOverlays() {
   const area = S.areas.get(S.loc.area);
   const box = S.viewer && S.viewer.querySelector('#ssh-ov');
