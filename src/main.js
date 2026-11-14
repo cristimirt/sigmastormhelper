@@ -23,6 +23,7 @@ import { initFactionInv } from './pages/factioninv.js';
 import { initGuildManage } from './pages/guildmanage.js';
 import { initHellforge } from './pages/hellforge.js';
 import { initHome } from './pages/home.js';
+import { initLanding, landingWanted } from './pages/landing.js';
 import { initInventing } from './pages/inventing.js';
 import { initRecruit, isRecruit } from './pages/recruit.js';
 import { initRelicList, isRelicList } from './pages/reliclist.js';
@@ -35,6 +36,7 @@ import { serverOffset } from './tooltips/energy.js';
 import { initTips } from './tooltips/tips.js';
 import { installCsrf } from './core/net.js';
 import { recoverToken } from './core/recover.js';
+import { install as installLocal } from 'ssh-local'; // extras that are not published (see tools/build.mjs); nothing when there are none
 
 // The game's top bar asks for Open Sans from a server that does not allow it (the browser blocks it): the copy that comes with the helper
 // is used for that name instead (it is declared after the game's, so it wins).
@@ -48,6 +50,7 @@ function ownFont() {
 
 async function init() {
   repairPage();
+  if (landingWanted()) { initLanding(); return; } // the page of someone who is not signed in: no game frame around it
   if (!pageParts()) return;
   rememberScripts();
   ownFont();
@@ -93,6 +96,7 @@ export default async function start(ctx) {
   recoverToken(); // before anything is loaded: a reload or a Back to an address without a token
   installCsrf();
   installImgFix();
+  installLocal();
   S.build = (ctx && ctx.build) || 'dev';
   S.base = (ctx && ctx.base) || ''; // the site the bundle comes from: its media/ folder has pictures of the helper's own
   await loadData(ctx);

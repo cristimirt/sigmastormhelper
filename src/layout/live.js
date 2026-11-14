@@ -110,6 +110,7 @@ async function sendChat(form) {
   const input = form.elements.namedItem('msg');
   if (!input || !input.value.trim() || input.disabled) return;
   const body = new URLSearchParams(new FormData(form));
+  body.delete('_operation'); // the form's value was used by the first message and works once: a fresh one is added by the request (core/net.js), as the game does
   input.disabled = true;
   const spin = document.createElement('div'); // the little wheel under the button while the message goes
   spin.style.cssText = 'text-align:center;padding-top:4px';
