@@ -5,7 +5,7 @@ import { S } from '../core/state.js';
 import { esc, fmt, parseHtml } from '../core/util.js';
 import { alertModal, gAlerts } from '../layout/modal.js';
 import { combatView } from './combatview.js';
-import { read, show, swapIn } from './loading.js';
+import { read, refreshTitans, show, swapIn } from './loading.js';
 
 export const isSep = (row) => row.classList.contains('ssh-mech') || row.classList.contains('sep');
 
@@ -38,7 +38,7 @@ export function placeResults(bd) {
   numberSlots(bd);
 }
 
-// The names of the special creatures get a colour: (Champion) silver, (Elite) yellow, (HK) red, (Behemoth) purple. Normal ones stay as they are.
+// The names of the special creatures get a colour: (Champion) silver, (Elite) purple, (HK) red, (Behemoth) yellow (#FFFF40, the game's Legendary yellow). Normal ones stay as they are.
 function colorNames(tb) {
   if (S.cfg.creatureColors === false) return;
   [...tb.children].filter((tr) => !isSep(tr) && !tr.classList.contains('ssh-resrow')).forEach((tr) => {
@@ -83,6 +83,7 @@ function numberSlots(bd) {
     // Behemoth creatures): the name says the kind. A creature without a key is attacked with a click, and the numbers go on without it.
     const nm = [...tr.children].map((td) => td.textContent.replace(/\s+/g, ' ').trim()).filter(Boolean).join(' '); // the creature's name is plain text in the row (its links are pictures)
     const kind = typeOf(nm);
+    if (kind === 'behemoth') a.setAttribute('data-bh', '1'); // the T key attacks it (events.js)
     const want = kind ? hotkeyOn(S.cfg, kind) : a.getAttribute('data-atk') !== 'x';
     if (!want) {
       if (a.getAttribute('data-atk') !== 'x') {
@@ -90,8 +91,10 @@ function numberSlots(bd) {
         const im0 = a.querySelector('img');
         if (im0) im0.setAttribute('src', im0.getAttribute('src').replace(/[^/]*$/, '') + ICON(9));
       }
+      if (kind === 'behemoth') a.classList.add('ssh-bhk'); // a T in the corner of its icon, like the number of the others (the T key attacks it)
       return;
     }
+    a.classList.remove('ssh-bhk');
     n++;
     a.setAttribute('data-atk', String(n));
     const im = a.querySelector('img');
@@ -287,6 +290,7 @@ S.died = false;
 export async function fightsDone() {
   if (S.pending) return;
   S.supDirty = true;
+  refreshTitans(); // a behemoth of the area may be the one that was killed
   if (!S.died) return;
   S.died = false;
   S.results = [];

@@ -6,6 +6,7 @@ import { closeEntity, doAttack, entityAttack, openEntity } from './entity.js';
 import { renderTrail } from './footprints.js';
 import { go } from './loading.js';
 import { applyZoom, moveFor, setZoom } from './map.js';
+import { behemothTip } from './behemoths.js';
 import { fixImgHosts } from './parsing.js';
 import { drawPath, findPath, stopWalk, tileUnderMouse, walkTo } from './pathfinding.js';
 
@@ -80,8 +81,17 @@ export function bind() {
   document.addEventListener('mouseover', (e) => {
     const t = e.target;
     if (pd || !t || typeof t.closest !== 'function') return;
-    const el = t.closest('#ssh-world [data-tip]');
     const area = S.loc && S.areas.get(S.loc.area);
+    const ov = t.closest('#ssh-world img[data-ov]');
+    if (ov && area && area.ov && area.ov[+ov.getAttribute('data-ov')]) { // a behemoth: who it is, then what the tile says
+      const o = area.ov[+ov.getAttribute('data-ov')];
+      const under = area.cells[o.i];
+      tip.innerHTML = behemothTip(o.u, area.titans, S.loc.area) + (under && under.tip ? '<hr style="border:0;border-top:1px solid #333;margin:5px 0">' + fixImgHosts(under.tip) : '');
+      tip.style.width = '150px';
+      tip.style.display = 'block';
+      return;
+    }
+    const el = t.closest('#ssh-world [data-tip]');
     if (!el || !area) { hideTip(); return; }
     const c = area.cells[+el.getAttribute('data-tip')];
     if (!c) return;
@@ -195,7 +205,7 @@ export function bind() {
     const tg = e.target;
     if (tg && (/^(input|textarea|select)$/i.test(tg.tagName) || tg.isContentEditable)) return false;
     const k = (e.key || '').toLowerCase();
-    return /^[1-9]$/.test(k) || !!DIRS[k];
+    return /^[1-9]$/.test(k) || k === 't' || !!DIRS[k];
   };
   ['keydown', 'keyup'].forEach((t) => document.addEventListener(t, (e) => { if (ours(e)) e.stopImmediatePropagation(); }, true));
   // The game's own document.onkeypress sends every key to its hotkeys (movement, F repair, ...) and only skips the global chat box,
@@ -219,6 +229,13 @@ export function bind() {
       e.stopImmediatePropagation();
       const link = document.querySelector('#ssh-al a[data-atk="' + e.key + '"]');
       if (link) doAttack(link);
+      return;
+    }
+    if ((e.key || '').toLowerCase() === 't') { // T attacks the behemoth of the Action List (the first one, if there are more)
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      const bh = document.querySelector('#ssh-al a[data-bh]');
+      if (bh) doAttack(bh);
       return;
     }
     if ((e.key || '').toLowerCase() === 'r') { // refresh the Action List (the game's R repairs at the mechanic: that is a button of the list)

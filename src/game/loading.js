@@ -8,7 +8,8 @@ import { parseHtml, sleep } from '../core/util.js';
 import { buildWorldPage } from '../layout/worldpage.js';
 import { initPathfinder } from '../pathfinder/panel.js';
 import { renderActions } from './actionlist.js';
-import { renderWorld } from './map.js';
+import { loadDoppler, titanId } from './behemoths.js';
+import { renderOverlays, renderWorld } from './map.js';
 import { parseAreaMap, parseAreaUrl, parseLoc, parseMoves } from './parsing.js';
 import { learnFrom } from './pathfinding.js';
 import { attachViewer } from './viewer.js';
@@ -26,11 +27,38 @@ async function ensureArea() {
     const a = parseAreaMap(html);
     if (!a) return false;
     S.areas.set(S.loc.area, a);
-    store.set('area:' + S.loc.area, { v: 3, a });
+    store.set('area:' + S.loc.area, { v: 3, a: { ...a, ov: [] } }); // the tiles are kept; what stands on them is read again (see loadOverlays)
     return true;
   } catch (e) {
     return false;
   }
+}
+
+// What stands on the tiles of the area (behemoths ...) is read again from the area's map page: at most once in 45 seconds for an area, and
+// the map shows it once it has arrived. A cached area has none until then.
+const OV_EVERY = 45000;
+export async function loadOverlays() {
+  const area = S.areas.get(S.loc.area);
+  if (!area || !S.areaUrl || area.ovBusy || Date.now() - (area.ovT || 0) < OV_EVERY) return;
+  area.ovBusy = true;
+  try {
+    const a = parseAreaMap(await fetchText(S.areaUrl));
+    if (a && a.cols === area.cols && a.rows === area.rows) {
+      area.ov = a.ov;
+      area.ovT = Date.now();
+      renderOverlays();
+      if (a.ov.some((o) => titanId(o.u))) { try { area.titans = await loadDoppler(); } catch (e) { /* the tooltip says only "Behemoth" */ } } // who the behemoths are
+    }
+  } catch (e) { /* the next move asks again */ }
+  area.ovBusy = false;
+}
+
+// After a fight in an area that has a behemoth: it may be the one that died, and the next one is somewhere else. The map is read again now and
+// once more a few seconds later (the game may need a moment to place the new one).
+export function refreshTitans() {
+  const area = S.areas.get(S.loc && S.loc.area);
+  if (!area || !(area.ov || []).some((o) => titanId(o.u))) return;
+  [0, 4000].forEach((ms) => setTimeout(() => { area.ovT = 0; loadOverlays(); }, ms));
 }
 
 export function read(doc) {
@@ -80,6 +108,7 @@ export async function show(info, prev) {
   S.slide = !!(prev && prev.t) && S.cfg.slide;
   renderWorld();
   renderActions();
+  loadOverlays();
   return true;
 }
 
