@@ -65,7 +65,7 @@ export function submitAction(clone) {
   };
   // The Bank button posts cmd=bank. A GET to the same address shows the same page, with the page in the address (reloadable, linkable).
   if (form.method === 'post' && fields.length === 1 && fields[0][0] === 'cmd' && fields[0][1] === 'bank') { navigate('index.php?cmd=bank'); return; }
-  if (form.method === 'post' && fields.some((f) => f[0] === 'subcmd' && f[1] === 'questaction')) { doQuest(form.action, fields, submitForm); return; }
+  if (form.method === 'post' && fields.some((f) => f[0] === 'subcmd' && f[1] === 'questaction')) { doQuest(form.action, fields, submitForm, clone); return; }
   if (form.method === 'post' && fields.some((f) => f[0] === 'subcmd' && f[1] === 'heal')) { doHeal(form.action, fields, submitForm); return; }
   if (form.method === 'post' && fields.some((f) => f[0] === 'cmd' && f[1] === 'portal') && !fields.some((f) => f[0] === 'subcmd')) { doPortal(form.action, fields, submitForm); return; }
   if (form.method === 'post' && fields.some((f) => f[0] === 'subcmd' && f[1] === 'usestairs')) {
@@ -210,10 +210,20 @@ function healNote(alerts) {
 }
 
 // A quest step: send it in the background and show the game's message in a pop-up instead of reloading the page.
-async function doQuest(action, fields, fallback) {
+async function doQuest(action, fields, fallback, btn) {
   if (S.busy || S.pending) return;
   S.pending++;
   let ok = false;
+  // the button is off and a wheel turns beside it until the game has answered (it can take a few seconds)
+  let spin = null;
+  if (btn && btn.isConnected) {
+    btn.disabled = true;
+    spin = document.createElement('span');
+    spin.className = 'ssh-spin';
+    spin.style.marginLeft = '6px';
+    spin.title = 'Waiting for the game...';
+    btn.after(spin);
+  }
   try {
     const body = new URLSearchParams();
     fields.forEach(([n, v]) => body.append(n, v));
@@ -230,6 +240,8 @@ async function doQuest(action, fields, fallback) {
     fallback();
   } finally {
     S.pending--;
+    if (spin) spin.remove();
+    if (btn && btn.isConnected) btn.disabled = false;
     if (ok && !S.pending) {
       let r = false;
       try { r = await refreshWorld(); } catch (e) { r = false; }
