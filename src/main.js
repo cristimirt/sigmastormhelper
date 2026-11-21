@@ -26,6 +26,8 @@ import { initHome } from './pages/home.js';
 import { initLanding, landingWanted } from './pages/landing.js';
 import { initInventing } from './pages/inventing.js';
 import { initRecruit, isRecruit } from './pages/recruit.js';
+import { initSkillGuide, isSkillGuide } from './pages/skillguide.js';
+import { initSkillTree, isSkillTree } from './pages/skilltree.js';
 import { initRelicList, isRelicList } from './pages/reliclist.js';
 import { initRelic } from './pages/relic.js';
 import { initQuest } from './pages/quest.js';
@@ -73,6 +75,8 @@ async function init() {
   if (document.querySelector('td[background*="header_factionmanage"]')) { initGuildManage(); return; } // the Manage Faction page
   if (behemothPage()) { initBehemoth(behemothPage()); return; } // Behemoth Rewards / Behemoth Kills
   if (isDoppler()) { initDoppler(); return; } // the Doppler Array
+  if (isSkillGuide()) { initSkillGuide(); return; } // the Skill Guide
+  if (isSkillTree()) { initSkillTree(); return; } // the Skills page (the skill trees)
   if (isRecruit()) { initRecruit(); return; } // the faction's recruitment page
   if (isRelicList()) { initRelicList(); return; } // the list of all artifacts
   if (document.getElementById('relic-capture')) { initRelic(); return; } // an artifact's page
