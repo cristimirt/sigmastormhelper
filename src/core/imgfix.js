@@ -18,10 +18,10 @@ export const fixSlashes = (u) => String(u).replace(DOUBLE, '$1/');
 // The same in markup written as text (a tooltip): in src="...", background="..." and url(...).
 const fixSlashesIn = (html) => html.replace(/((?:src|background)\s*=\s*["']?|url\(\s*["']?)(https?:\/\/[^\/?#\s"'()<>]+)\/{2,}(?=[^\/])/gi, '$1$2/');
 
-// The map tiles are asked through /asset.php?path=tiles/41_49.gif (or /asset.php?tiles/41_49.gif), a script that takes ~700 ms per picture,
-// while the CDN serves the same file in ~25 ms: the address is changed to the CDN's. Only the tiles: the other pictures (the items) are not
-// the same on the CDN, so their asset.php addresses stay.
-const ASSET = /^(?:https?:\/\/(?:www\.)?sigmastorm\.com)?\/?asset\.php\?(?:path=)?(tiles(?:\/|%2F)[^&#\s]*)/i;
+// The map tiles and the pictures of locations, shops, stairways and portals are asked through /asset.php?path=tiles/41_49.gif (or /asset.php?tiles/41_49.gif, locations/518.gif), a
+// script that takes ~700 ms per picture, while the CDN serves the same file in ~25 ms: the address is changed to the CDN's. Only those: the other
+// pictures (the items) are not the same on the CDN, so their asset.php addresses stay.
+const ASSET = /^(?:https?:\/\/(?:www\.)?sigmastorm\.com)?\/?asset\.php\?(?:path=)?((?:tiles|locations|shops|stairways|portals)(?:\/|%2F)[^&#\s]*)/i;
 const fromAsset = (s) => {
   let p = s.match(ASSET)[1];
   try { p = decodeURIComponent(p); } catch (e) { /* keep it as it is */ }

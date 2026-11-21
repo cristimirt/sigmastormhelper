@@ -5,9 +5,13 @@ import { S } from '../core/state.js';
 import { alertBad, alertText, parseHtml } from '../core/util.js';
 import { unslash } from '../layout/dom.js';
 import { floatPanel } from '../layout/floating.js';
-import { alertModal, gAlerts, mModal } from '../layout/modal.js';
+import { alertModal, gAlerts, mModal, showBusy } from '../layout/modal.js';
 import { closeLog, placeResults, refreshWorld } from './combat.js';
+import { openShopPopup } from '../pages/shop.js';
 import { tableToDivs } from './rows.js';
+
+// The portal icon of the Sigma Storm Path Finder, for the teleport button in the header.
+const PORTAL = '<svg viewBox="0 0 16 16" width="15" height="15"><ellipse cx="8" cy="8" rx="6.2" ry="7" fill="#0b2f3a" stroke="#a7fffd" stroke-width="1.3"/><ellipse cx="8" cy="8" rx="3.2" ry="4.2" fill="#a7fffd" opacity=".85"/></svg>';
 
 // A panel on the page itself (not in the map), draggable anywhere; it scrolls with the page.
 function ensurePanel() {
@@ -15,9 +19,9 @@ function ensurePanel() {
   if (p) return p;
   p = document.createElement('div');
   p.id = 'ssh-al';
-  p.innerHTML = '<div class="hd">Action List<span class="rf" title="Refresh the list [R]">&#8635;</span></div><div class="bd"></div>';
+  p.innerHTML = '<div class="hd">Action List<span class="rf" title="Refresh the list [R]">&#8635;</span><span class="tp" title="Teleport to Taulin City">' + PORTAL + '</span></div><div class="bd"></div>';
   document.body.appendChild(p);
-  floatPanel(p, { key: 'alpos', skip: '.rf', home: (r) => ({ x: Math.max(8, r.right + window.scrollX - 278), y: Math.max(8, r.top + window.scrollY + 8) }) });
+  floatPanel(p, { key: 'alpos', skip: '.rf, .tp', home: (r) => ({ x: Math.max(8, r.right + window.scrollX - 278), y: Math.max(8, r.top + window.scrollY + 8) }) });
   return p;
 }
 
@@ -66,6 +70,7 @@ export function submitAction(clone) {
   // The Bank button posts cmd=bank. A GET to the same address shows the same page, with the page in the address (reloadable, linkable).
   if (form.method === 'post' && fields.length === 1 && fields[0][0] === 'cmd' && fields[0][1] === 'bank') { navigate('index.php?cmd=bank'); return; }
   if (form.method === 'post' && fields.some((f) => f[0] === 'subcmd' && f[1] === 'questaction')) { doQuest(form.action, fields, submitForm, clone); return; }
+  if (form.method === 'post' && fields.some((f) => f[0] === 'cmd' && f[1] === 'shop') && fields.some((f) => f[0] === 'shop_id') && !fields.some((f) => f[0] === 'subcmd')) { doShop(fields, submitForm, clone); return; }
   if (form.method === 'post' && fields.some((f) => f[0] === 'subcmd' && f[1] === 'heal')) { doHeal(form.action, fields, submitForm); return; }
   if (form.method === 'post' && fields.some((f) => f[0] === 'cmd' && f[1] === 'portal') && !fields.some((f) => f[0] === 'subcmd')) { doPortal(form.action, fields, submitForm); return; }
   if (form.method === 'post' && fields.some((f) => f[0] === 'subcmd' && f[1] === 'usestairs')) {
@@ -84,11 +89,24 @@ export function submitAction(clone) {
 // read in the background; if it is not what we expect, the form is sent the old way. A Travel button asks once more, then goes
 // the way the game's does (the address of its button) in the background and swaps the new place in; a message of the game's
 // (not enough credits...) shows in a dialog.
+// Browse Shop: the shop opens in a dialog over the map (see pages/shop.js); if the answer is not a shop, the form is sent the old way.
+async function doShop(fields, fallback, btn) {
+  if (S.busy || S.pending) return;
+  S.pending++;
+  const row = btn && btn.closest ? btn.closest('.r') : null;
+  const name = row && row.querySelector('b') ? row.querySelector('b').textContent.trim() : '';
+  let ok = false;
+  try { ok = await openShopPopup(fields, name); } catch (e) { ok = false; }
+  S.pending--;
+  if (!ok) fallback();
+}
+
 async function doPortal(action, fields, fallback) {
   if (S.busy || S.pending) return;
   S.pending++;
   let rows = [];
   let note = '';
+  const done = showBusy();
   try {
     const body = new URLSearchParams();
     fields.forEach(([n, v]) => body.append(n, v));
@@ -108,6 +126,7 @@ async function doPortal(action, fields, fallback) {
       note = intro ? intro.textContent.replace(/\s+/g, ' ').trim() : '';
     }
   } catch (e) { rows = []; }
+  done();
   S.pending--;
   if (!rows.length) { fallback(); return; }
   const wrap = document.createElement('div');
@@ -154,7 +173,7 @@ async function doPortal(action, fields, fallback) {
   });
   list.append(tbl);
   wrap.append(head, list);
-  mModal('Transit Portal', wrap, [{ text: 'Close' }]);
+  mModal('Transit Portal', wrap, [{ text: 'Close' }], { big: true });
 }
 
 // Healing at a healer: the same request as the game's button, in the background; the game's message in the list in place of the
@@ -345,6 +364,44 @@ export async function doRepair(btn) {
   } catch (e) {
     if (box.isConnected) { box.innerHTML = '<span style="color:#ff6b6b">Repair failed.</span>'; btn.dataset.state = 'ok'; }
   }
+}
+
+// The settings page has a button that brings a character that is stuck back to the starting realm (25 Energy). The button is a form with
+// one-time values, so the settings page is read for a fresh one when the button of the dialog is pressed, and the form is sent from that.
+export function teleportDialog() {
+  const body = document.createElement('div');
+  body.style.cssText = 'max-width:420px;text-align:center';
+  body.innerHTML = "<p style=\"margin:0 0 10px\">If you ever get stuck in the game (for example you enter a level restricted area, lose a level and can't escape), you can use the 'Instant Teleport' button below, which will teleport your character back to the starting realm for a cost of <b>25</b> Energy.</p>" +
+    "<p style=\"margin:12px 0 0;font-size:11px\">(Note you must have completed the mission 'Bit Builder' to use this)</p>";
+  mModal('Teleport to Taulin City', body, [{ text: 'Instant Teleport back to Taulin Rad Lands', fn: doTeleport }]);
+}
+
+async function doTeleport() {
+  if (S.busy || S.pending) return;
+  S.pending++;
+  let alerts = [];
+  let sent = false;
+  const done = showBusy();
+  try {
+    const doc = parseHtml(await fetchText('index.php?cmd=settings'));
+    const form = doc.getElementById('settings-teleport');
+    if (form) {
+      const html = await fetchText(form.getAttribute('action') || 'index.php', { method: 'POST', body: new URLSearchParams(new FormData(form)) });
+      alerts = gAlerts(parseHtml(html));
+      sent = true;
+    } else {
+      alerts = [];
+    }
+  } catch (e) { sent = false; }
+  done();
+  S.pending--;
+  if (!sent) {
+    const m = document.createElement('div');
+    m.textContent = 'The teleport could not be started. Try the button on the Settings page.';
+    mModal('Teleport to Taulin City', m, [{ text: 'OK' }]);
+    return;
+  }
+  if (alertBad(alerts)) alertModal(alerts); else navigate('index.php?cmd=world');
 }
 
 // Read the world page again and show what is on the tile now (the refresh icon, and the R key). The finished fights in the list go.

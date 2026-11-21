@@ -66,11 +66,14 @@ export function toast(alerts) {
 
 // A small draggable dialog (title bar, body, buttons). Esc or a click outside closes it.
 // opts: { center: true } centers the title; { keep: true } leaves this dialog open when another one is shown on top of it; { onClose } runs when it closes.
+// { big: true } is a modal (the shop, the backpack, the combat sets, ...): a window with content of its own, not a message. It stays open under the
+// small dialogs (a question, a message) that are shown on top of it, and only its own Close button, the cross or Esc (when it is the top one) closes it.
 export function mModal(title, body, buttons, opts) {
   document.querySelectorAll('#ssh-mm:not(.keep)').forEach((e) => e.remove());
   const o = mel('div');
   o.id = 'ssh-mm';
-  if (opts && opts.keep) o.classList.add('keep');
+  if (opts && (opts.keep || opts.big)) o.classList.add('keep');
+  if (opts && opts.big) o.classList.add('big');
   if (opts && opts.center) o.classList.add('ctr');
   o.innerHTML = '<div class="box"><div class="ph"><span class="t"></span><span class="x" title="Close">&#10006;</span></div><div class="pb"></div><div class="pf"></div></div>';
   o.querySelector('.t').textContent = title;
@@ -111,4 +114,22 @@ export function mModal(title, body, buttons, opts) {
   const first = pf.firstChild;
   if (first) first.focus();
   return close;
+}
+
+// A dark layer over the whole page with a spinner, so it is clear that something is happening (a request in the background). Returns the function
+// that takes it away. The page under it cannot be clicked meanwhile;
+export function showBusy() {
+  if (!document.getElementById('ssh-busy-css')) {
+    const st = mel('style');
+    st.id = 'ssh-busy-css';
+    st.textContent = '#ssh-busy{position:fixed;left:0;top:0;right:0;bottom:0;z-index:9500;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;cursor:progress;animation:ssh-busy-in .2s ease-out}' +
+      '#ssh-busy i{width:44px;height:44px;box-sizing:border-box;border:4px solid rgba(159,224,255,.25);border-top-color:#9fe0ff;border-radius:50%;animation:ssh-busy-rot .8s linear infinite}' +
+      '@keyframes ssh-busy-rot{to{transform:rotate(360deg)}}@keyframes ssh-busy-in{from{opacity:0}to{opacity:1}}';
+    document.head.append(st);
+  }
+  const o = mel('div');
+  o.id = 'ssh-busy';
+  o.append(mel('i'));
+  document.body.append(o);
+  return () => o.remove();
 }

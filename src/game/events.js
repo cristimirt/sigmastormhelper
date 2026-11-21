@@ -1,6 +1,6 @@
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
-import { doRepair, refreshActions, submitAction } from './actionlist.js';
+import { doRepair, refreshActions, submitAction, teleportDialog } from './actionlist.js';
 import { closeLog, openLog } from './combat.js';
 import { closeEntity, doAttack, entityAttack, openEntity } from './entity.js';
 import { renderTrail } from './footprints.js';
@@ -27,12 +27,13 @@ export function bind() {
       if (m && m.enabled) go(m.href);
       return;
     }
+    if (t.closest('#ssh-al .tp')) { e.preventDefault(); e.stopPropagation(); teleportDialog(); return; }
     if (t.closest('#ssh-al .rf')) { e.preventDefault(); e.stopPropagation(); refreshActions(); return; }
     const atk = t.closest('#ssh-al a[data-atk]');
     if (atk) { e.preventDefault(); e.stopPropagation(); doAttack(atk); return; }
     const ev = t.closest('#ssh-al a[href*="subcmd=viewcreature"]');
     if (ev) { e.preventDefault(); e.stopPropagation(); openEntity(ev.getAttribute('href')); return; }
-    if (t.closest('#ssh-ent [data-eclose]') || t.id === 'ssh-ent') { e.preventDefault(); closeEntity(); return; }
+    if (t.closest('#ssh-ent [data-eclose]')) { e.preventDefault(); closeEntity(); return; }
     const ea = t.closest('#ssh-ent [data-eatk]');
     if (ea) { e.preventDefault(); e.stopPropagation(); entityAttack(ea); return; }
     const elg = t.closest('#ssh-ent .clog');
@@ -139,7 +140,7 @@ export function bind() {
   const endPd = () => { pdrag = null; };
   document.addEventListener('pointerup', endPd);
   document.addEventListener('pointercancel', endPd);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (document.getElementById('ssh-pop')) closeLog(); else closeEntity(); } });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (document.getElementById('ssh-pop')) closeLog(); } });
   document.addEventListener('pointerdown', (e) => {
     const t = e.target;
     if (e.button !== 0 || !t || typeof t.closest !== 'function' || !t.closest('#ssh-map') || t.closest(OVER)) return;
