@@ -3,12 +3,18 @@ import { fetchText, navigate, postHref } from '../core/net.js';
 import { S } from '../core/state.js';
 import { esc, parseHtml, txt } from '../core/util.js';
 import { attackAlert, fightsDone, fillResult, isSep, logBody, parseCombat, playerDied, resultHtml } from './combat.js';
+import { mModal } from '../layout/modal.js';
 import { fillEvaluation } from './evaluation.js';
 
 // Creature details in a pop-up (the game's "View Entity" page), with the same background fight.
 S.entRes = [];
 
-export function closeEntity() { const p = document.getElementById('ssh-ent'); if (p) p.remove(); }
+// The creature's details are a modal (a big window that stays under the small dialogs shown over it); closing it is the modal's own cross.
+export function closeEntity() {
+  const p = document.getElementById('ssh-ent');
+  const x = p && p.closest('#ssh-mm') && p.closest('#ssh-mm').querySelector('.x');
+  if (x) x.click(); else if (p) p.remove();
+}
 
 // The game's creature page is a stack of tables; this rebuilds it with divs (same graphics, same data).
 function buildEntity(frame, atkHref) {
@@ -52,8 +58,10 @@ export async function openEntity(href) {
   closeEntity();
   const pop = document.createElement('div');
   pop.id = 'ssh-ent';
-  pop.innerHTML = '<div class="ebox"><div class="ehandle" title="Drag to move"></div><div class="eclose" data-eclose="1" title="Close">&#10006;</div><div class="eload" style="padding:60px;text-align:center"><span class="ssh-spin"></span></div></div>';
-  document.body.appendChild(pop);
+  pop.innerHTML = '<div class="ebox"><div class="eload" style="padding:60px;text-align:center"><span class="ssh-spin"></span></div></div>';
+  mModal('View Entity', pop, [{ text: 'Close' }], { big: true, center: true });
+  const mm = pop.closest('#ssh-mm');
+  if (mm) mm.classList.add('ent');
   try {
     const html = await fetchText(new URL(href, location.href).href);
     if (!document.getElementById('ssh-ent')) return; // closed meanwhile
@@ -74,6 +82,9 @@ export async function openEntity(href) {
     const box = pop.querySelector('.ebox');
     box.querySelector('.eload').remove();
     const built = buildEntity(frame, am[1].replace(/&amp;/g, '&'));
+    const nm = frame.querySelector('img[src*="creatures/"]');
+    const ttl = mm && mm.querySelector('.t');
+    if (ttl && nm) ttl.textContent = txt((nm.closest('td') || nm.parentElement).textContent) || 'View Entity';
     if (built) {
       box.style.background = 'url(' + (frame.getAttribute('background') || '') + ')';
       box.insertAdjacentHTML('beforeend', built);

@@ -120,7 +120,7 @@ export function csOpen(testSets) {
     const html = await fetchText('index.php', { method: 'POST', body: fields });
     return { html, doc: parseHtml(html) };
   };
-  const close = mModal('Combat sets', body, [{ text: 'Close' }]);
+  const close = mModal('Combat sets', body, [{ text: 'Close' }], { big: true });
   if (!testSets) reload().catch(() => {}); // the list on the page may be older than the server's
   body.addEventListener('click', async (e) => {
     const b = e.target.closest && e.target.closest('[data-c]');

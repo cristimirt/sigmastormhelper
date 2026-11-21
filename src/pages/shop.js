@@ -41,6 +41,7 @@ const CSS = '#ssh-sh{display:none;width:640px;margin:0 auto;background-position:
 const txt = (n) => (n ? n.textContent.replace(/\s+/g, ' ').trim() : '');
 let cur = 0; // the open tab (kept when the page is built again)
 let busy = false;
+let inPopup = false; // the shop is in a dialog over the world page (no picture bars, no back link)
 let note = null; // { text, bad }: the game's message of the last purchase, shown when the page is built again
 
 // What the game's table says: the pictures, the text, the tab names and the items of every tab.
@@ -84,9 +85,11 @@ function build(t) {
   const root = mel('div');
   root.id = 'ssh-sh';
   root.style.backgroundImage = cssUrl(d.bg);
-  const hd = mel('div', 'sh-head');
-  hd.style.backgroundImage = cssUrl(d.head);
-  root.append(hd);
+  if (!inPopup) {
+    const hd = mel('div', 'sh-head');
+    hd.style.backgroundImage = cssUrl(d.head);
+    root.append(hd);
+  }
   if (d.banner) {
     const b = mel('div', 'sh-banner');
     const i = d.banner.cloneNode(false);
@@ -94,7 +97,7 @@ function build(t) {
     b.append(i);
     root.append(b);
   }
-  if (d.back) {
+  if (d.back && !inPopup) {
     const b = mel('div', 'sh-back');
     b.append('[ ', d.back.cloneNode(true), ' ]');
     root.append(b);
@@ -160,10 +163,12 @@ function build(t) {
     root.append(bar, ...grids);
     open(cur);
   }
-  const ft = mel('div', 'sh-foot');
-  ft.style.backgroundImage = cssUrl(S.base ? S.base + 'media/large_content_footer.png' : d.foot);
-  ft.style.marginTop = '14px';
-  root.append(ft);
+  if (!inPopup) {
+    const ft = mel('div', 'sh-foot');
+    ft.style.backgroundImage = cssUrl(S.base ? S.base + 'media/large_content_footer.png' : d.foot);
+    ft.style.marginTop = '14px';
+    root.append(ft);
+  }
   return root;
 }
 
@@ -231,13 +236,51 @@ async function send(form) {
   }
 }
 
+const addCss = () => {
+  if (document.getElementById('ssh-sh-css')) return;
+  const st = mel('style');
+  st.id = 'ssh-sh-css';
+  st.textContent = CSS + '#ssh-mm.shop .box{max-width:none}#ssh-mm.shop .pb{padding:0;max-height:82vh;overflow:auto}#ssh-mm.shop #ssh-sh{background-image:none!important;padding-bottom:14px}' +
+    '#ssh-mm .sh-wait{width:640px;max-width:100%;height:220px;display:flex;align-items:center;justify-content:center}#ssh-mm .sh-wait i{width:44px;height:44px;box-sizing:border-box;border:4px solid rgba(159,224,255,.25);border-top-color:#9fe0ff;border-radius:50%;animation:ssh-busy-rot .8s linear infinite}@keyframes ssh-busy-rot{to{transform:rotate(360deg)}}';
+  document.head.append(st);
+};
+
+// The shop of the world page in a dialog: the same request as the game's Browse Shop button, in the background; its answer is the shop page, made into
+// divs as the page itself would be (buying works the same). Returns false when the answer is not a shop (the caller sends the form the old way).
+export async function openShopPopup(fields, title) {
+  if (document.getElementById('ssh-sh')) return false;
+  addCss();
+  const body = new URLSearchParams();
+  fields.forEach(([n, v]) => body.append(n, v));
+  // the dialog opens at once with a spinner; the shop replaces it when the answer is there
+  const holder = mel('div', 'sh-wait');
+  holder.append(mel('i'));
+  inPopup = true;
+  const close = mModal(title || 'Shop', holder, [{ text: 'Close' }], { center: true, big: true, onClose: () => { inPopup = false; } });
+  const m = [...document.querySelectorAll('#ssh-mm')].pop();
+  if (m) m.classList.add('shop');
+  try {
+    const doc = parseHtml(await fetchText('index.php', { method: 'POST', body }));
+    const head = doc.querySelector('td[background*="header_shop"]');
+    const nt = head && head.closest('table[width="640"]');
+    if (!nt || !nt.querySelector('#tabs')) throw new Error('not a shop');
+    if (!holder.isConnected) return true; // closed meanwhile
+    const fresh = document.importNode(nt, true);
+    fresh.setAttribute('data-ssh-sh', '1');
+    holder.className = '';
+    holder.replaceChildren(fresh, build(fresh));
+  } catch (e) {
+    if (holder.isConnected) close();
+    return false;
+  }
+  return true;
+}
+
 export function initShop() {
   const head = document.querySelector('td[background*="header_shop"]');
   const table = head && head.closest('table[width="640"]');
   if (!table || document.getElementById('ssh-sh')) return;
-  const st = mel('style');
-  st.textContent = CSS;
-  document.head.append(st);
+  addCss();
   table.setAttribute('data-ssh-sh', '1');
   table.after(build(table));
 }

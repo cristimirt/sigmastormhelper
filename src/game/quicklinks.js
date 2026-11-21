@@ -237,7 +237,7 @@ export async function quickAction(href, label, post) {
 function bagDialog() {
   const host = mel('div', 'qb');
   host.textContent = 'Loading the backpack...';
-  mModal('Backpack', host, [{ text: 'Close' }], { keep: true, onClose: () => { BP.onChange = null; refreshWorld().catch(() => {}); refreshSupplies(); } });
+  mModal('Backpack', host, [{ text: 'Close' }], { big: true, onClose: () => { BP.onChange = null; refreshWorld().catch(() => {}); refreshSupplies(); } });
   bpPopup(host, refreshBagCount); // the count follows what is destroyed or used in it
 }
 

@@ -2,7 +2,7 @@ import { ITEM } from '../core/constants.js';
 import { fetchDoc, fetchText, withToken } from '../core/net.js';
 import { pageParts } from '../core/page.js';
 import { store } from '../core/storage.js';
-import { alertBad, alertText, esc, https, parseHtml, sleep } from '../core/util.js';
+import { alertBad, alertText, esc, https, parseHtml } from '../core/util.js';
 import { mel } from '../layout/dom.js';
 import { gAlerts, mModal } from '../layout/modal.js';
 import { fetchItem, parseItem } from '../tooltips/compare.js';
@@ -420,6 +420,14 @@ export function initFactionInv() {
     const again = i.kind === 'p' && !!doc.getElementById('faction-recall-' + i.inv); // the report still lists it
     return { ok: !alertBad(al) && !again, msg: alertText(al) };
   }
+  // Many items at once: up to PAR requests are in flight at a time (the next one goes as soon as one is answered); Stop ends the line.
+  const PAR = 5;
+  async function pool(list, fn) {
+    let at = 0;
+    await Promise.all(Array.from({ length: Math.min(PAR, list.length) }, async () => {
+      while (!stop && at < list.length) await fn(list[at++]);
+    }));
+  }
   const drop = (i) => { const at = items.indexOf(i); if (at >= 0) items.splice(at, 1); sel.delete(i.k); };
 
   async function act(i, row) {
@@ -519,15 +527,14 @@ export function initFactionInv() {
     let last = '';
     stop = false;
     busy++;
-    for (const i of list) {
-      if (stop) break;
-      status('<span class="ssh-spin"></span> Recalling ' + (ok + bad + 1) + ' / ' + list.length + ' <a href="#" id="fi-stop">Stop</a>');
+    status('<span class="ssh-spin"></span> Recalling 0 / ' + list.length + ' <a href="#" id="fi-stop">Stop</a>');
+    await pool(list, async (i) => {
       let r;
       try { r = await send(i); } catch (e) { r = { ok: false, msg: 'The request failed.' }; }
       if (r.ok) { ok++; drop(i); } else { bad++; last = r.msg; }
+      status('<span class="ssh-spin"></span> Recalling ' + (ok + bad) + ' / ' + list.length + ' <a href="#" id="fi-stop">Stop</a>');
       if ((ok + bad) % 5 === 0) { drawChips(); drawTable(); }
-      await sleep(120);
-    }
+    });
     busy--;
     save();
     drawChips();
@@ -563,14 +570,13 @@ export function initFactionInv() {
       if (players.length) {
         const before = new Set((await loadStore()).map((s) => s.k));
         const sent = [];
-        for (const i of players) {
-          if (stop) break;
-          status('<span class="ssh-spin"></span> Recalling ' + (sent.length + bad + 1) + ' / ' + players.length + ' <a href="#" id="fi-stop">Stop</a>');
+        status('<span class="ssh-spin"></span> Recalling 0 / ' + players.length + ' <a href="#" id="fi-stop">Stop</a>');
+        await pool(players, async (i) => {
           let r;
           try { r = await send(i); } catch (e) { r = { ok: false, msg: 'The request failed.' }; }
           if (r.ok) { sent.push(i); drop(i); } else { bad++; last = r.msg; }
-          await sleep(120);
-        }
+          status('<span class="ssh-spin"></span> Recalling ' + (sent.length + bad) + ' / ' + players.length + ' <a href="#" id="fi-stop">Stop</a>');
+        });
         if (sent.length) {
           status('<span class="ssh-spin"></span> Finding the items in the store...');
           const after = await loadStore();
@@ -583,15 +589,14 @@ export function initFactionInv() {
         }
       }
       let n = 0;
-      for (const s of todo) {
-        if (stop) break;
-        status('<span class="ssh-spin"></span> Taking ' + (++n) + ' / ' + todo.length + ' <a href="#" id="fi-stop">Stop</a>');
+      status('<span class="ssh-spin"></span> Taking 0 / ' + todo.length + ' <a href="#" id="fi-stop">Stop</a>');
+      await pool(todo, async (s) => {
         const live = items.find((x) => x.k === s.k) || s;
         let r;
         try { r = await send(live); } catch (e) { r = { ok: false, msg: 'The request failed.' }; }
         if (r.ok) { got++; items = items.filter((x) => x.k !== s.k); sel.delete(s.k); } else { bad++; last = r.msg; }
-        await sleep(120);
-      }
+        status('<span class="ssh-spin"></span> Taking ' + (++n) + ' / ' + todo.length + ' <a href="#" id="fi-stop">Stop</a>');
+      });
     } catch (e) {
       bad++;
       last = 'Something went wrong.';
