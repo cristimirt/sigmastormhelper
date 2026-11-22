@@ -28,6 +28,8 @@ export function bind() {
       return;
     }
     if (t.closest('#ssh-al .tp')) { e.preventDefault(); e.stopPropagation(); teleportDialog(); return; }
+    const wc = t.closest('#ssh-al [data-walkcancel]');
+    if (wc) { e.preventDefault(); e.stopPropagation(); wc.disabled = true; stopWalk('Stopped'); return; }
     if (t.closest('#ssh-al .rf')) { e.preventDefault(); e.stopPropagation(); refreshActions(); return; }
     const atk = t.closest('#ssh-al a[data-atk]');
     if (atk) { e.preventDefault(); e.stopPropagation(); doAttack(atk); return; }

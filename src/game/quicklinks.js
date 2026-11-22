@@ -78,7 +78,7 @@ export function buildQuickBar(src) {
   return bar;
 }
 
-// The supplies in the bag, over all folders and pages: how many medipacks (any size: the name has "Medipack" in it), written under the Medipack
+// The supplies in the bag, over all folders and pages: how many medipacks (any size: the name has "Medipack" or "Medpack" in it), written under the Medipack
 // button, and how many ammo refills (Ammo items whose "Ammo Type" is the "Damage Type" of an equipped weapon), written on the ammo icon.
 // The bag only shows pictures, so names and types come from the item data (once per kind of item, kept for the visit).
 const itemInfo = new Map();
@@ -131,7 +131,7 @@ export async function refreshSupplies(page) {
           seen.add(it.inv); // the same item can show on every page of a folder
           const info = await infoOf(m);
           const n = parseInt(it.count, 10) || 1;
-          if (/medipack/i.test(info.name)) meds += n;
+          if (/medi?pack/i.test(info.name)) meds += n; // "Medipack" and "Medpack" both
           if (REPAIR.test(info.name) || /repair/i.test(info.type)) kits += n; // whatever its level: choosing a fitting one is up to the player
           if (info.ammo && types.has(info.ammo)) { ammo += n; if (!ammoIt) ammoIt = it; }
         }

@@ -4,6 +4,7 @@ import { fetchText, navigate } from '../core/net.js';
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
 import { parseHtml, sleep } from '../core/util.js';
+import { renderActions } from './actionlist.js';
 import { applyHtml, go, read } from './loading.js';
 import { applyZoom, renderWorld } from './map.js';
 
@@ -171,6 +172,8 @@ const moveHref = (x, y) => {
 async function sendSteps(seg) {
   const v = S.viewer;
   v && v.classList.add('ssh-fast');
+  S.results = [];
+  renderActions('Moving...'); // not the list of the tile the walk started from, which is wrong now
   const results = [];
   const reqs = [];
   let bad = false;
@@ -199,9 +202,31 @@ async function sendSteps(seg) {
     }).catch(() => { results[k] = { html: '', ok: false }; bad = true; }));
     await sleep(ms);
   }
-  await Promise.all(reqs);
+  // The game answers the moves one after the other and each answer comes only when its move is over, which can be seconds after the character
+  // stands on the last tile. So while the answers are awaited the world page is asked for (one request at a time, as travel() in loading.js does), and
+  // the first one that shows the character on the last tile is the page that is used: the creatures and buildings of the tile show at once.
   const sent = reqs.length;
-  let html = sent && results.length === sent && results.every((r) => r && r.ok) ? results[sent - 1].html : '';
+  let early = '';
+  const all = Promise.all(reqs);
+  if (!bad && !S.cancel && sent === seg.length - 1 && sent) {
+    const [fx, fy] = seg[seg.length - 1];
+    let fin = false;
+    all.then(() => { fin = true; });
+    const probe = (async () => {
+      await sleep(150);
+      for (let n = 0; n < 40 && !fin && !early; n++) {
+        try {
+          const r = await fetch('index.php?cmd=world', { credentials: 'same-origin' });
+          const h = r.ok ? await r.text() : ''; // 409: the game is still handling a move
+          const loc = h ? read(parseHtml(h)).loc : null;
+          if (loc && loc.area === area && loc.x === fx && loc.y === fy) early = h;
+        } catch (e) { /* the next one */ }
+        if (!early && !fin) await sleep(100);
+      }
+    })();
+    await Promise.race([all, probe.then(() => (early ? 0 : all))]);
+  } else await all;
+  let html = early || (sent && results.length === sent && results.every((r) => r && r.ok) ? results[sent - 1].html : '');
   try {
     if (!html) html = await fetchText('index.php?cmd=world'); // where are we really?
     if (!(await applyHtml(html))) navigate('index.php?cmd=world');
@@ -268,6 +293,8 @@ export async function walkTo(tx, ty) {
   } finally {
     S.walking = false;
     S.hover = null;
+    const mv = document.querySelector('#ssh-al .bd .none');
+    if (mv && mv.textContent === 'Moving...') renderActions(); // the walk ended without a new page: the list of the page that is shown
     if (!S.cancel || !S.viewer) drawPath(null);
     else setTimeout(() => { if (!S.walking) drawPath(null); }, 1800);
   }

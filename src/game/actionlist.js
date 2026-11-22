@@ -419,6 +419,7 @@ export function renderActions(text) {
   const bd = ensurePanel().querySelector('.bd');
   if (text) {
     bd.innerHTML = '<div class="none">' + text + '</div>';
+    if (S.walking && text === 'Moving...') bd.innerHTML += '<div class="wc"><input type="button" class="custombutton" data-walkcancel="1" value="Cancel" title="Stop the walk (any key or a click on the map does it too)"></div>'; // the walk can be stopped from here
     return;
   }
   const ad = document.getElementById('actionDiv');

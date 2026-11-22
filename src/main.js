@@ -25,6 +25,8 @@ import { initHellforge } from './pages/hellforge.js';
 import { initHome } from './pages/home.js';
 import { initLanding, landingWanted } from './pages/landing.js';
 import { initInventing } from './pages/inventing.js';
+import { initMailbox, isMailbox } from './pages/mailbox.js';
+import { initMultiCraft, isRecipePage } from './pages/multicraft.js';
 import { initPortal, isPortal } from './pages/portal.js';
 import { initRecruit, isRecruit } from './pages/recruit.js';
 import { initSkillGuide, isSkillGuide } from './pages/skillguide.js';
@@ -76,6 +78,8 @@ async function init() {
   if (document.querySelector('td[background*="header_factionmanage"]')) { initGuildManage(); return; } // the Manage Faction page
   if (behemothPage()) { initBehemoth(behemothPage()); return; } // Behemoth Rewards / Behemoth Kills
   if (isDoppler()) { initDoppler(); return; } // the Doppler Array
+  if (isMailbox()) { initMailbox(); return; } // the Item Mailbox
+  if (isRecipePage()) { initMultiCraft(); return; } // a blueprint's page: how many times to craft
   if (isPortal()) { initPortal(); return; } // a Transit Portal
   if (isSkillGuide()) { initSkillGuide(); return; } // the Skill Guide
   if (isSkillTree()) { initSkillTree(); return; } // the Skills page (the skill trees)

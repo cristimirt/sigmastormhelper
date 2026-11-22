@@ -1,9 +1,9 @@
 import { updateHeader } from '../banner.js';
 import { fetchText, navigate } from '../core/net.js';
 import { S } from '../core/state.js';
-import { cssUrl, https, parseHtml } from '../core/util.js';
+import { alertBad, cssUrl, fmt, https, parseHtml } from '../core/util.js';
 import { mel } from '../layout/dom.js';
-import { mModal } from '../layout/modal.js';
+import { gAlerts, mModal } from '../layout/modal.js';
 import { updateSidebars } from '../layout/sidebars.js';
 
 // A shop (cmd=shop, opened with a POST, so its address has no cmd) for the Modern layout, made of divs: .sh-head (picture), .sh-banner (the shop's
@@ -35,9 +35,13 @@ const CSS = '#ssh-sh{display:none;width:640px;margin:0 auto;background-position:
   '#ssh-sh .sh-price{display:flex;align-items:center;gap:3px;height:14px;font-size:11px;color:#fff}#ssh-sh .sh-price img{height:12px;width:auto}' +
   '#ssh-sh .sh-none{padding:14px;color:#a9a091}' +
   '#ssh-sh.busy{opacity:.55;pointer-events:none}' +
+  '.sh-prog{position:sticky;top:0;z-index:5;padding:8px 20px 8px;background:rgba(11,14,14,.92);border-bottom:1px solid #3a4242;text-align:center;color:#d8cfbf;font:11px tahoma,sans-serif}' +
+  '.sh-prog .sh-pb{height:8px;margin-top:5px;background:#10171a;border:1px solid #3a4242}.sh-prog .sh-pb i{display:block;height:100%;width:0;background:#5cc8e8;transition:width .25s}' +
+  '#ssh-mm .sh-qty{margin-top:8px;text-align:center}#ssh-mm .sh-qty input{width:56px;height:22px;box-sizing:border-box;margin-left:4px;padding:2px 4px;background:#0b0e0e;color:#d8cfbf;border:1px solid #5a5f5f;text-align:center;font:11px Arial,sans-serif}#ssh-mm .sh-qty input:focus{outline:0;border-color:#9fe0ff}#ssh-mm .sh-total{margin-top:6px}#ssh-mm .sh-get{margin-top:2px;color:#a9a091}' +
   '#ssh-sh .sh-note{width:580px;margin:12px auto 0;padding:5px 8px;box-sizing:border-box;text-align:center;border:1px solid #2d6a39;color:#7fe08a;background:rgba(0,0,0,.4)}' +
   '#ssh-sh .sh-note.bad{border-color:#8a2a22;color:#ff8a80}';
 
+const MAXQ = 99;
 const txt = (n) => (n ? n.textContent.replace(/\s+/g, ' ').trim() : '');
 let cur = 0; // the open tab (kept when the page is built again)
 let busy = false;
@@ -199,39 +203,101 @@ function ask(it) {
   if (busy || !it.form) return;
   const body = mel('div');
   body.textContent = it.form.getAttribute('data-sigma-confirm') || 'Are you sure you wish to buy this item?';
+  let inp = null;
   if (it.cost) {
-    const p = mel('div', '', '');
-    p.style.marginTop = '6px';
-    p.textContent = 'Price: ' + it.cost + (it.coin && it.coin.getAttribute('title') ? ' ' + it.coin.getAttribute('title') : '');
-    body.append(p);
+    const unit = parseInt(String(it.cost).replace(/[^\d]/g, ''), 10);
+    const coin = it.coin && it.coin.getAttribute('title') ? ' ' + it.coin.getAttribute('title') : '';
+    const row = mel('div', 'sh-qty');
+    const sm = String(it.left || '').match(/(\d+)\s*\/\s*(\d+)/); // the "1 / 25" under an item is the stack a purchase gives (how many of at most how many), not the stock
+    const per = sm ? parseInt(sm[1], 10) : 1;
+    row.append('Quantity: ');
+    inp = mel('input');
+    inp.type = 'number';
+    inp.min = '1';
+    inp.max = String(MAXQ);
+    inp.value = '1';
+    row.append(inp);
+    const p = mel('div', 'sh-total');
+    const g = mel('div', 'sh-get');
+    const total = () => {
+      const q = Math.max(1, Math.min(MAXQ, parseInt(inp.value, 10) || 1));
+      p.textContent = 'Price: ' + (Number.isNaN(unit) ? it.cost : fmt(unit * q)) + coin + (q > 1 && !Number.isNaN(unit) ? ' (' + q + ' x ' + fmt(unit) + ')' : '');
+    };
+    const gets = () => {
+      const q = Math.max(1, Math.min(MAXQ, parseInt(inp.value, 10) || 1));
+      g.textContent = 'You get ' + (per > 1 ? q + ' x ' + per + ' = ' + fmt(q * per) : fmt(q)) + (q * per === 1 ? ' item' : ' items') + (sm ? ' (a purchase is a stack of ' + per + ' / ' + sm[2] + ')' : '');
+    };
+    inp.addEventListener('input', () => { total(); gets(); });
+    total();
+    gets();
+    body.append(row, p, g);
   }
-  mModal('Buy item', body, [{ text: 'Buy', fn: () => send(it.form) }, { text: 'Cancel' }], { center: true });
+  const qty = () => (inp ? Math.max(1, Math.min(MAXQ, parseInt(inp.value, 10) || 1)) : 1);
+  mModal('Buy item', body, [{ text: 'Buy', fn: () => send(it.form, qty()) }, { text: 'Cancel' }], { center: true });
+  if (inp) { inp.focus(); inp.select(); }
 }
 
-async function send(form) {
+// The item is bought n times, one after the other: every answer is the shop page again with new one-time values, so each request is made from the
+// form of the item in the page as it is then. It stops at the first message of the game that is an error or a warning (not enough credits ...) or when the item is gone.
+async function send(form, n) {
   if (busy) return;
   busy = true;
-  const root = document.getElementById('ssh-sh');
-  root && root.classList.add('busy');
+  const root0 = document.getElementById('ssh-sh');
+  root0 && root0.classList.add('busy');
   const shop = (form.querySelector('input[name="shop_id"]') || {}).value;
+  const fid = form.id;
   let swapped = false;
+  let done = 0;
+  let stopped = false;
+  let f = form;
+  // the progress of a purchase of several: a bar above the shop (in what holds it, which stays when the shop is built again)
+  const host = root0 && root0.parentElement;
+  let bar = null;
+  if (host && n > 1) {
+    bar = mel('div', 'sh-prog');
+    bar.innerHTML = '<div class="sh-pt"></div><div class="sh-pb"><i></i></div>';
+    host.prepend(bar);
+  }
+  const setProg = (k) => {
+    if (!bar) return;
+    bar.querySelector('.sh-pt').textContent = 'Buying ' + Math.min(k + 1, n) + ' / ' + n + '...';
+    bar.querySelector('i').style.width = Math.round((k / n) * 100) + '%';
+  };
   try {
-    const text = await fetchText('index.php', { method: 'POST', body: fieldsOf(form) });
-    const doc = parseHtml(text);
-    swapped = swap(doc); // the game's own message (an alert box above the text) comes along in the page
-    updateHeader(text);
-    try { updateSidebars(doc); } catch (e) { /* the next live check has it */ }
-    if (!swapped && shop) { busy = false; navigate('index.php?cmd=shop&shop_id=' + shop); return; } // not the shop page: let the browser show what the game made of it
+    for (let i = 0; i < (n || 1); i++) {
+      setProg(i);
+      const text = await fetchText('index.php', { method: 'POST', body: fieldsOf(f) });
+      const doc = parseHtml(text);
+      swapped = swap(doc); // the game's own message (an alert box above the text) comes along in the page
+      updateHeader(text);
+      try { updateSidebars(doc); } catch (e) { /* the next live check has it */ }
+      if (!swapped && shop) { busy = false; navigate('index.php?cmd=shop&shop_id=' + shop); return; } // not the shop page: let the browser show what the game made of it
+      if (alertBad(gAlerts(doc))) { stopped = true; break; }
+      done++;
+      if (i < (n || 1) - 1) {
+        f = document.querySelector('table[data-ssh-sh] form[id="' + fid + '"]');
+        if (!f) { stopped = true; break; } // sold out
+        const r = document.getElementById('ssh-sh');
+        r && r.classList.add('busy');
+        await new Promise((res) => setTimeout(res, 100));
+      }
+    }
   } catch (e) {
     note = { text: 'The purchase request failed.', bad: true };
   }
   busy = false;
+  if (bar) bar.remove();
   const r = document.getElementById('ssh-sh');
   if (r) r.classList.remove('busy');
-  if (!swapped && note && note.text && r) { // the page was not built again: the message still shows
-    const n = mel('div', 'sh-note' + (note.bad ? ' bad' : ''));
-    n.textContent = note.text;
-    r.querySelector('.sh-tabs').before(n);
+  if ((n || 1) > 1 && r && !note) {
+    note = { text: 'Bought ' + done + ' of ' + n + '.', bad: stopped };
+  }
+  if (note && note.text && r) { // the page was not built again (or it is a summary): the message shows above the tabs
+    const x = mel('div', 'sh-note' + (note.bad ? ' bad' : ''));
+    x.textContent = note.text;
+    const tabs = r.querySelector('.sh-tabs');
+    if (tabs) tabs.before(x); else r.append(x);
+    setTimeout(() => x.remove(), 8000);
     note = null;
   }
 }

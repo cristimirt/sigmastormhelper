@@ -106,6 +106,6 @@ export function addStyle() {
     '#ssh-pop .stat{display:flex;justify-content:space-between;margin:2px 0;color:#bdb6aa;}' +
     '#ssh-al .mech{margin:0 0 4px;padding:2px 2px 2px;line-height:1.5;}#ssh-al .mech .em{color:#8b8b8b;font-size:11px;}' +
     '#ssh-al .ssh-repair{display:inline-block;cursor:pointer;margin-right:4px;vertical-align:middle;line-height:0;}#ssh-al .ssh-repair img{display:inline-block;vertical-align:middle;}#ssh-al .ssh-repair[data-state="off"],#ssh-al .ssh-repair[data-state="none"],#ssh-al .ssh-repair[data-state="wait"]{opacity:.35;cursor:default;}' +
-    '#ssh-al .bd a{color:#9fe0ff;}#ssh-al .none{padding:4px 2px;opacity:.75;}';
+    '#ssh-al .bd a{color:#9fe0ff;}#ssh-al .none{padding:4px 2px;opacity:.75;}#ssh-al .wc{padding:4px 2px 2px;text-align:center}#ssh-al .wc input{cursor:pointer}#ssh-al .wc input[disabled]{opacity:.5;cursor:default}';
   document.head.appendChild(st);
 }
