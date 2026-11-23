@@ -1,3 +1,4 @@
+import { withToken } from '../core/net.js';
 import { TILE, ZOOM_MAX, ZOOM_MIN } from '../core/constants.js';
 import { DATA } from '../core/data.js';
 import { S } from '../core/state.js';
@@ -46,7 +47,7 @@ export function renderWorld() {
   if (gd) {
     const id = DATA.realms[S.loc.area];
     gd.hidden = !id;
-    if (id) gd.href = 'https://guide.sigmastorm.com/index.php?cmd=realms&subcmd=view&realm_id=' + id;
+    if (id) gd.href = withToken('index.php?cmd=guide&section=areas&id=' + id); // the Guide is in the game now
   }
   applyZoom();
   renderStairs();

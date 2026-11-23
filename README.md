@@ -107,7 +107,7 @@ After a change run `npm run build:dev` (the server reads the files on every requ
 
 ### Updating the data
 
-Edit the JSON in `data/` and push. `realms.json` maps an area's name to its number in the Guide (`guide.sigmastorm.com/index.php?cmd=realms`, 27 pages of areas): add a line when the game gets a new area. `tiles.json` maps a tile picture id to `w` (walkable) or `b` (blocked); `tools/wiki-mapper.user.js` exports it from the wiki's map pages. `skills.json` is keyed by the skill id (the number in `skills/<id>_small.gif`), `buffs-extra.json` by lower-case buff name (stims and the like).
+Edit the JSON in `data/` and push. `realms.json` maps an area's name to its number in the Guide (the in-game Guide, `index.php?cmd=guide&section=areas`): add a line when the game gets a new area. `tiles.json` maps a tile picture id to `w` (walkable) or `b` (blocked); `tools/wiki-mapper.user.js` exports it from the wiki's map pages. `skills.json` is keyed by the skill id (the number in `skills/<id>_small.gif`), `buffs-extra.json` by lower-case buff name (stims and the like).
 
 ## Contributing
 

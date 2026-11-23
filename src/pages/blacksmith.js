@@ -1,14 +1,14 @@
 import { S } from '../core/state.js';
 import { cssUrl, https } from '../core/util.js';
 import { mel } from '../layout/dom.js';
+import { steelContainer } from '../layout/steel.js';
 
 // The Blacksmith (mechanic) page (cmd=blacksmith) for the Modern layout, made of divs: .bs-head (picture), .bs-back, .bs-intro, .bs-items (.bs-item:
 // the worn item, its durability and the price) and .bs-all (Repair All). The game's table stays in the page, hidden in the Modern layout, so the
 // Original layout is untouched. Every button clicks the button of the game's own form, so the game's confirmation and the posting stay the game's.
 
-const CSS = '#ssh-bs{display:none;width:640px;margin:0 auto;background-position:0 0;color:#d8cfbf;font:13px tahoma,sans-serif}' +
+const CSS = '#ssh-bs{display:none;color:#d8cfbf;font:13px tahoma,sans-serif}' +
   'html.ssh-modern #ssh-bs{display:block}html.ssh-modern [data-ssh-bs]{display:none!important}' +
-  '#ssh-bs .bs-head,#ssh-bs .bs-foot{height:54px;background-repeat:no-repeat;background-position:center top}' +
   '#ssh-bs .bs-back{padding:6px 0 0;text-align:center;font-size:11px}' +
   '#ssh-bs .bs-intro{padding:12px 20px 4px;text-align:center;font-size:11px;line-height:1.4}' +
   '#ssh-bs .bs-items{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;padding:18px 20px 8px}' +
@@ -59,12 +59,9 @@ function read(t) {
 
 function build(t) {
   const d = read(t);
-  const root = mel('div');
-  root.id = 'ssh-bs';
-  root.style.backgroundImage = cssUrl(d.bg);
-  const hd = mel('div', 'bs-head');
-  hd.style.backgroundImage = cssUrl(d.head);
-  root.append(hd);
+  const box = steelContainer({ header: d.head }); // the steel container (layout/steel.js): the game's title bar, the page, the footer
+  box.id = 'ssh-bs';
+  const root = box.body;
   if (d.back) {
     const b = mel('div', 'bs-back');
     const a = d.back.cloneNode(true);
@@ -112,10 +109,7 @@ function build(t) {
     wrap.append(b);
     root.append(wrap);
   }
-  const ft = mel('div', 'bs-foot');
-  ft.style.backgroundImage = cssUrl(S.base ? S.base + 'media/large_content_footer.png' : d.foot);
-  root.append(ft);
-  return root;
+  return box;
 }
 
 export function initBlacksmith() {

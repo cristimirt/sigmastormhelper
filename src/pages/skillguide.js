@@ -3,6 +3,7 @@ import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
 import { cssUrl, esc, https, parseHtml } from '../core/util.js';
 import { mel } from '../layout/dom.js';
+import { steelContainer } from '../layout/steel.js';
 import { scaleDesc } from '../tooltips/skills.js';
 
 // The Skill Guide page (cmd=skills&subcmd=guide) for the Modern layout: a list of divs made from the game's table (the game's own table stays in
@@ -17,9 +18,7 @@ const WEEK = 7 * 24 * 3600 * 1000;
 const PAR = 5;
 
 const CSS = 'html.ssh-modern [data-ssh-sg]{display:none!important}#ssh-sg{display:none}html.ssh-modern #ssh-sg{display:block}' +
-  '#ssh-sg{padding:14px 20px 20px;box-sizing:border-box;width:640px;margin:0 auto;text-align:left;color:#fff}' +
-  '#ssh-sg .sg-hd{height:54px;margin:-14px -20px 12px;background:center top no-repeat}' +
-  '#ssh-sg .sg-ft{height:54px;margin:14px -20px -20px;background:center top no-repeat}' +
+  '#ssh-sg .ssh-content-body{padding-top:12px;padding-bottom:20px;box-sizing:border-box;text-align:left;color:#fff}' +
   '#ssh-sg a{color:#a7ffff;text-decoration:none}#ssh-sg a:hover{color:#fff}' +
   '#ssh-sg .sg-top{text-align:center;margin-bottom:10px}#ssh-sg .sg-txt{margin:0 0 10px}' +
   '#ssh-sg .sg-bar{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 6px;padding:6px 8px;background:#101414;border:1px solid #212323}' +
@@ -120,13 +119,9 @@ export function initSkillGuide() {
   st.textContent = CSS;
   document.head.append(st);
   table.setAttribute('data-ssh-sg', '1');
-  const root = mel('div');
-  root.id = 'ssh-sg';
-  const bg = table.getAttribute('background');
-  if (bg) root.style.backgroundImage = cssUrl(bg);
-  const hd = mel('div', 'sg-hd');
-  hd.style.backgroundImage = cssUrl(https(head.getAttribute('background')));
-  root.append(hd);
+  const page = steelContainer({ header: head.getAttribute('background') }); // the steel container (layout/steel.js)
+  page.id = 'ssh-sg';
+  const root = page.body;
   const back = table.querySelector('a[href*="cmd=skills"]');
   const top = mel('div', 'sg-top');
   top.innerHTML = '[ <a href="#">View Skill Trees</a> ]';
@@ -288,9 +283,5 @@ export function initSkillGuide() {
     if (a && typeof window.ajaxLoadItem === 'function') window.ajaxLoadItem(+a.dataset.id, 0, 2, 0, '');
   });
 
-  const ft = mel('div', 'sg-ft');
-  const fd = table.querySelector('td[background*="large_content_footer"]');
-  ft.style.backgroundImage = S.base ? cssUrl(S.base + 'media/large_content_footer.png') : cssUrl(fd ? fd.getAttribute('background') : '');
-  root.append(ft);
-  table.after(root);
+  table.after(page);
 }

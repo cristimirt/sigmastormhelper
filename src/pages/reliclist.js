@@ -1,5 +1,5 @@
 import { mel } from '../layout/dom.js';
-import { tableToDivs } from '../layout/tablediv.js';
+import { steelFromTable } from '../layout/steel.js';
 
 // The page that lists all artifacts (cmd=guild&subcmd=reliclist) for the Modern layout: a copy of the game's table made of divs
 // (layout/tablediv.js). The game's table stays in the page, hidden in the Modern layout, so the Original layout is untouched. The links and the
@@ -17,8 +17,7 @@ export function initRelicList() {
   st.textContent = CSS;
   document.head.append(st);
   table.setAttribute('data-ssh-rll', '1');
-  const root = mel('div');
+  const root = steelFromTable(table);
   root.id = 'ssh-rll';
-  root.append(tableToDivs(table));
   table.after(root);
 }

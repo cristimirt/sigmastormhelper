@@ -1,4 +1,5 @@
 import { S } from '../core/state.js';
+import { esc } from '../core/util.js';
 import { clearItems, compareParts, loadItem, pairCss, peekItem, tipLook } from './compare.js';
 import { energyHtml, energyOn } from './energy.js';
 import { loadSkill, scaleDesc, skillByName, skillInfo } from './skills.js';
@@ -90,12 +91,13 @@ export function initTips() {
   // ("<b>Strike</b><br>(Level: 10)<br><br>Active at level: 10<br><br>[Click to deactivate]").
   const skillTip = (html) => {
     const lv = html.match(/\(Level:\s*(\d+)\)/);
-    const el = hov && hov.closest && hov.closest('img, .skillBox');
-    if (!lv || !el) return null;
+    const el = hov && hov.closest && hov.closest('img, .skillBox, [data-tipskill]');
+    const ts = hov && hov.closest && hov.closest('[data-tipskill]'); // (the picture inside such a row is the closest img)
+    if (!el || (!lv && !ts)) return null; // data-tipskill without a level: the skill as the game describes it (not learned)
     const src = el.tagName === 'IMG' ? el.getAttribute('src') || '' : el.getAttribute('style') || '';
-    const sm = src.match(/\/skills\/(?:box\/)?(\d+)_small\.gif/) || /^skill_(\d+)$/.exec(el.id || '');
+    const sm = src.match(/\/skills\/(?:box\/)?(\d+)_small\.gif/) || /^skill_(\d+)$/.exec(el.id || '') || [0, ts && ts.getAttribute('data-tipskill')]; // data-tipskill: the Quick Buff window's rows
     const nm = html.match(/<b>([^<]+)<\/b>/);
-    return { id: sm ? sm[1] : null, name: nm ? nm[1].trim() : '', level: +lv[1] };
+    return { id: sm ? sm[1] : null, name: nm ? nm[1].trim() : '', level: lv ? +lv[1] : 0 };
   };
   const skillFor = (sk) => {
     let s = sk.id !== null ? skillInfo(sk.id) : null;
@@ -104,8 +106,8 @@ export function initTips() {
   };
   const skillBlock = (s, level) => {
     if (!s) return '';
-    const e = s.e ? '<div>' + s.e.replace(/\{L\/(\d+)\}/g, (m, n) => Math.floor(level / n)) + '</div>' : '';
-    return '<div class="sk">' + scaleDesc(s.d, level) + e + (s.x.length ? '<div class="sx">' + s.x.join(' &middot; ') + '</div>' : '') + '</div>';
+    const e = s.e && level ? '<div>' + s.e.replace(/\{L\/(\d+)\}/g, (m, n) => Math.floor(level / n)) + '</div>' : '';
+    return '<div class="sk">' + (level ? scaleDesc(s.d, level) : esc(s.d)) + e + (s.x.length ? '<div class="sx">' + s.x.join(' &middot; ') + '</div>' : '') + '</div>';
   };
   const refresh = (id, html) => {
     if (id !== tipId || !trig) return;

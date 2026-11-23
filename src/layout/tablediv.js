@@ -1,5 +1,6 @@
 import { S } from '../core/state.js';
 import { cssUrl, https } from '../core/util.js';
+import { unbreak } from './unbreak.js';
 
 // A copy of a piece of the game's markup in which every table is made of divs (CSS grid), for the pages that are big sets of nested tables.
 // Each table becomes a grid: its columns come from the widest row (colspan counted), a cell is a div that spans its colspan / rowspan, the first
@@ -104,7 +105,7 @@ function convTable(t) {
       d.style.cssText = (i === 0 ? 'grid-column:1 / span ' + span : span > 1 ? 'grid-column:span ' + span : '') + ';' + cellStyle(c, pad) + (c.getAttribute('style') ? ';' + c.getAttribute('style') : '');
       const inner = document.createElement('div'); // the content in one block, so that inline content stays inline inside the flex cell
       [...c.childNodes].forEach((n) => inner.append(conv(n)));
-      d.append(inner);
+      d.append(unbreak(inner)); // the game's line breaks become spacing (layout/unbreak.js)
       g.append(d);
     });
   });

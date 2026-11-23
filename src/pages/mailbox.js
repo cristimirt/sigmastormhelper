@@ -3,6 +3,7 @@ import { fetchText } from '../core/net.js';
 import { S } from '../core/state.js';
 import { alertBad, alertText, cssUrl, https, parseHtml } from '../core/util.js';
 import { mel } from '../layout/dom.js';
+import { steelContainer } from '../layout/steel.js';
 import { gAlerts } from '../layout/modal.js';
 import { updateSidebars } from '../layout/sidebars.js';
 
@@ -13,9 +14,8 @@ import { updateSidebars } from '../layout/sidebars.js';
 // the ticked items one after the other ("Retrieve selected"), or every item when none is ticked ("Retrieve all"). It stops at the first message of the
 // game that is an error or a warning (the backpack is full ...) and says how many were taken.
 
-const CSS = '#ssh-mb{display:none;width:640px;margin:0 auto;background-position:0 0;color:#d8cfbf;font:11px tahoma,sans-serif}' +
+const CSS = '#ssh-mb{display:none;color:#d8cfbf;font:11px tahoma,sans-serif}' +
   'html.ssh-modern #ssh-mb{display:block}html.ssh-modern [data-ssh-mb]{display:none!important}' +
-  '#ssh-mb .mb-head,#ssh-mb .mb-foot{height:54px;background-repeat:no-repeat;background-position:center top}' +
   '#ssh-mb .mb-intro{width:550px;margin:20px auto 0;text-align:center;line-height:1.45}' +
   '#ssh-mb .mb-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:16px;width:580px;margin:20px auto 0;min-height:60px}' +
   '#ssh-mb .mb-item{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;width:62px;user-select:none}' +
@@ -95,12 +95,9 @@ function fieldsOf(form) {
 
 function build(t) {
   const d = read(t);
-  const root = mel('div');
-  root.id = 'ssh-mb';
-  root.style.backgroundImage = cssUrl(d.bg);
-  const hd = mel('div', 'mb-head');
-  hd.style.backgroundImage = cssUrl(d.head);
-  root.append(hd);
+  const page = steelContainer({ header: d.head }); // the steel container (layout/steel.js)
+  page.id = 'ssh-mb';
+  const root = page.body;
   if (d.intro) {
     const x = mel('div', 'mb-intro');
     x.innerHTML = d.intro.innerHTML;
@@ -173,14 +170,10 @@ function build(t) {
   bar.append(btn);
   root.append(bar);
   if (prog) root.append(mel('div', 'mb-prog', 'Retrieving ' + prog.k + '/' + prog.n + ' items'));
-  root.classList.toggle('busy', busy);
-  const ft = mel('div', 'mb-foot');
-  ft.style.backgroundImage = cssUrl(S.base ? S.base + 'media/large_content_footer.png' : d.foot);
-  ft.style.marginTop = '14px';
-  root.append(ft);
+  page.classList.toggle('busy', busy);
   sync();
-  countdown(root);
-  return root;
+  countdown(page);
+  return page;
 }
 
 // The page's own table is replaced by the one of an answer (when it is the mailbox), and the divs are made again from it.

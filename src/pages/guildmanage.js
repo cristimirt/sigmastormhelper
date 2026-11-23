@@ -1,6 +1,7 @@
 import { fetchDoc, fetchText, navigate } from '../core/net.js';
 import { alertBad, alertText, parseHtml } from '../core/util.js';
 import { gAlerts } from '../layout/modal.js';
+import { steelFromTable } from '../layout/steel.js';
 import { tableToDivs } from '../layout/tablediv.js';
 import { mel } from '../layout/dom.js';
 import { sections, sectionsCss } from '../layout/panels.js';
@@ -134,15 +135,14 @@ export function initGuildManage() {
     ct.replaceWith(ph);
     stacks.push(panelsOf(ct));
   });
-  const root = mel('div');
+  const root = steelFromTable(work);
   root.id = 'ssh-gm';
-  const grid = tableToDivs(work);
+  const grid = root.grid;
   grid.querySelectorAll('.gm-col').forEach((col, i) => {
     (stacks[i] || []).forEach((p) => col.append(panelEl(p)));
   });
   grid.style.gridTemplateColumns = '6px minmax(0,1fr) minmax(0,1fr) 6px'; // two equal columns, a small margin at the sides, a small space between
   grid.style.columnGap = '6px';
-  root.append(grid);
   table.after(root);
   st.textContent += sectionsCss('#ssh-gm', '.gm-h', '.tgc:not(.gm-h)');
   root.addEventListener('submit', (e) => {

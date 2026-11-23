@@ -328,7 +328,21 @@ function menuShow(s, open) {
   s.img.src = s.img.src.replace(/[^/]*$/, '') + s.name + (open ? '_on' : '') + '.gif';
   if (Array.isArray(window.menuOpen)) window.menuOpen[s.id] = open ? 1 : 0; // the game's own list agrees
 }
+// The game opens the list of the page you are on, but not for every page (the Datapad leaves Character closed): when no list is open,
+// the one that holds a link to this page is opened.
+function openCurrentList() {
+  const lists = [...document.querySelectorAll('.ssh-w [id^="menuSource_"]')];
+  if (lists.some((l) => getComputedStyle(l).display !== 'none')) return;
+  const q = new URLSearchParams(location.search), cmd = q.get('cmd');
+  if (!cmd) return;
+  const sub = q.get('subcmd') || '';
+  const hit = lists.find((l) => [...l.querySelectorAll('a[href]')].some((a) => {
+    try { const u = new URL(a.getAttribute('href'), location.href).searchParams; return u.get('cmd') === cmd && (u.get('subcmd') || '') === sub; } catch (e) { return false; }
+  }));
+  if (hit) hit.style.display = 'block';
+}
 function syncMenu() {
+  openCurrentList();
   document.querySelectorAll('.ssh-w .wm > a[href*="changeMenu"]').forEach((a) => { const s = menuState(a); if (s && s.list) menuShow(s, getComputedStyle(s.list).display !== 'none'); });
 }
 

@@ -1,6 +1,7 @@
 import { S } from '../core/state.js';
 import { cssUrl, https } from '../core/util.js';
 import { mel } from '../layout/dom.js';
+import { steelContainer } from '../layout/steel.js';
 
 // The blueprint list (Inventing) for the Modern layout, made of divs: .iv-head (picture), .iv-intro, .iv-folders (.iv-f: the folder picture, its
 // name and a small delete button), the "Add New Folder" button, the page list, .iv-list (.iv-r: tick, picture, name, type, item level), the move
@@ -9,9 +10,8 @@ import { mel } from '../layout/dom.js';
 // their clicks (a delete asks first, a new folder asks for a name, the page list and the move are sent in the background); ticks and the target
 // folder are written to the original controls, which are what the move sends. Built again after every swap of the content.
 
-const CSS = '#ssh-iv{display:none;width:640px;margin:0 auto;background-position:0 0;color:#d8cfbf;font:11px tahoma,sans-serif}' +
+const CSS = '#ssh-iv{display:none;color:#d8cfbf;font:11px tahoma,sans-serif}' +
   'html.ssh-modern #ssh-iv{display:block}html.ssh-modern [data-ssh-iv]{display:none!important}' +
-  '#ssh-iv .iv-head{height:48px;background-repeat:no-repeat;background-position:center top}#ssh-iv .iv-foot{height:54px;background-repeat:no-repeat;background-position:center top}' +
   '#ssh-iv .iv-intro{padding:14px 30px 4px;line-height:1.45}#ssh-iv .iv-intro p{margin:0 0 10px}' +
   '#ssh-iv .iv-folders{display:flex;flex-wrap:wrap;justify-content:center;gap:14px 6px;padding:14px 20px 4px}' +
   '#ssh-iv .iv-f{position:relative;display:flex;flex-direction:column;align-items:center;width:60px;font-size:9px;line-height:1.2;color:#d8cfbf;text-align:center}' +
@@ -61,13 +61,10 @@ function build(table) {
   const head = table.querySelector('td[background*="header_"]');
   const foot = table.querySelector('td[background*="large_content_footer"]');
   const box = table.rows[1] && table.rows[1].cells[0] && table.rows[1].cells[0].firstElementChild;
-  const root = mel('div');
-  root.id = 'ssh-iv';
-  root.style.backgroundImage = cssUrl(table.getAttribute('background'));
-  const hd = mel('div', 'iv-head');
-  hd.style.backgroundImage = cssUrl(head && head.getAttribute('background'));
-  root.append(hd);
-  if (!box) return root;
+  const page = steelContainer({ header: head && head.getAttribute('background') }); // the steel container (layout/steel.js)
+  page.id = 'ssh-iv';
+  const root = page.body;
+  if (!box) return page;
   const intro = box.querySelector(':scope > p');
   if (intro) {
     const w = mel('div', 'iv-intro');
@@ -155,10 +152,7 @@ function build(table) {
   }
   const bottom = pager(box.querySelector('#assembly-page-bottom'));
   if (bottom) root.append(bottom);
-  const ft = mel('div', 'iv-foot');
-  ft.style.backgroundImage = cssUrl(S.base ? S.base + 'media/large_content_footer.png' : foot && foot.getAttribute('background'));
-  root.append(ft);
-  return root;
+  return page;
 }
 
 // The divs of the content `c` (the page's content cell): made from the game's table, which is hidden next to them. Safe to call again.

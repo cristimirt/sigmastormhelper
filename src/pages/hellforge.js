@@ -2,6 +2,7 @@ import { fetchText } from '../core/net.js';
 import { S } from '../core/state.js';
 import { cssUrl, https, parseHtml } from '../core/util.js';
 import { mel } from '../layout/dom.js';
+import { steelContainer } from '../layout/steel.js';
 
 // The Engineering page (cmd=hellforge) for the Modern layout, made of divs: .hf-head (picture), .hf-intro, .hf-items (the items that can be
 // upgraded), .hf-forge (the slot in the middle with the Upgrade button), .hf-cost and the level guide. The game's table stays in the page, hidden in the
@@ -10,10 +11,9 @@ import { mel } from '../layout/dom.js';
 // is fetched in the background and its table takes the place of the hidden one. Clicking the item in the slot puts it back. The Upgrade button
 // clicks the button of the game's own form.
 
-const CSS = '#ssh-hf{display:none;width:640px;margin:0 auto;background-position:0 0;color:#d8cfbf;font:11px tahoma,sans-serif;transition:opacity .15s}' +
+const CSS = '#ssh-hf{display:none;color:#d8cfbf;font:11px tahoma,sans-serif;transition:opacity .15s}' +
   'html.ssh-modern #ssh-hf{display:block}html.ssh-modern [data-ssh-hf]{display:none!important}' +
   '#ssh-hf.busy{opacity:.55;pointer-events:none}' +
-  '#ssh-hf .hf-head,#ssh-hf .hf-foot{height:54px;background-repeat:no-repeat;background-position:center top}' +
   '#ssh-hf .hf-intro{width:570px;margin:0 auto;padding:12px 0 6px;line-height:1.45}' +
   '#ssh-hf .hf-intro p{margin:0}' +
   '#ssh-hf .hf-items{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;min-height:66px;padding:14px 20px 6px}' +
@@ -85,12 +85,9 @@ function read(t) {
 
 function build(t) {
   const d = read(t);
-  const root = mel('div');
-  root.id = 'ssh-hf';
-  root.style.backgroundImage = cssUrl(d.bg);
-  const hd = mel('div', 'hf-head');
-  hd.style.backgroundImage = cssUrl(d.head);
-  root.append(hd);
+  const box = steelContainer({ header: d.head }); // the steel container (layout/steel.js): the game's title bar, the page, the footer
+  box.id = 'ssh-hf';
+  const root = box.body;
   if (d.intro) {
     const b = mel('div', 'hf-intro');
     b.append(copyOf(d.intro));
@@ -168,10 +165,7 @@ function build(t) {
     else td.querySelectorAll('p').forEach((p) => row.append(copyOf(p)));
     root.append(row);
   });
-  const ft = mel('div', 'hf-foot');
-  ft.style.backgroundImage = cssUrl(S.base ? S.base + 'media/large_content_footer.png' : d.foot);
-  root.append(ft);
-  return root;
+  return box;
 }
 
 // The page's own table is replaced by the one of the answer, and the divs are made again from it.

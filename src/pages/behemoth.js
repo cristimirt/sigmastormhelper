@@ -1,6 +1,6 @@
 import { withToken } from '../core/net.js';
 import { mel } from '../layout/dom.js';
-import { tableToDivs } from '../layout/tablediv.js';
+import { steelFromTable } from '../layout/steel.js';
 import { BM_CSS, behMenu } from './behmenu.js';
 
 // Behemoth Rewards (cmd=guild&subcmd=titanrewards) and Behemoth Kills (cmd=titan) for the Modern layout: the game's table made of divs
@@ -51,9 +51,9 @@ export function initBehemoth(kind) {
     });
   }
   table.setAttribute('data-ssh-bh', '1');
-  const root = mel('div');
+  const root = steelFromTable(table);
   root.id = 'ssh-bh';
-  const grid = tableToDivs(table);
+  const grid = root.grid;
   const menu = behMenu(kind);
   const back = [...grid.querySelectorAll('a[href*="subcmd=manage"]')].find((a) => /Back to/i.test(a.textContent));
   const cell = back && back.closest('.tgc');
@@ -104,6 +104,5 @@ export function initBehemoth(kind) {
       }
     });
   }
-  root.append(grid);
   table.after(root);
 }

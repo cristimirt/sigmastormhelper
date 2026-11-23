@@ -30,6 +30,32 @@ The helper only changes how pages look and how they are used in your own browser
 - **Footprints**: a button that marks the tiles you have walked on (per area).
 - **Transit portals**: the Examine Portal button in the Action List opens a dialog with every destination, its minimum level, its cost in credits and a Travel Here button (it asks once more before going), instead of a new page. The travel is sent in the background and the new place is swapped in; a message of the game's shows in a dialog.
 - **Medpack count**: the number under the heal button on the map also counts items called "Medpack" (not only "Medipack").
+- **Guide link**: the "G" button on the map opens the area in the Guide that is now inside the game (`cmd=guide`), not the old guide.sigmastorm.com.
+- **Mission Log** in the Modern layout (Active, Completed and Not Started, the list as wide as the page), with a "G" button (styled like the wiki button) before the wiki button of each mission that opens it in the in-game Guide.
+- **Steel container**: one frame (title bar, body on the repeating background, footer) for the pages that use it, in the Mission Log and the Faction Inventory; the page gets a class from its address (`page-questbook`, `subpage-viewquest` ...); the content area has 20px of space above.
+- **Mission pages** use the steel container too (with the glass header). All the converted pages (Bank, Blacksmith, Item Augmentation, Engineering, Evolve, Inventing, Item Mailbox, Shops, Skills, Skill Guide, Transit Portal, Faction pages, Doppler Array, Behemoth pages, Artifacts) have the same structure now: title bar (steel or glass), body, footer.
+- **Skills page** is made of a few plain divs (no more nested grids): the tabs, the tree with its tiers of skills, and the details panel.
+- **Journal**, its **Ignore List** and **Outbox** in the Modern layout (the steel container, one row per entry).
+- Quick Buff window: the result of a cast replaces the list inside the same window (with a Back button) instead of opening a second window.
+- Quick Buff window: the game's message at the top (not enough energy, ...) is a readable red notice.
+- Quick Buff window: "Select all" and "Sort alphabetically" (the choice is kept) at the bottom.
+- Quick Buff window is only as tall as its content; the "not learned" notice for Nano Blood is the helper's own dialog.
+- **Quick Buff window** (Cast Skill(s) on a profile, the Faction panel): a card per target with the last activity and the skills that are on the player (level, time left), a mark in the list on skills a target already has at your level or higher, the cost of the ticked skills (Energy and Surge, for all the targets) next to what you have, and Nano Blood at the top (red "Activate" casts it on you, green "Activated" with its description on hover). Targets are found by name in your faction (Manage list) and the links on the page.
+- **Buff timers run down by the second** (Data Sheet and Active Buffs under the world map), and a removed buff takes its timer with it.
+- **Active skills can be taken off by clicking their picture** (Active Buffs under the world map, the buffs on the Data Sheet): the game's own question, then the same background request as the Skills box on the right, so the page is not left (on the Data Sheet it used to end on the home page without taking the skill off).
+- **Faction Chat** page in the Modern layout (the steel container with a "Faction Chat" header, one row per message).
+- **Official Guide area map**: shops and stairways show their picture (from the wiki; so far two areas) and a stairway links to the area it leads to; the tooltip of a tile appears at once.
+- **Official Guide**: a Wiki button on the page of an item and of an area.
+- **Official Guide area map**: the tiles come from the CDN, locations show their own picture and link to their page, shops and stairways get an icon.
+- **Official Guide** loads only its content (not the whole page) when you use its links, lists and searches; Back and Forward work.
+- **Official Guide** in the Modern layout: the frame and the steel container around it, tabs, lists, search forms and entry pages in the helper's style, a Locations tab and a Locations card on the overview.
+- **Faction Inventory**: the Atk, Dmg, Def, Arm, HP and Type columns are gone (the Type filter stays).
+- **Locate Player** page in the Modern layout (the steel container).
+- **Transmit Message** page in the Modern layout (the steel container).
+- **No line breaks** in the Modern layout: the game's `<br>` in the pages the helper rebuilds (Slaughterfest and the pages made of converted tables) became spacing.
+- **Slaughterfest Rewards** page in the Modern layout (a list of items, their price and a Buy button).
+- **Slaughterfest** page (`cmd=instances`) in the Modern layout (the steel container).
+- **Main Menu**: on a page the game does not open a list for (the Datapad), the list that holds the page is now open (Character).
 - **Multi-buy in shops**: the question before a purchase has a quantity box and the price follows it; the item is bought that many times in a row (stops at the first error or warning of the game, or when it is sold out) and a note says how many were bought. A progress bar shows how far it is.
 - **Fast walk shows the arrival tile sooner**: the Action List says "Moving..." during the walk and the page of the last tile is used as soon as the game shows the character there, instead of after the slow answers of the move requests, so the actions are there without pressing refresh. A Cancel button in the Action List stops the walk.
 - **Item Mailbox** in the Modern layout: clicking an item takes it into the backpack in the background and the list is read again without reloading the page; Ctrl+click, the box in an item's corner or Shift+click (a range) select items, and the button at the bottom takes them one after the other ("Retrieve selected", or "Retrieve all" when none is selected); it stops at the first error or warning of the game. The time left under each item counts down by itself and reads "Expired" (red) at 0.

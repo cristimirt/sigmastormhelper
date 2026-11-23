@@ -3,6 +3,7 @@ import { S } from '../core/state.js';
 import { cssUrl, digits, https, parseHtml } from '../core/util.js';
 import { updateHeader } from '../banner.js';
 import { mel } from '../layout/dom.js';
+import { steelContainer } from '../layout/steel.js';
 import { updateSidebars } from '../layout/sidebars.js';
 import { addSlider } from '../layout/slider.js';
 
@@ -13,10 +14,9 @@ import { addSlider } from '../layout/slider.js';
 // helper's slider (layout/slider.js) is used: 0 up to the Current Max Deposit for the deposit, 0 up to the Account Balance for the withdraw.
 // A deposit or a withdraw is sent in the background with the game's own form fields and the page content is replaced by the answer.
 
-const CSS = '#ssh-bk{display:none;width:640px;margin:0 auto;background-position:0 0;color:#d8cfbf;font:11px tahoma,sans-serif;transition:opacity .15s}' +
+const CSS = '#ssh-bk{display:none;color:#d8cfbf;font:11px tahoma,sans-serif;transition:opacity .15s}' +
   'html.ssh-modern #ssh-bk{display:block}html.ssh-modern [data-ssh-bk]{display:none!important}' +
   '#ssh-bk.busy{opacity:.55;pointer-events:none}' +
-  '#ssh-bk .bk-head,#ssh-bk .bk-foot{height:54px;background-repeat:no-repeat;background-position:center top}' +
   '#ssh-bk .bk-intro{padding:12px 45px 6px;line-height:1.45;text-align:left}' +
   '#ssh-bk .bk-box{width:550px;margin:12px auto 18px}' +
   '#ssh-bk .bk-title{height:20px;line-height:20px;background:#212323;text-align:center;color:#fff}' +
@@ -119,12 +119,9 @@ function action(a, max, kind) {
 
 function build(t) {
   const d = read(t);
-  const root = mel('div');
-  root.id = 'ssh-bk';
-  root.style.backgroundImage = cssUrl(d.bg);
-  const hd = mel('div', 'bk-head');
-  hd.style.backgroundImage = cssUrl(d.head);
-  root.append(hd);
+  const page = steelContainer({ header: d.head }); // the steel container (layout/steel.js): the game's title bar, the page, the footer
+  page.id = 'ssh-bk';
+  const root = page.body;
   if (d.intro) {
     const b = mel('div', 'bk-intro');
     [...d.intro.childNodes].forEach((n) => b.append(copyOf(n)));
@@ -145,10 +142,7 @@ function build(t) {
   if (d.dep.row) box.append(action(d.dep, d.maxDep, 'dep'));
   if (d.wd.row) box.append(action(d.wd, d.balance, 'wd'));
   root.append(box);
-  const ft = mel('div', 'bk-foot');
-  ft.style.backgroundImage = cssUrl(S.base ? S.base + 'media/large_content_footer.png' : d.foot);
-  root.append(ft);
-  return root;
+  return page;
 }
 
 // The page's own table is replaced by the one of the answer, and the divs are made again from it.

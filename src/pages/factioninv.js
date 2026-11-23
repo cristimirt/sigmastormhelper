@@ -4,6 +4,7 @@ import { pageParts } from '../core/page.js';
 import { store } from '../core/storage.js';
 import { alertBad, alertText, esc, https, parseHtml } from '../core/util.js';
 import { mel } from '../layout/dom.js';
+import { steelContainer } from '../layout/steel.js';
 import { gAlerts, mModal } from '../layout/modal.js';
 import { fetchItem, parseItem } from '../tooltips/compare.js';
 
@@ -19,7 +20,6 @@ const MANAGE = 'index.php?cmd=guild&subcmd=manage';
 const STORE = 'Faction Store';
 const KEEP = 60 * 24 * 3600 * 1000; // what is known about an item stays this long after it was last seen in the lists
 const PER = [25, 50, 100, 250];
-const ABBR = { Attack: 'Atk', Damage: 'Dmg', Defense: 'Def', Defence: 'Def', Armor: 'Arm', Armour: 'Arm', HP: 'HP' };
 const BYCOLOR = { '#40FFFF': 'Rare', '#FF40FF': 'Unique', '#FFFF40': 'Legendary', '#FFFFFF': 'Common' };
 const QRANK = ['Uncrafted', 'Very Poor', 'Poor', 'Average', 'Good', 'Very Good', 'Excellent', 'Perfect']; // worst to best
 // the item classes (Core, Psi, ...) of gear; the other items have none
@@ -190,7 +190,7 @@ export function initFactionInv() {
   const root = mel('div', 'fi');
   root.id = 'ssh-fi';
   root.innerHTML =
-    '<div class="fi-h"><b>Faction Inventory</b><span class="fi-n" id="fi-n"></span>' +
+    '<div class="fi-h"><span class="fi-n" id="fi-n"></span>' +
     '<span class="fi-r"><a href="' + withToken(MANAGE) + '">Manage Faction</a> &middot; <a href="#" id="fi-ref">Refresh</a></span></div>' +
     '<div class="fi-bar" id="fi-st"></div>' +
     '<div class="fi-f">' +
@@ -209,7 +209,9 @@ export function initFactionInv() {
     '<label>Show <select id="fi-per">' + PER.map((n) => '<option value="' + n + '">' + n + '</option>').join('') + '</select> per page</label></div>' +
     '<div class="fi-tw"><table class="fi-t"><thead id="fi-th"></thead><tbody id="fi-tb"></tbody></table></div>' +
     '<div class="fi-pg" id="fi-pg"></div>';
-  p.body.replaceChildren(root);
+  const box = steelContainer({ title: 'Faction Inventory' }); // the steel container of the Mission Log, with the helper's bar and the title on it
+  box.body.append(root);
+  p.body.replaceChildren(box);
   document.title = 'Faction Inventory';
   const $ = (id) => root.querySelector('#' + id);
   $('fi-per').value = String(st.per);
@@ -231,14 +233,6 @@ export function initFactionInv() {
   const info = (i) => det[ck(i)];
   const nameOf = (i) => { const d = info(i); return (d && d.n) || i.name || '...'; };
   const durOf = (i) => { const d = info(i); return d && d.m ? Math.round((d.d / d.m) * 100) : -1; };
-  const bonusKeys = () => {
-    const c = {};
-    items.forEach((i) => { const d = info(i); if (d) Object.keys(d.b).forEach((k) => { c[k] = (c[k] || 0) + 1; }); });
-    const pref = ['Attack', 'Damage', 'Defense', 'Defence', 'Armor', 'Armour', 'HP'];
-    const rank = (k) => (pref.includes(k) ? pref.indexOf(k) - 100 : 0);
-    return Object.keys(c).sort((a, b) => rank(a) - rank(b) || c[b] - c[a]).slice(0, 5);
-  };
-
   // Fetches what the items are, six at a time; the table fills in as the answers arrive.
   async function loadDetails(force) {
     const todo = items.filter((i) => force || !det[ck(i)] || det[ck(i)].v < 3 || (det[ck(i)].v === 3 && !det[ck(i)].c));
@@ -304,11 +298,10 @@ export function initFactionInv() {
       case 'l': return d ? d.l : -1;
       case 'w': return i.where.toLowerCase();
       case 'e': return i.eq ? 1 : 0;
-      case 't': return d ? d.t.toLowerCase() : '';
       case 'q': return d ? d.q : '';
       case 'g': return d ? d.u : -1;
       case 'u': return durOf(i);
-      default: return d && d.b[k.slice(2)] !== undefined ? d.b[k.slice(2)] : -1;
+      default: return -1;
     }
   };
 
@@ -373,12 +366,11 @@ export function initFactionInv() {
 
   function drawTable() {
     rows = filtered();
-    const bk = bonusKeys();
     const arrow = (k) => (st.sort.k === k ? (st.sort.d > 0 ? ' &#9650;' : ' &#9660;') : '');
     const th = (k, label, cls, title) => '<th class="s ' + (cls || '') + '" data-s="' + k + '"' + (title ? ' title="' + esc(title) + '"' : '') + '>' + label + arrow(k) + '</th>';
     $('fi-th').innerHTML = '<tr><th class="c"><input type="checkbox" id="fi-all" title="Select all the items shown (every page)"></th><th class="i"></th>' +
-      th('n', 'Name') + th('l', 'Lv', 'n') + th('w', 'Where') + th('e', 'Eq', 'ck', 'Equipped (worn by the member)') + th('t', 'Type') + th('q', 'Qual') + th('g', 'Up', 'n', 'Upgrade level') +
-      bk.map((k) => th('b:' + k, ABBR[k] || k.slice(0, 4), 'n', k)).join('') + th('u', 'Du%', 'n', 'Durability') + '<th class="a"></th>';
+      th('n', 'Name') + th('l', 'Lv', 'n') + th('w', 'Where') + th('e', 'Eq', 'ck', 'Equipped (worn by the member)') + th('q', 'Qual') + th('g', 'Up', 'n', 'Upgrade level') +
+      th('u', 'Du%', 'n', 'Durability') + '<th class="a"></th>';
     const pages = Math.max(1, Math.ceil(rows.length / st.per));
     st.page = Math.min(st.page, pages - 1);
     const from = st.page * st.per;
@@ -390,11 +382,10 @@ export function initFactionInv() {
       return '<tr data-k="' + i.k + '"' + (sel.has(i.k) ? ' class="sel"' : '') + '><td class="c"><input type="checkbox"' + (sel.has(i.k) ? ' checked' : '') + (i.href ? '' : ' disabled') + '></td>' +
         '<td class="i"><img src="' + esc(i.icon) + '" alt="" data-item="' + i.item + '|' + i.inv + '|' + i.type + '|' + i.pid + '"></td>' +
         '<td class="nm"><span data-item="' + i.item + '|' + i.inv + '|' + i.type + '|' + i.pid + '"' + (d && d.k ? ' style="color:' + esc(d.k) + '"' : '') + '>' + name + '</span>' + (i.qty > 1 ? ' <i>x' + i.qty + '</i>' : '') + (d && d.s ? ' <em class="set">set</em>' : '') + '</td>' +
-        '<td class="n">' + (d ? d.l : '') + '</td><td class="w' + (i.kind === 's' ? ' st' : '') + '"' + (i.kind === 'p' ? ' data-pid="' + i.pid + '"' : ' title="' + esc(i.where) + '"') + ' data-who="' + esc(i.where) + '">' + esc(i.where) + '</td><td class="ck">' + (i.eq ? '&#10003;' : '') + '</td><td title="' + esc(d ? d.t : '') + '">' + esc(d ? d.t : '') + '</td><td' + (d && d.qc ? ' style="color:' + esc(d.qc) + '"' : '') + '>' + esc(d ? d.q : '') + '</td><td class="n">' + (d && d.u ? d.u : '') + '</td>' +
-        bk.map((k) => '<td class="n">' + (d && d.b[k] !== undefined ? d.b[k] : '') + '</td>').join('') +
+        '<td class="n">' + (d ? d.l : '') + '</td><td class="w' + (i.kind === 's' ? ' st' : '') + '"' + (i.kind === 'p' ? ' data-pid="' + i.pid + '"' : ' title="' + esc(i.where) + '"') + ' data-who="' + esc(i.where) + '">' + esc(i.where) + '</td><td class="ck">' + (i.eq ? '&#10003;' : '') + '</td><td' + (d && d.qc ? ' style="color:' + esc(d.qc) + '"' : '') + '>' + esc(d ? d.q : '') + '</td><td class="n">' + (d && d.u ? d.u : '') + '</td>' +
         '<td class="n' + (du >= 0 && du < 30 ? ' low' : '') + '">' + (du >= 0 ? du : '') + '</td>' +
         '<td class="a">' + (i.href ? (i.kind === 's' ? '<a href="#" class="fi-do" data-do="take" title="Take it to your backpack">Take</a>' : '<a href="#" class="fi-do" data-do="recall" title="Recall it to the faction store">Recall</a> <span class="fi-bar2">|</span> <a href="#" class="fi-do" data-do="bp" title="Recall it to the faction store, then take it to your backpack">Take</a>') : '') + '</td></tr>';
-    }).join('') || '<tr><td colspan="' + (11 + bk.length) + '" class="fi-none">' + (busy ? 'Loading...' : 'No items match.') + '</td></tr>';
+    }).join('') || '<tr><td colspan="10" class="fi-none">' + (busy ? 'Loading...' : 'No items match.') + '</td></tr>';
     const all = $('fi-all');
     const can = rows.filter((i) => i.href);
     all.checked = !!can.length && can.every((i) => sel.has(i.k));
@@ -672,7 +663,7 @@ export function initFactionInv() {
     if (a.dataset.pg !== undefined && !a.classList.contains('off')) { st.page = +a.dataset.pg; drawTable(); $('fi-tb').scrollIntoView({ block: 'nearest' }); return; }
     if (a.classList.contains('s')) {
       const k = a.dataset.s;
-      st.sort = { k, d: st.sort.k === k ? -st.sort.d : (k === 'n' || k === 'w' || k === 't' || k === 'q' ? 1 : -1) };
+      st.sort = { k, d: st.sort.k === k ? -st.sort.d : (k === 'n' || k === 'w' || k === 'q' ? 1 : -1) };
       remember(); drawTable();
       return;
     }
