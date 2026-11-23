@@ -12,7 +12,7 @@ export function floatPanel(p, { key, skip, home }) {
     p.style.left = Math.max(0, Math.min(p.offsetLeft, doc.scrollWidth - p.offsetWidth)) + 'px';
     p.style.top = Math.max(0, Math.min(p.offsetTop, doc.scrollHeight - 40)) + 'px';
   };
-  const pos = store.get(key, null) || home(S.viewer.getBoundingClientRect());
+  const pos = store.get(key, null) || home((S.viewer || S.pfAnchor || document.body).getBoundingClientRect());
   p.style.left = pos.x + 'px';
   p.style.top = pos.y + 'px';
   clamp();

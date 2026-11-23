@@ -6,6 +6,7 @@ import { floatPanel } from '../layout/floating.js';
 import { create } from './route.js';
 import { liveWalk, startsOnTile, stepMain, stepShort } from './steptext.js';
 import { esc } from '../core/util.js';
+import { addStyle } from '../game/styles.js';
 
 const SITE = 'https://cristimirt.github.io/sspathfinder/';
 
@@ -48,11 +49,12 @@ function recompute() {
 
 // Called after every move (renderWorld) and when the panel opens: re-plans when the area changed, later when the tile did.
 export function pfUpdate() {
+  if (S.loc) store.set('lastloc', S.loc); // where the Path Finder starts on a page that has no map (a Transit Portal page)
   if (!st.open || !st.router || !S.loc) return;
   const area = st.router.byName[S.loc.area] || null;
-  const tile = [S.loc.x, S.loc.y];
+  const tile = S.loc.x == null ? null : [S.loc.x, S.loc.y]; // a world map has no tile
   const key = area ? area.name : '?' + S.loc.area;
-  const moved = !st.tile || st.tile[0] !== tile[0] || st.tile[1] !== tile[1];
+  const moved = !st.tile || !tile || st.tile[0] !== tile[0] || st.tile[1] !== tile[1];
   st.tile = tile;
   clearTimeout(st.timer);
   if (key !== st.key) {
@@ -231,4 +233,24 @@ export function initPathfinder() {
   btn.addEventListener('click', () => (st.open ? closePanel() : openPanel()));
   st.dest = store.get('pfdest', '');
   if (store.get('pfopen', false)) openPanel();
+}
+
+// A page without the map (a Transit Portal page, a world map): a button above `anchor` opens the same panel. `loc` is where the player is
+// ({ area, x, y }, no x and y on a world map); without it the position is the one the map was left at (kept by pfUpdate), which is where
+// the portal is.
+const BAR = '#ssh-pfbar{display:none}html.ssh-modern #ssh-pfbar{display:block;max-width:640px;margin:0 auto 6px;text-align:right}html.ssh-modern #ssh-pfbar[style]{max-width:none}#ssh-pfbar #ssh-pfbtn{position:static;display:inline-block}';
+export function initPathfinderPage(anchor, loc, below) {
+  if (!S.cfg.pathfinder || !anchor || document.getElementById('ssh-pfbtn')) return;
+  addStyle();
+  const css = document.createElement('style');
+  css.textContent = BAR;
+  document.head.append(css);
+  S.pfAnchor = anchor;
+  const last = store.get('lastloc', null);
+  if (loc) S.loc = loc; else if (!S.loc && last) S.loc = last;
+  const bar = document.createElement('div');
+  bar.id = 'ssh-pfbar';
+  bar.innerHTML = '<button type="button" id="ssh-pfbtn" title="Find the way to an area">Path Finder</button>';
+  if (below) { bar.style.cssText = 'text-align:center;margin:10px 0'; anchor.after(bar); } else anchor.before(bar); // below: under the anchor, in the middle
+  initPathfinder();
 }

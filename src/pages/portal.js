@@ -3,6 +3,8 @@ import { alertBad, parseHtml } from '../core/util.js';
 import { mel } from '../layout/dom.js';
 import { alertModal, gAlerts, mModal, showBusy } from '../layout/modal.js';
 import { steelFromTable } from '../layout/steel.js';
+import { S } from '../core/state.js';
+import { initPathfinderPage } from '../pathfinder/panel.js';
 
 // The Transit Portal page (cmd=portal&portal_id=N) for the Modern layout: a copy of the game's tables made of divs (layout/tablediv.js); the game's
 // table stays in the page, hidden in the Modern layout, so the Original layout is untouched. A Travel Here button asks first (a dialog of the
@@ -44,6 +46,7 @@ export function initPortal() {
   root.id = 'ssh-pt';
   table.setAttribute('data-ssh-pt', '1');
   table.after(root);
+  if (S.layout === 'modern') initPathfinderPage(root);
   root.querySelectorAll('form').forEach((f) => f.removeAttribute('onsubmit'));
   root.addEventListener('submit', (e) => {
     const form = e.target;

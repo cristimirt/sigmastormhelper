@@ -32,6 +32,7 @@ import { initFactionChat, isFactionChat } from './pages/factionchat.js';
 import { initFindPlayer, isFindPlayer } from './pages/findplayer.js';
 import { initJournal, isJournal } from './pages/journal.js';
 import { initMailbox, isMailbox } from './pages/mailbox.js';
+import { initMastermap, isMastermap } from './pages/mastermap.js';
 import { initMissionLog, isMissionLog } from './pages/missionlog.js';
 import { initMultiCraft, isRecipePage } from './pages/multicraft.js';
 import { initPortal, isPortal } from './pages/portal.js';
@@ -92,6 +93,7 @@ async function init() {
   if (isFindPlayer()) { initFindPlayer(); return; } // Locate Player
   if (isJournal()) { initJournal(); return; } // the Journal
   if (isMailbox()) { initMailbox(); return; } // the Item Mailbox
+  if (isMastermap()) { initMastermap(); return; } // a world map (Mastermap)
   if (isMissionLog()) { initMissionLog(); return; } // the Mission Log (Active / Completed / Not Started)
   if (isRecipePage()) { initMultiCraft(); return; } // a blueprint's page: how many times to craft
   if (isPortal()) { initPortal(); return; } // a Transit Portal

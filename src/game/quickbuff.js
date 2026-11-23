@@ -31,6 +31,7 @@ const CSS =
   '#ssh-qb-tg .qb-la{margin-left:auto;color:#9a9488}#ssh-qb-tg .qb-x{color:#ff5a4d;cursor:pointer;font-size:14px;line-height:1}' +
   '#ssh-qb-tg .qb-b{display:flex;flex-wrap:wrap;gap:3px 12px;margin-top:4px}#ssh-qb-tg .qb-s{display:inline-flex;align-items:center;gap:4px}' +
   '#ssh-qb-tg .qb-s img{width:18px;height:18px}#ssh-qb-tg .qb-s i{color:#9a9488;font-style:normal}#ssh-qb-tg .qb-none{color:#9a9488}' +
+  '#quickBuffDialogContent .qb-ic{width:18px;height:18px;vertical-align:middle;margin:0 5px 0 2px;cursor:help}' +
   '.qb-mk{margin-left:6px;font-size:10px;font-weight:bold}.qb-mk.hi{color:#ff5a4d}.qb-mk.lo{color:#4fdc6a}' +
   '#ssh-qb-res{width:560px;max-width:100%;margin:6px auto 0;font:12px Verdana,Arial,sans-serif;color:#ddd;text-align:left}#ssh-qb-res .qb-hd{background:#c9a86a;color:#1a1a1a;font-weight:bold;padding:1px 6px}#ssh-qb-res .qb-rb{background:#1b1b1b;border:1px solid #2c2f2f;border-top:0;padding:8px 10px;line-height:1.5}#ssh-qb-res .qb-rb ul{margin:0;padding-left:18px}#ssh-qb-res .qb-rf{margin-top:8px;text-align:right}#ssh-qb-opt{display:flex;gap:18px;margin:6px auto 0;width:560px;max-width:100%;font:12px Verdana,Arial,sans-serif;color:#ddd}#ssh-qb-opt label{cursor:pointer;display:inline-flex;align-items:center;gap:5px}#ssh-qb-cost{margin:8px auto 0;width:560px;max-width:100%;font:12px Verdana,Arial,sans-serif;color:#ddd;text-align:left}#ssh-qb-cost b{margin:0 3px 0 10px}#ssh-qb-cost .bad{color:#ff5a4d}#ssh-qb-cost .ok{color:#4fdc6a}';
 
@@ -195,6 +196,26 @@ function cost(content, input) {
   const g = have('surgeImg');
   const part = (label, v, h) => '<b>' + label + '</b><span class="' + (h !== null && v * n > h ? 'bad' : v ? 'ok' : '') + '">' + (v * n).toLocaleString() + '</span> / ' + (h === null ? '?' : h.toLocaleString());
   box.innerHTML = 'Cost' + (n > 1 ? ' (' + n + ' targets)' : '') + ':' + part('Energy', c.Energy, e) + part('Surge', c.Surge, g);
+}
+
+// the skills of the list get their picture, and the tooltip of the skill (its description with the values of the level shown in the list)
+function icons(content) {
+  let added = false;
+  content.querySelectorAll('input[name="skills[]"]').forEach((inp) => {
+    const lab = content.querySelector('label[for="' + inp.id + '"]');
+    if (!lab || lab.dataset.qbIc) return;
+    lab.dataset.qbIc = '1';
+    const level = +((lab.textContent.match(/\[(\d+)\]/) || [0, 0])[1]);
+    const name = lab.textContent.replace(/\[\d+\]/g, '').replace(/\s+/g, ' ').trim();
+    const img = document.createElement('img');
+    img.className = 'qb-ic';
+    img.alt = '';
+    img.src = icon(inp.value);
+    lab.prepend(img);
+    tipOn(lab, inp.value, level, name);
+    added = true;
+  });
+  return added;
 }
 
 // a mark on the skills of the list that a target has already
@@ -394,6 +415,7 @@ function tick() {
   cards(content, input);
   cost(content, input);
   options(content);
+  if (icons(content)) fitted = false;
   if (!fitted) { fitted = true; fit(content); setTimeout(() => fit(content), 1200); }
 }
 
