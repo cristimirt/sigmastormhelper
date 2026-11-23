@@ -1,0 +1,353 @@
+# Official Guide area map: wiki comparison log
+
+Generated 2026-11-23 while filling `data/guidemap.json` (the shop and stairway pictures of the guide's area maps) from the community wiki (sigmastorm2.fandom.com). The guide lists 652 areas; the pictures come from the wiki's map of each area, at the coordinates the guide gives for its shops and stairways. Coordinates are (x, y), counted from 0.
+
+## Areas of the guide that are not on the wiki (198)
+
+No page with that name (nor a close one) on the wiki; their shops and stairways keep the generic icons.
+
+- Archive Retrieval (id 754) — guide has 0 shop(s), 3 stairway(s)
+- VR Training Zone (id 802) — guide has 1 shop(s), 2 stairway(s)
+- SF City Arena (id 841) — guide has 3 shop(s), 0 stairway(s)
+- SF Volcanic Arena (id 858) — guide has 1 shop(s), 0 stairway(s)
+- SF Arboreal Arena (id 859) — guide has 1 shop(s), 0 stairway(s)
+- SF Sandstone Arena (id 860) — guide has 1 shop(s), 0 stairway(s)
+- TIU Vanguard (L2 Hub Access) (id 878) — guide has 0 shop(s), 2 stairway(s)
+- Rah Kain (West Branch) (id 915) — guide has 0 shop(s), 1 stairway(s)
+- Rah Kain (Main) (id 916) — guide has 1 shop(s), 3 stairway(s)
+- Rah Kain (Line) (id 917) — guide has 0 shop(s), 1 stairway(s)
+- Rah Kain (Riser) (id 918) — guide has 1 shop(s), 2 stairway(s)
+- Rah Kain (Feed) (id 919) — guide has 1 shop(s), 3 stairway(s)
+- Rah Kain (Pump) (id 920) — guide has 1 shop(s), 3 stairway(s)
+- Rah Kain (Root) (id 922) — guide has 1 shop(s), 4 stairway(s)
+- Rah Kain (Turret) (id 923) — guide has 1 shop(s), 1 stairway(s)
+- Rah Kain (Trunk) (id 924) — guide has 1 shop(s), 2 stairway(s)
+- Rah Kain (Stem) (id 925) — guide has 1 shop(s), 2 stairway(s)
+- Rah Kain (Branch) (id 926) — guide has 1 shop(s), 5 stairway(s)
+- Rah Kain (Cargo Pad) (id 927) — guide has 1 shop(s), 1 stairway(s)
+- Rah Kain (Troop Pad) (id 928) — guide has 1 shop(s), 1 stairway(s)
+- Rah Kain (Stalk) (id 929) — guide has 1 shop(s), 2 stairway(s)
+- Rah Kain (Crest) (id 930) — guide has 1 shop(s), 3 stairway(s)
+- Rah Kain (Dome) (id 931) — guide has 1 shop(s), 3 stairway(s)
+- Rah Kain (Pod) (id 932) — guide has 1 shop(s), 1 stairway(s)
+- Rah Kain (Overflow Access) (id 933) — guide has 0 shop(s), 2 stairway(s)
+- Rah Kain (Overflow) (id 934) — guide has 0 shop(s), 1 stairway(s)
+- Asteroid Theta 7194 (id 935) — guide has 1 shop(s), 1 stairway(s)
+- Asteroid Omicron 9716 (id 936) — guide has 1 shop(s), 1 stairway(s)
+- Rah Kain (Dome Gate) (id 937) — guide has 0 shop(s), 2 stairway(s)
+- Kain Salt Run (Landing) (id 938) — guide has 1 shop(s), 3 stairway(s)
+- Kain Salt Run (Rise) (id 939) — guide has 1 shop(s), 2 stairway(s)
+- Kain Salt Run (Basin) (id 940) — guide has 1 shop(s), 2 stairway(s)
+- Kain Salt Run (Vale) (id 941) — guide has 0 shop(s), 2 stairway(s)
+- Stormpost (Gate) (id 942) — guide has 1 shop(s), 2 stairway(s)
+- Stormpost (Square) (id 943) — guide has 1 shop(s), 7 stairway(s)
+- Stormpost (West) (id 944) — guide has 1 shop(s), 1 stairway(s)
+- Stormpost (East) (id 945) — guide has 1 shop(s), 1 stairway(s)
+- Stormpost (South) (id 946) — guide has 1 shop(s), 1 stairway(s)
+- Stormpost (Tower) (id 947) — guide has 1 shop(s), 3 stairway(s)
+- Stormpost (Passage) (id 948) — guide has 0 shop(s), 2 stairway(s)
+- Kain Salt Run (Caverns) (id 949) — guide has 1 shop(s), 2 stairway(s)
+- Kain Salt Run (Dell) (id 950) — guide has 1 shop(s), 2 stairway(s)
+- Mega Ganth (Leg) (id 951) — guide has 1 shop(s), 3 stairway(s)
+- Mega Ganth (Back) (id 952) — guide has 1 shop(s), 2 stairway(s)
+- Mega Ganth (Tank) (id 953) — guide has 1 shop(s), 2 stairway(s)
+- Mega Ganth (Corridors) (id 954) — guide has 1 shop(s), 5 stairway(s)
+- Mega Ganth (Left Bay) (id 955) — guide has 1 shop(s), 1 stairway(s)
+- Mega Ganth (Right Bay) (id 956) — guide has 1 shop(s), 3 stairway(s)
+- Mega Ganth (Head) (id 957) — guide has 1 shop(s), 3 stairway(s)
+- Mega Ganth (Chamber) (id 958) — guide has 1 shop(s), 1 stairway(s)
+- Kain Salt Run (Plain) (id 959) — guide has 1 shop(s), 2 stairway(s)
+- Stormpost (Maintenance Bay) (id 960) — guide has 0 shop(s), 1 stairway(s)
+- Kain Salt Run (Straight) (id 961) — guide has 1 shop(s), 3 stairway(s)
+- The Circle (Edge) (id 962) — guide has 1 shop(s), 2 stairway(s)
+- The Circle (South Flank) (id 963) — guide has 1 shop(s), 2 stairway(s)
+- The Circle (Field) (id 964) — guide has 1 shop(s), 2 stairway(s)
+- The Circle (Narrows) (id 965) — guide has 1 shop(s), 1 stairway(s)
+- The Circle (Plain) (id 966) — guide has 1 shop(s), 5 stairway(s)
+- The Circle (Accord HQ) (id 967) — guide has 1 shop(s), 2 stairway(s)
+- The Circle (Accord Control) (id 968) — guide has 1 shop(s), 1 stairway(s)
+- The Circle (Frontline) (id 969) — guide has 1 shop(s), 2 stairway(s)
+- The Circle (East Flank) (id 970) — guide has 1 shop(s), 3 stairway(s)
+- The Circle (Bunker) (id 971) — guide has 1 shop(s), 3 stairway(s)
+- The Circle (Warren) (id 972) — guide has 1 shop(s), 6 stairway(s)
+- The Circle (Spawning Pit) (id 973) — guide has 1 shop(s), 1 stairway(s)
+- The Circle (Range) (id 974) — guide has 1 shop(s), 1 stairway(s)
+- The Circle (Air Lock) (id 975) — guide has 1 shop(s), 2 stairway(s)
+- The Circle (Mess) (id 976) — guide has 1 shop(s), 4 stairway(s)
+- The Circle (Plant) (id 977) — guide has 1 shop(s), 1 stairway(s)
+- The Circle (Stores) (id 978) — guide has 1 shop(s), 1 stairway(s)
+- The Circle (Deep Halls) (id 979) — guide has 1 shop(s), 4 stairway(s)
+- The Circle (C and C) (id 980) — guide has 1 shop(s), 3 stairway(s)
+- The Circle (Logistics) (id 981) — guide has 1 shop(s), 1 stairway(s)
+- The Circle (Fighting Pit) (id 982) — guide has 1 shop(s), 1 stairway(s)
+- The Circle (CC Command) (id 983) — guide has 0 shop(s), 1 stairway(s)
+- The Circle (Maze) (id 984) — guide has 1 shop(s), 3 stairway(s)
+- The Circle (Corridor) (id 985) — guide has 1 shop(s), 2 stairway(s)
+- The Circle (Perimeter) (id 986) — guide has 1 shop(s), 4 stairway(s)
+- The Circle (Fortress lvl 1) (id 987) — guide has 1 shop(s), 2 stairway(s)
+- The Circle (Fortress lvl 2) (id 988) — guide has 1 shop(s), 2 stairway(s)
+- The Circle (Fortress lvl 3) (id 989) — guide has 1 shop(s), 2 stairway(s)
+- Maren Ridge (Vale) (id 990) — guide has 1 shop(s), 2 stairway(s)
+- Maren Ridge (Crest) (id 991) — guide has 1 shop(s), 3 stairway(s)
+- Maren Ridge (Slope) (id 992) — guide has 1 shop(s), 2 stairway(s)
+- Maren Ridge (Hills) (id 993) — guide has 1 shop(s), 2 stairway(s)
+- Dahon Plains (Wall) (id 994) — guide has 1 shop(s), 3 stairway(s)
+- Dahon Plains (Dell) (id 995) — guide has 1 shop(s), 2 stairway(s)
+- Cerrath Caves (Passage) (id 996) — guide has 1 shop(s), 2 stairway(s)
+- Cerrath Caves (Cavern) (id 997) — guide has 1 shop(s), 3 stairway(s)
+- Cerrath Caves (Lake) (id 998) — guide has 1 shop(s), 1 stairway(s)
+- Cerrath Caves (Pump Station) (id 999) — guide has 1 shop(s), 2 stairway(s)
+- Cerrath (Upper Halls) (id 1000) — guide has 1 shop(s), 4 stairway(s)
+- Cerrath (Tech Division) (id 1001) — guide has 1 shop(s), 2 stairway(s)
+- Cerrath (Mainframe) (id 1002) — guide has 1 shop(s), 2 stairway(s)
+- Cerrath (Archive) (id 1003) — guide has 1 shop(s), 2 stairway(s)
+- Cerrath  (Data Store) (id 1004) — guide has 1 shop(s), 3 stairway(s)
+- Cerrath (Data Vault) (id 1005) — guide has 1 shop(s), 1 stairway(s)
+- Cerrath Caves (Cave Station) (id 1006) — guide has 0 shop(s), 2 stairway(s)
+- Cerrath (Cerrath Station) (id 1007) — guide has 0 shop(s), 2 stairway(s)
+- The Circle (Muster Point) (id 1008) — guide has 1 shop(s), 3 stairway(s)
+- The Circle (Broken Ground) (id 1009) — guide has 1 shop(s), 2 stairway(s)
+- The Circle (Shallow Vale) (id 1010) — guide has 0 shop(s), 4 stairway(s)
+- The Circle (Terrace) (id 1011) — guide has 1 shop(s), 1 stairway(s)
+- The Circle (Steps) (id 1012) — guide has 1 shop(s), 2 stairway(s)
+- The Circle (Trenches) (id 1013) — guide has 1 shop(s), 2 stairway(s)
+- The Circle (North Flank) (id 1014) — guide has 1 shop(s), 5 stairway(s)
+- The Circle (Bluff) (id 1015) — guide has 1 shop(s), 1 stairway(s)
+- The Circle (Ridge) (id 1016) — guide has 1 shop(s), 1 stairway(s)
+- The Circle (Killing Ground) (id 1017) — guide has 1 shop(s), 2 stairway(s)
+- Tarrolan (Gate) (id 1018) — guide has 1 shop(s), 3 stairway(s)
+- Tarrolan (Downtown) (id 1019) — guide has 1 shop(s), 2 stairway(s)
+- Tarrolan (Works) (id 1020) — guide has 1 shop(s), 3 stairway(s)
+- Tarrolan (Main Street) (id 1021) — guide has 1 shop(s), 2 stairway(s)
+- Tarrolan (Plaza) (id 1022) — guide has 1 shop(s), 7 stairway(s)
+- Tarrolan (West Side) (id 1023) — guide has 1 shop(s), 2 stairway(s)
+- Tarrolan (Heights) (id 1024) — guide has 1 shop(s), 1 stairway(s)
+- Tarrolan (Towers) (id 1025) — guide has 1 shop(s), 1 stairway(s)
+- Tarrolan (Court) (id 1026) — guide has 1 shop(s), 1 stairway(s)
+- Tarrolan (Starport) (id 1027) — guide has 1 shop(s), 3 stairway(s)
+- Tarrolan (Ganth) (id 1028) — guide has 1 shop(s), 3 stairway(s)
+- Tarrolan (Chamber) (id 1029) — guide has 1 shop(s), 1 stairway(s)
+- Tarrolan (Sewers) (id 1030) — guide has 1 shop(s), 3 stairway(s)
+- Rebel Lab (Basement) (id 1031) — guide has 1 shop(s), 2 stairway(s)
+- Rebel Lab (Halls) (id 1032) — guide has 1 shop(s), 6 stairway(s)
+- Rebel Lab (Generator Room) (id 1033) — guide has 1 shop(s), 1 stairway(s)
+- Rebel Lab (Testing Chamber) (id 1034) — guide has 1 shop(s), 1 stairway(s)
+- Rebel Lab (Processing) (id 1035) — guide has 1 shop(s), 1 stairway(s)
+- Rebel Lab (Portal Chamber) (id 1036) — guide has 1 shop(s), 2 stairway(s)
+- Darkscape (Maw) (id 1037) — guide has 1 shop(s), 3 stairway(s)
+- Darkscape (Caverns) (id 1038) — guide has 1 shop(s), 2 stairway(s)
+- Darkscape (Nexus) (id 1039) — guide has 1 shop(s), 2 stairway(s)
+- The Circle (Second Line) (id 1040) — guide has 0 shop(s), 1 stairway(s)
+- Tarrolan (Bunker) (id 1043) — guide has 0 shop(s), 1 stairway(s)
+- Darkscape (Veil) (id 1044) — guide has 1 shop(s), 3 stairway(s)
+- Darkscape (Haze) (id 1045) — guide has 1 shop(s), 2 stairway(s)
+- Darkscape (Channel) (id 1046) — guide has 1 shop(s), 1 stairway(s)
+- Darkscape (Gallery) (id 1047) — guide has 1 shop(s), 2 stairway(s)
+- Darkscape (Creep) (id 1048) — guide has 1 shop(s), 3 stairway(s)
+- Darkscape (Narrows) (id 1049) — guide has 1 shop(s), 2 stairway(s)
+- Darkscape (Tunnels) (id 1050) — guide has 1 shop(s), 5 stairway(s)
+- Darkscape (Halls) (id 1051) — guide has 1 shop(s), 1 stairway(s)
+- Darkscape (Gloom) (id 1052) — guide has 1 shop(s), 1 stairway(s)
+- Darkscape (Threshold) (id 1054) — guide has 1 shop(s), 3 stairway(s)
+- Darkscape (Rift) (id 1055) — guide has 1 shop(s), 4 stairway(s)
+- Darkscape (Niche) (id 1056) — guide has 1 shop(s), 1 stairway(s)
+- Darkscape (Chamber Access) (id 1057) — guide has 0 shop(s), 2 stairway(s)
+- Darkscape (Chamber) (id 1058) — guide has 0 shop(s), 1 stairway(s)
+- Star Chamber (id 1060) — guide has 0 shop(s), 3 stairway(s)
+- Koljin Heights (Ridge) (id 1061) — guide has 0 shop(s), 1 stairway(s)
+- Koljin Heights (Scree) (id 1062) — guide has 1 shop(s), 2 stairway(s)
+- Koljin Heights (Corrie) (id 1063) — guide has 1 shop(s), 3 stairway(s)
+- Golem Crucible (Dome) (id 1064) — guide has 1 shop(s), 2 stairway(s)
+- Golem Crucible (Hall) (id 1065) — guide has 1 shop(s), 3 stairway(s)
+- Golem Crucible (Plaza) (id 1066) — guide has 1 shop(s), 5 stairway(s)
+- Golem Crucible (Maintence) (id 1067) — guide has 1 shop(s), 1 stairway(s)
+- Golem Crucible (Assembly) (id 1068) — guide has 1 shop(s), 1 stairway(s)
+- Golem Crucible (Finalise) (id 1069) — guide has 1 shop(s), 2 stairway(s)
+- Golem Crucible (Testing) (id 1070) — guide has 1 shop(s), 2 stairway(s)
+- Golem Crucible (Portal) (id 1071) — guide has 1 shop(s), 4 stairway(s)
+- Takron Tower (Observation) (id 1072) — guide has 1 shop(s), 3 stairway(s)
+- Takron Tower (Recycle) (id 1073) — guide has 1 shop(s), 2 stairway(s)
+- Takron Tower (Droid Test) (id 1074) — guide has 1 shop(s), 4 stairway(s)
+- Takron Tower (Weapon Test) (id 1075) — guide has 1 shop(s), 1 stairway(s)
+- Takron Tower (Analysis) (id 1076) — guide has 1 shop(s), 3 stairway(s)
+- Takron Tower (Shield Gen) (id 1077) — guide has 1 shop(s), 2 stairway(s)
+- Takron Tower (Stores) (id 1078) — guide has 1 shop(s), 3 stairway(s)
+- Takron Tower (Security) (id 1079) — guide has 1 shop(s), 2 stairway(s)
+- Takron Tower (Reception) (id 1080) — guide has 1 shop(s), 3 stairway(s)
+- Takron Tower (Power Core) (id 1081) — guide has 1 shop(s), 3 stairway(s)
+- Takron Tower (Locker) (id 1082) — guide has 1 shop(s), 1 stairway(s)
+- Golem Crucible (Vault) (id 1084) — guide has 0 shop(s), 1 stairway(s)
+- Golem Crucible (Section) (id 1085) — guide has 0 shop(s), 1 stairway(s)
+- Takron Tower (Map Room) (id 1086) — guide has 0 shop(s), 1 stairway(s)
+- Takron Tower (Map Room Access) (id 1087) — guide has 0 shop(s), 2 stairway(s)
+- Takron Tower (Comms Station) (id 1088) — guide has 0 shop(s), 1 stairway(s)
+- Takron City (Square) (id 1089) — guide has 1 shop(s), 3 stairway(s)
+- Nargith Plain (Hills) (id 1090) — guide has 1 shop(s), 2 stairway(s)
+- Nargith Plain (Slope) (id 1091) — guide has 1 shop(s), 2 stairway(s)
+- Nargith Plain (Vale) (id 1092) — guide has 1 shop(s), 2 stairway(s)
+- Nargith Plain (Straight) (id 1093) — guide has 1 shop(s), 3 stairway(s)
+- Nargith Plain (Field) (id 1094) — guide has 1 shop(s), 2 stairway(s)
+- Nargith Plain (Rise) (id 1095) — guide has 1 shop(s), 2 stairway(s)
+- Nargith Plain (Terrace) (id 1096) — guide has 1 shop(s), 4 stairway(s)
+- Nargith Plain (Citadel) (id 1097) — guide has 1 shop(s), 1 stairway(s)
+- Nargith Plain (Dunes) (id 1098) — guide has 1 shop(s), 2 stairway(s)
+- Nargith Plain (Battleline) (id 1099) — guide has 1 shop(s), 2 stairway(s)
+- Nargith Cave (Maze) (id 1100) — guide has 1 shop(s), 2 stairway(s)
+- Nargith Plain (Pod) (id 1101) — guide has 1 shop(s), 2 stairway(s)
+- Nargith Plain (Mesa) (id 1102) — guide has 1 shop(s), 4 stairway(s)
+- Nargith Plain (Steppe) (id 1103) — guide has 1 shop(s), 1 stairway(s)
+- Nargith Plain (Dell) (id 1104) — guide has 1 shop(s), 2 stairway(s)
+- Nargith Plain (Gulch) (id 1105) — guide has 1 shop(s), 2 stairway(s)
+- Nargith Plain (Waste) (id 1106) — guide has 1 shop(s), 2 stairway(s)
+- Nargith Plain (Flats) (id 1107) — guide has 1 shop(s), 2 stairway(s)
+- Nargith Plain (Burrow) (id 1108) — guide has 1 shop(s), 2 stairway(s)
+- Nargith Plain (Nest) (id 1109) — guide has 1 shop(s), 3 stairway(s)
+- Nargith Plain (Reserve) (id 1110) — guide has 1 shop(s), 1 stairway(s)
+- Chamber of Whispers (id 1111) — guide has 0 shop(s), 2 stairway(s)
+
+## Areas found under a different name (7)
+
+The wiki page is named differently from the guide (a typo, a missing prefix, brackets); the page was used.
+
+- Highridge (Walk) (id 464) → wiki page "Highridge Walk"
+- Highridge (Descent) (id 465) → wiki page "Highridge Descent"
+- Taulin Towers (Cave) (id 493) → wiki page "Taulin Towers Cave"
+- OS 1313 (Enviromental) (id 565) → wiki page "OS 1313 (Environmental)"
+- Obsidian Tower Vault (id 606) → wiki page "Obsidian Tower (Vault)"
+- TIU Spearhead (L2 Main Deflector ) (id 768) → wiki page "TIU Spearhead (L2 Main Deflector)"
+- Spearhead (L1 Trooper Dispatch Access) (id 772) → wiki page "TIU Spearhead (L1 Trooper Dispatch Access)"
+
+## Shops and stairways of the guide with no picture on the wiki map (52)
+
+The wiki's map has only a ground tile at those coordinates (or the coordinates are off); the generic icon is kept.
+
+- System Edge (id 450): stairway at (6,1) has no picture on the wiki map
+- Transfer Pod (id 452): stairway at (11,7) has no picture on the wiki map
+- Phantom Lake (Shore) (id 466): stairway at (15,6) has no picture on the wiki map
+- Taulin Gamma Wastes (Plains) (id 470): shop at (15,11) has no picture on the wiki map
+- Phantom Lake (Inner) (id 482): stairway at (5,1) has no picture on the wiki map
+- Desert Locker (id 489): stairway at (2,3) has no picture on the wiki map
+- Highridge Mines (Dark Excavations) (id 502): shop at (5,19) has no picture on the wiki map
+- Ashstorm Wilds (Oasis) (id 628): stairway at (18,2) has no picture on the wiki map
+- Darkfire (Crawl) (id 667): stairway at (1,2) has no picture on the wiki map
+- Ashstorm CZ (Ground Zero) (id 680): stairway at (7,18) has no picture on the wiki map
+- Ashstorm ToO (North Edge) (id 696): stairway at (15,1) has no picture on the wiki map
+- TIU Spearhead (L1 Interceptor Bay) (id 724): stairway at (12,10) has no picture on the wiki map
+- TIU Spearhead (L1 Droid Assembly) (id 759): stairway at (1,15) has no picture on the wiki map
+- Dahon Plains (Edge) (id 774): shop at (14,14) has no picture on the wiki map
+- Dahon Plains (Vale) (id 776): shop at (4,2) has no picture on the wiki map
+- Dahon Plains (Hills) (id 777): shop at (15,8) has no picture on the wiki map
+- Dahon Plains (Tall Grass) (id 778): shop at (3,5) has no picture on the wiki map
+- Dahon Plains (Grassland) (id 779): shop at (4,9) has no picture on the wiki map
+- Dahon Plains (Highlands) (id 780): shop at (14,10) has no picture on the wiki map
+- Dahon Plains (Dry Basin) (id 781): shop at (2,2) has no picture on the wiki map
+- Taulin Desert (Arid Plain) (id 785): shop at (13,16) has no picture on the wiki map
+- Taulin Desert (Arid Plain) (id 785): stairway at (13,10) has no picture on the wiki map
+- Taulin Desert (Drift) (id 786): shop at (6,4) has no picture on the wiki map
+- Taulin Desert (Salt Flats) (id 787): shop at (4,10) has no picture on the wiki map
+- Taulin Desert (Plateau) (id 788): shop at (14,12) has no picture on the wiki map
+- Taulin Desert (Descent) (id 809): stairway at (6,10) has no picture on the wiki map
+- Taulin Sands (Dustbowl) (id 811): stairway at (9,1) has no picture on the wiki map
+- Taulin Sands (Dustbowl) (id 811): stairway at (6,8) has no picture on the wiki map
+- Phantom Domain (Border) (id 823): stairway at (15,3) has no picture on the wiki map
+- Phantom Domain (Proving Grounds) (id 824): stairway at (7,14) has no picture on the wiki map
+- Phantom Domain (Temple of Steel) (id 826): stairway at (11,16) has no picture on the wiki map
+- TIU Vanguard (L2 Sensor Control) (id 848): shop at (16,2) has no picture on the wiki map
+- TIU Vanguard (L2 Sensor Control) (id 848): stairway at (10,14) has no picture on the wiki map
+- TIU Vanguard (L2 Sensor Control) (id 848): stairway at (1,8) has no picture on the wiki map
+- TIU Vanguard (L2 Sensor Control) (id 848): stairway at (4,7) has no picture on the wiki map
+- TIU Vanguard (L2 Missile Storage) (id 850): stairway at (1,15) has no picture on the wiki map
+- TIU Vanguard (L2 Emitter Rack) (id 851): stairway at (16,14) has no picture on the wiki map
+- TIU Vanguard (L2 Communications Station) (id 856): stairway at (3,2) has no picture on the wiki map
+- Dahon Plains (Sand Sink) (id 861): stairway at (11,1) has no picture on the wiki map
+- Dahon Plains (Ingredior Range) (id 864): stairway at (13,12) has no picture on the wiki map
+- Dahon Plains (Grassy Downs) (id 868): stairway at (12,14) has no picture on the wiki map
+- Dahon Plains (Cerrath Gate) (id 870): stairway at (1,12) has no picture on the wiki map
+- Dahon Plains (Cerrath Gate) (id 870): stairway at (6,13) has no picture on the wiki map
+- Cerrath (Dispatch) (id 879): stairway at (8,1) has no picture on the wiki map
+- Cerrath (Quality Core) (id 882): stairway at (15,8) has no picture on the wiki map
+- Cerrath (Upgrade) (id 883): stairway at (3,18) has no picture on the wiki map
+- Cerrath (Maintenance) (id 887): stairway at (5,12) has no picture on the wiki map
+- Cerrath (Maintenance) (id 887): stairway at (16,17) has no picture on the wiki map
+- Cerrath (Sub Basement) (id 896): stairway at (16,3) has no picture on the wiki map
+- Cerrath Caves (Descent) (id 898): stairway at (2,8) has no picture on the wiki map
+- Cerrath Caves (Maze) (id 901): stairway at (10,1) has no picture on the wiki map
+- Cerrath Caves (Staging Point) (id 906): stairway at (12,6) has no picture on the wiki map
+
+## Things the wiki lists under Stores and Stairs that the guide has nothing for (73)
+
+Nothing in the guide at those coordinates (no shop, stairway, portal or location).
+
+- Taulin Gamma Wastes (Plains) (id 470): wiki lists "[store] Taulin Gamma Supplies" at (6,5), the guide has nothing there
+- Taulin Gamma Wastes (Straights) (id 471): wiki lists "Taulin Gamma Wastes (Plains)" at (17,16), the guide has nothing there
+- Taulin Gamma Wastes (Straights) (id 471): wiki lists "Taulin Gamma Wastes (Vale)" at (1,7), the guide has nothing there
+- Taulin Gamma Wastes (Straights) (id 471): wiki lists "[store] Taulin Straights Mart" at (5,13), the guide has nothing there
+- Taulin Gamma Wastes (Towers) (id 475): wiki lists "Plateau" at (24,3), the guide has nothing there
+- Taulin Gamma Wastes (Towers) (id 475): wiki lists "Resurrection Tower" at (22,12), the guide has nothing there
+- Taulin Gamma Wastes (Towers) (id 475): wiki lists "Taulin Towers Cave" at (24,11), the guide has nothing there
+- Taulin Gamma Wastes (Towers) (id 475): wiki lists "[store] Taulin Towers Bazaar" at (20,3), the guide has nothing there
+- Taulin Gamma Wastes (Sands) (id 477): wiki lists "Highridge Mines (Mouth)" at (15,6), the guide has nothing there
+- Highridge Mines (Mouth) (id 478): wiki lists "Highridge Mines (Halls)" at (23,2), the guide has nothing there
+- Highridge Mines (Mouth) (id 478): wiki lists "Highridge Mines (Chasm)" at (23,22), the guide has nothing there
+- Highridge Mines (Mouth) (id 478): wiki lists "Highridge Mines (Maze)" at (1,22), the guide has nothing there
+- Phantom Lake (Inner) (id 482): wiki lists "[store] Phantom Inner Stock Room" at (7,7), the guide has nothing there
+- Taulin Gamma Wastes (Nest) (id 483): wiki lists "Hot Zone" at (7,2), the guide has nothing there
+- Taulin Gamma Wastes (Nest) (id 483): wiki lists "[store] Taulin Nest Mart" at (2,9), the guide has nothing there
+- Highridge Mines (Rock Layer) (id 496): wiki lists "Highridge Mines (Broken Sediment)" at (8,32), the guide has nothing there
+- Highridge Mines (Rock Layer) (id 496): wiki lists "[store] Rock Layer Goods" at (2,29), the guide has nothing there
+- Highridge Mines (Volcanic Deposits) (id 499): wiki lists "Deep Level" at (3,23), the guide has nothing there
+- Highridge Mines (Volcanic Deposits) (id 499): wiki lists "Sprawl" at (9,23), the guide has nothing there
+- Highridge Mines (Volcanic Deposits) (id 499): wiki lists "Dark Excavations" at (15,23), the guide has nothing there
+- Highridge Mines (Volcanic Deposits) (id 499): wiki lists "Unstable Layer" at (21,23), the guide has nothing there
+- Highridge Mines (Sprawl) (id 501): wiki lists "Highridge Mines (Volcanic Deposits)" at (9,1), the guide has nothing there
+- Highridge Mines (Dark Excavations) (id 502): wiki lists "[store] Excavations Emporium" at (9,12), the guide has nothing there
+- Highridge Mines (Unstable Layer) (id 503): wiki lists "Dark Excavations" at (22,13), the guide has nothing there
+- Highridge Mines (Unstable Layer) (id 503): wiki lists "Mountain Path" at (23,3), the guide has nothing there
+- Highridge Crag (Deserted Camp) (id 507): wiki lists "Highridge Crag (Bluff)" at (38,5), the guide has nothing there
+- Highridge Crag (Deserted Camp) (id 507): wiki lists "[store] Mountain Camp Supplies" at (23,11), the guide has nothing there
+- Raga Domain (Lonely  Road) (id 538): wiki lists "Raga Hills (Edge)" at (20,6), the guide has nothing there
+- Raga Hills (Secret Way) (id 545): wiki lists "Scrap Yard (Gate)" at (28,3), the guide has nothing there
+- Raga Hills (Secret Way) (id 545): wiki lists "[store] Raga Way Stash" at (21,2), the guide has nothing there
+- SureTec (Bot Lab) (id 553): wiki lists "SureTec Holdings" at (25,9), the guide has nothing there
+- OS 1313 (Enviromental) (id 565): wiki lists "Fighter Bay" at (16,10), the guide has nothing there
+- OS 1313 (Enviromental) (id 565): wiki lists "Research Module" at (12,15), the guide has nothing there
+- OS 1313 (Enviromental) (id 565): wiki lists "Power Core" at (2,14), the guide has nothing there
+- OS 1313 (Bio Lab) (id 566): wiki lists "Environmental" at (6,20), the guide has nothing there
+- Mount Nuwa (Ascent) (id 575): wiki lists "Desolation of Nuwa (Base)" at (7,21), the guide has nothing there
+- Mount Nuwa (Top) (id 577): wiki lists "Mount Nuwa (Ascent)" at (9,22), the guide has nothing there
+- Mount Nuwa (Top) (id 577): wiki lists "[store] Nuwa Top Stockist" at (21,21), the guide has nothing there
+- Plain of the Void (id 584): wiki lists "Ruined Transfer Point" at (38,35), the guide has nothing there
+- Plain of the Void (id 584): wiki lists "Snabith Clan Lands (Edge)" at (34,38), the guide has nothing there
+- Plain of the Void (id 584): wiki lists "Desolation of Nuwa" at (27,38), the guide has nothing there
+- Plain of the Void (id 584): wiki lists "Veron Wastes" at (29,35), the guide has nothing there
+- Plain of the Void (id 584): wiki lists "[store] Void Plain Mart" at (36,36), the guide has nothing there
+- Ways of the Void (id 585): wiki lists "Snabith Clan Lands (Prowl)" at (35,33), the guide has nothing there
+- Snabith Clan Lands (Edge) (id 586): wiki lists "Veron Wastes" at (14,15), the guide has nothing there
+- Ullgath Caves (Grotto) (id 646): wiki lists "Ullgath Caves" at (13,8), the guide has nothing there
+- Netherdeep (Crooked Corridors) (id 658): wiki lists "Black Fissures" at (13,22), the guide has nothing there
+- Netherdeep (Crooked Corridors) (id 658): wiki lists "[portal] Netherdeep Portal" at (21,7), the guide has nothing there
+- Sanctuary of Ages (Colonnade) (id 673): wiki lists "[store] Sanctuary Colonnade Fair" at (11,2), the guide has nothing there
+- Ashstorm CZ (Hunting Grounds) (id 683): wiki lists "East Flank" at (14,15), the guide has nothing there
+- Ashstorm CZ (Hunting Grounds) (id 683): wiki lists "[store] Ashstorm Hunting Supplies" at (2,13), the guide has nothing there
+- Ashstorm CZ (Trenches) (id 684): wiki lists "[store] Ashstorm Trenches Locker" at (2,13), the guide has nothing there
+- Ashstorm ToO (Supply Line) (id 706): wiki lists "Sanctuary of Ages Inner Halls" at (16,14), the guide has nothing there
+- Sanctuary of Ages (Hidden Avenue) (id 707): wiki lists "Southern Chambers" at (12,22), the guide has nothing there
+- Sanctuary of Ages (Chapter House) (id 713): wiki lists "Narthex" at (2,17), the guide has nothing there
+- TIU Spearhead (L1 Interceptor Bay) (id 724): wiki lists "Asteroid Kappa 3617" at (13,3), the guide has nothing there
+- TIU Spearhead (L3 Service Ring) (id 734): wiki lists "L3 Service Ring Access" at (5,2), the guide has nothing there
+- TIU Spearhead (L4 Service Ring) (id 737): wiki lists "L4 Service Ring Access" at (2,1), the guide has nothing there
+- TIU Spearhead (L4 Missile Rack) (id 764): wiki lists "Spearhead Missile Portal" at (2,7), the guide has nothing there
+- TIU Spearhead (L2  Probe Launcher) (id 767): wiki lists "L2 Sensor Command" at (1,13), the guide has nothing there
+- Dahon Plains (Edge) (id 774): wiki lists "Dahon Plains (Low Lands)" at (16,11), the guide has nothing there
+- Taulin Desert (Drift) (id 786): wiki lists "Arid Plain" at (16,15), the guide has nothing there
+- Taulin Desert (Salt Flats) (id 787): wiki lists "Drift" at (17,10), the guide has nothing there
+- Taulin Desert (Rad Hills) (id 793): wiki lists "Knoll" at (6,17), the guide has nothing there
+- Taulin Desert (Descent) (id 809): wiki lists "Wilds" at (22,8), the guide has nothing there
+- TIU Vanguard (L1 Transit) (id 844): wiki lists "TIU Vanguard (L1 Cargo)" at (15,1), the guide has nothing there
+- TIU Vanguard (L1 Transit) (id 844): wiki lists "TIU Vanguard" at (16,1), the guide has nothing there
+- TIU Vanguard (L2 Sensor Control) (id 848): wiki lists "L2 Communications Station" at (4,2), the guide has nothing there
+- TIU Vanguard (L2 Communications Station) (id 856): wiki lists "Vanguard SC Setup" at (16,2), the guide has nothing there
+- TIU Vanguard (L2 Communications Station) (id 856): wiki lists "L2 Sensor Control" at (1,8), the guide has nothing there
+- TIU Vanguard (L2 Communications Station) (id 856): wiki lists "L1 Engine Room" at (4,7), the guide has nothing there
+- Rah Kain (Funnel) (id 912): wiki lists "Kain Funnel Centre" at (2,21), the guide has nothing there
+- Rah Kain (Funnel) (id 912): wiki lists "Rah Kain (Junction)" at (14,22), the guide has nothing there

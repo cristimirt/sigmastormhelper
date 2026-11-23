@@ -44,7 +44,7 @@ The helper only changes how pages look and how they are used in your own browser
 - **Buff timers run down by the second** (Data Sheet and Active Buffs under the world map), and a removed buff takes its timer with it.
 - **Active skills can be taken off by clicking their picture** (Active Buffs under the world map, the buffs on the Data Sheet): the game's own question, then the same background request as the Skills box on the right, so the page is not left (on the Data Sheet it used to end on the home page without taking the skill off).
 - **Faction Chat** page in the Modern layout (the steel container with a "Faction Chat" header, one row per message).
-- **Official Guide area map**: shops and stairways show their picture (from the wiki; so far two areas) and a stairway links to the area it leads to; the tooltip of a tile appears at once.
+- **Official Guide area map**: shops and stairways show their picture (from the wiki, for all the areas that have a wiki page; the rest is logged in `docs/guide-map-log.md`) and a stairway links to the area it leads to; the tooltip of a tile appears at once.
 - **Official Guide**: a Wiki button on the page of an item and of an area.
 - **Official Guide area map**: the tiles come from the CDN, locations show their own picture and link to their page, shops and stairways get an icon.
 - **Official Guide** loads only its content (not the whole page) when you use its links, lists and searches; Back and Forward work.
