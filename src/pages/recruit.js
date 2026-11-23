@@ -1,5 +1,5 @@
 import { mel } from '../layout/dom.js';
-import { tableToDivs } from '../layout/tablediv.js';
+import { steelFromTable } from '../layout/steel.js';
 
 // The Faction Recruitment page (cmd=guild&subcmd=recruit) for the Modern layout: a copy of the game's table made of divs (layout/tablediv.js).
 // The game's table stays in the page, hidden in the Modern layout, so the Original layout is untouched. The forms are copies that work like the
@@ -21,9 +21,9 @@ export function initRecruit() {
   st.textContent = CSS;
   document.head.append(st);
   table.setAttribute('data-ssh-rc', '1');
-  const root = mel('div');
+  const root = steelFromTable(table);
   root.id = 'ssh-rc';
-  const grid = tableToDivs(table);
+  const grid = root.grid;
   // the list of requests: the game gives the Action column 20%, which is less than the two buttons need, so the table grew wider than the page;
   // here that column is as wide as its buttons and the other two share what is left
   const list = grid.querySelector('form[id^="faction-acceptjoin-"]');
@@ -31,6 +31,5 @@ export function initRecruit() {
   const og = lg && lg.parentElement.closest('.tg'); // the table around it (600 wide): its first column takes what the others leave, so nothing is wider than the page
   if (og) og.style.gridTemplateColumns = 'minmax(0,1fr) auto auto';
   if (lg) lg.style.gridTemplateColumns = 'minmax(min-content,1fr) minmax(min-content,3fr) max-content';
-  root.append(grid);
   table.after(root);
 }

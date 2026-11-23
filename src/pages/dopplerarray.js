@@ -3,6 +3,7 @@ import { withToken } from '../core/net.js';
 import { cssUrl, fmt, https } from '../core/util.js';
 import { S } from '../core/state.js';
 import { mel } from '../layout/dom.js';
+import { steelContainer } from '../layout/steel.js';
 import { BM_CSS, behMenu } from './behmenu.js';
 
 // The Doppler Array page (cmd=guild&subcmd=dopplerarray) for the Modern layout: a list of divs made from the game's table (the game's own table
@@ -12,9 +13,7 @@ import { BM_CSS, behMenu } from './behmenu.js';
 // of the behemoth's whole health, and whether the drop is secured (half of the health or more) or cannot be any more.
 
 const CSS = BM_CSS + 'html.ssh-modern [data-ssh-da]{display:none!important}#ssh-da{display:none}html.ssh-modern #ssh-da{display:block}' +
-  '#ssh-da{padding:14px 20px 20px;box-sizing:border-box;width:640px;margin:0 auto;text-align:left;color:#fff}' +
-  '#ssh-da .da-hd{height:54px;margin:-14px -20px 12px;background:center top no-repeat}' +
-  '#ssh-da .da-ft{height:54px;margin:14px -20px -20px;background:center top no-repeat}' +
+  '#ssh-da .ssh-content-body{padding-top:12px;padding-bottom:20px;box-sizing:border-box;text-align:left;color:#fff}' +
   '#ssh-da a{color:#a7ffff;text-decoration:none}#ssh-da a:hover{color:#fff}' +
   '#ssh-da .da-txt{margin:0 0 12px}' +
   '#ssh-da .da-t{display:grid;grid-template-columns:minmax(130px,1.2fr) minmax(0,1.2fr) minmax(0,.8fr) minmax(150px,1.3fr);width:540px;max-width:100%;margin:0 auto}' +
@@ -62,13 +61,9 @@ export function initDoppler() {
   st.textContent = CSS;
   document.head.append(st);
   table.setAttribute('data-ssh-da', '1');
-  const root = mel('div');
-  root.id = 'ssh-da';
-  const bg = table.getAttribute('background'); // the content picture of the game's table (the same as on the other pages)
-  if (bg) root.style.backgroundImage = cssUrl(bg);
-  const hd = mel('div', 'da-hd'); // the title bar picture
-  hd.style.backgroundImage = 'url("' + https(head.getAttribute('background')) + '")';
-  root.append(hd);
+  const page = steelContainer({ header: head.getAttribute('background') }); // the steel container (layout/steel.js)
+  page.id = 'ssh-da';
+  const root = page.body;
   root.append(behMenu('doppler'));
   const intro = [...table.querySelectorAll('td')].find((td) => !td.querySelector('td') && /^The Doppler Array/.test(td.textContent.trim()));
   if (intro) root.append(mel('div', 'da-txt', '')), (root.lastChild.textContent = intro.textContent.trim());
@@ -102,9 +97,5 @@ export function initDoppler() {
     grid.append(first, rc, hpc, kc);
   });
   root.append(grid);
-  const ft = mel('div', 'da-ft'); // the footer picture (the helper's own HD one)
-  const fd = table.querySelector('td[background*="large_content_footer"]');
-  ft.style.backgroundImage = S.base ? cssUrl(S.base + 'media/large_content_footer.png') : cssUrl(fd ? fd.getAttribute('background') : '');
-  root.append(ft);
-  table.after(root);
+  table.after(page);
 }

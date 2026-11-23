@@ -2,6 +2,7 @@ import { fetchText } from '../core/net.js';
 import { S } from '../core/state.js';
 import { cssUrl, https, parseHtml } from '../core/util.js';
 import { mel } from '../layout/dom.js';
+import { steelContainer } from '../layout/steel.js';
 
 // The Item Augmentation page (cmd=crafting) for the Modern layout, made of divs: .au-head (picture), .au-intro, .au-items (the items that can be
 // augmented), .au-slot (the slot for the chosen item) and .au-tiers (the augmenters and their prices). The game's table stays in the page, hidden
@@ -10,10 +11,9 @@ import { mel } from '../layout/dom.js';
 // in the background and its table takes the place of the hidden one. Clicking the item in the slot puts it back. An augmenter button clicks the
 // button of the game's own form.
 
-const CSS = '#ssh-au{display:none;width:640px;margin:0 auto;background-position:0 0;color:#d8cfbf;font:11px tahoma,sans-serif;transition:opacity .15s}' +
+const CSS = '#ssh-au{display:none;color:#d8cfbf;font:11px tahoma,sans-serif;transition:opacity .15s}' +
   'html.ssh-modern #ssh-au{display:block}html.ssh-modern [data-ssh-au]{display:none!important}' +
   '#ssh-au.busy{opacity:.55;pointer-events:none}' +
-  '#ssh-au .au-head,#ssh-au .au-foot{height:54px;background-repeat:no-repeat;background-position:center top}' +
   '#ssh-au .au-intro{width:570px;margin:0 auto;padding:12px 0 6px;line-height:1.45;text-align:left}' +
   '#ssh-au .au-label{width:570px;margin:14px auto 0;padding:3px 0;background:#212323;text-align:center;font-weight:bold}' +
   '#ssh-au .au-items{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;min-height:66px;padding:14px 20px 6px}' +
@@ -78,12 +78,9 @@ function read(t) {
 
 function build(t) {
   const d = read(t);
-  const root = mel('div');
-  root.id = 'ssh-au';
-  root.style.backgroundImage = cssUrl(d.bg);
-  const hd = mel('div', 'au-head');
-  hd.style.backgroundImage = cssUrl(d.head);
-  root.append(hd);
+  const box = steelContainer({ header: d.head }); // the steel container (layout/steel.js): the game's title bar, the page, the footer
+  box.id = 'ssh-au';
+  const root = box.body;
   if (d.intro) {
     const b = mel('div', 'au-intro');
     b.append(...[...d.intro.childNodes].map((n) => copyOf(n)));
@@ -150,10 +147,7 @@ function build(t) {
     tiers.append(row);
   });
   root.append(tiers);
-  const ft = mel('div', 'au-foot');
-  ft.style.backgroundImage = cssUrl(S.base ? S.base + 'media/large_content_footer.png' : d.foot);
-  root.append(ft);
-  return root;
+  return box;
 }
 
 const tableOf = (doc) => {

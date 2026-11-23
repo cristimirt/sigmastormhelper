@@ -3,10 +3,11 @@
 // kept in localStorage, so a data fix reaches the players without a new build of the script.
 import { PREFIX } from './constants.js';
 
-export const DATA = { tiles: {}, skills: {}, extra: {}, realms: {} };
+export const DATA = { tiles: {}, skills: {}, extra: {}, realms: {}, guidemap: {} };
 
+// guidemap: the pictures of the shops (s) and of the stairways (a) on the maps of the guide, by area number and by "x,y" (from the wiki)
 // key in DATA -> file name in data/
-const FILES = { tiles: 'tiles', skills: 'skills', extra: 'buffs-extra', realms: 'realms' };
+const FILES = { tiles: 'tiles', skills: 'skills', extra: 'buffs-extra', realms: 'realms', guidemap: 'guidemap' };
 
 export async function loadData(ctx) {
   const manifest = (ctx && ctx.manifest) || {};

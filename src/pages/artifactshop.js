@@ -2,7 +2,7 @@ import { fetchText, navigate } from '../core/net.js';
 import { alertBad, parseHtml } from '../core/util.js';
 import { mel } from '../layout/dom.js';
 import { gAlerts, mModal, richHtml } from '../layout/modal.js';
-import { tableToDivs } from '../layout/tablediv.js';
+import { steelFromTable } from '../layout/steel.js';
 
 // The faction's Artifact Shop: every item has its own small POST form with a Buy button, one purchase per click. A number box next to each
 // Buy button says how many to buy: the form is sent that many times, one after the other. Every answer carries the form again with a
@@ -106,9 +106,8 @@ export function initArtifactShop() {
     const st = mel('style');
     st.textContent = 'html.ssh-modern [data-ssh-as]{display:none!important}#ssh-as{display:none}html.ssh-modern #ssh-as{display:block}';
     document.head.append(st);
-    const root = mel('div');
+    const root = steelFromTable(table);
     root.id = 'ssh-as';
-    root.append(tableToDivs(table));
     table.setAttribute('data-ssh-as', '1');
     table.after(root);
     qtyBoxes(root);

@@ -3,6 +3,7 @@ import { fetchText, navigate } from '../core/net.js';
 import { S } from '../core/state.js';
 import { alertBad, cssUrl, fmt, https, parseHtml } from '../core/util.js';
 import { mel } from '../layout/dom.js';
+import { steelContainer } from '../layout/steel.js';
 import { gAlerts, mModal } from '../layout/modal.js';
 import { updateSidebars } from '../layout/sidebars.js';
 
@@ -16,9 +17,8 @@ import { updateSidebars } from '../layout/sidebars.js';
 // and the header (credits) and the side panels are updated. The game's own message (its alert box above the text) is in the answer and is the
 // only one shown (a note of the helper's own is only for a failed request). The open tab stays open.
 
-const CSS = '#ssh-sh{display:none;width:640px;margin:0 auto;background-position:0 0;color:#d8cfbf;font:11px tahoma,sans-serif}' +
+const CSS = '#ssh-sh{display:none;color:#d8cfbf;font:11px tahoma,sans-serif}' +
   'html.ssh-modern #ssh-sh{display:block}html.ssh-modern [data-ssh-sh]{display:none!important}' +
-  '#ssh-sh .sh-head,#ssh-sh .sh-foot{height:54px;background-repeat:no-repeat;background-position:center top}' +
   '#ssh-sh .sh-banner{padding-top:12px;text-align:center;line-height:0}#ssh-sh .sh-banner img{max-width:600px}' +
   '#ssh-sh .sh-back{padding:12px 0 0;text-align:center}' +
   '#ssh-sh .sh-intro{width:600px;margin:0 auto;padding:12px 0 6px;line-height:1.45}' +
@@ -86,14 +86,9 @@ function read(t) {
 
 function build(t) {
   const d = read(t);
-  const root = mel('div');
-  root.id = 'ssh-sh';
-  root.style.backgroundImage = cssUrl(d.bg);
-  if (!inPopup) {
-    const hd = mel('div', 'sh-head');
-    hd.style.backgroundImage = cssUrl(d.head);
-    root.append(hd);
-  }
+  const page = steelContainer({ header: d.head, bare: inPopup }); // the steel container (layout/steel.js); in the pop-up there is no title bar and footer
+  page.id = 'ssh-sh';
+  const root = page.body;
   if (d.banner) {
     const b = mel('div', 'sh-banner');
     const i = d.banner.cloneNode(false);
@@ -167,13 +162,7 @@ function build(t) {
     root.append(bar, ...grids);
     open(cur);
   }
-  if (!inPopup) {
-    const ft = mel('div', 'sh-foot');
-    ft.style.backgroundImage = cssUrl(S.base ? S.base + 'media/large_content_footer.png' : d.foot);
-    ft.style.marginTop = '14px';
-    root.append(ft);
-  }
-  return root;
+  return page;
 }
 
 // The fields of a game form that are sent (the token and the one-time value are not: fetch adds fresh ones).

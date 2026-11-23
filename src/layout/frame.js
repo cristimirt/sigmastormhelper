@@ -41,6 +41,18 @@ function frameContent(center) {
   return { table, cf, cell: r1.cells[1], body };
 }
 
+// The classes that tell which page it is, from the address: cmd=questbook -> page-questbook, subcmd=viewquest -> subpage-viewquest,
+// subcmd2=report -> subpage2-report, and so on. The styles of a page start with them (#ssh-page.page-questbook ...).
+function pageClasses() {
+  const q = new URLSearchParams(location.search);
+  const out = [];
+  ['cmd', 'subcmd', 'subcmd2', 'subcmd3', 'subcmd4'].forEach((k, i) => {
+    const v = (q.get(k) || '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    if (v) out.push((i === 0 ? 'page' : i === 1 ? 'subpage' : 'subpage' + i) + '-' + v);
+  });
+  return out;
+}
+
 export function buildFrame() {
   const m = document.getElementById('mainContentDiv');
   // the game's page table has four rows (header, columns, bottom caps, banner); a page like "this mission has not been started" has three
@@ -52,6 +64,7 @@ export function buildFrame() {
   const r3 = m.rows[m.rows.length - 1];
   const page = mel('div');
   page.id = 'ssh-page';
+  page.classList.add(...pageClasses());
   const part = (cls) => { const d = mel('div', cls); page.append(d); return d; };
   const hd = part('ssh-hd');
   const left = part('ssh-left');
@@ -112,10 +125,11 @@ export function frameCss(contentBg) {
     P + ' .cf-mid{display:grid;grid-template-columns:27px 669px 27px;flex:1}' +
     P + ' .cf-l{background-repeat:no-repeat,repeat-y;background-position:right top,0 0}' +
     P + ' .cf-r{background-repeat:no-repeat,repeat-y;background-position:left top,0 0}' +
-    P + ' .cf-body{min-width:0;background-repeat:repeat}' +
+    P + ' .cf-body{min-width:0;background-repeat:repeat;padding-top:20px}' +
     // the world page fills it: its lower panels grow and its footer picture sits at the bottom
     P + ' .cf-body:has(>#ssh-wp){display:flex;flex-direction:column}' +
     P + ' .cf-body>#ssh-wp~br{display:none}' + // the game's line break under its content
+    P + ' .cf-body>br:first-child{display:none}' + // the game's line break above the page gave the space that the padding of .cf-body gives now
     P + ' .cf-bot{height:5px;background-repeat:no-repeat;background-position:0 0}' +
     P + ' .ssh-lb,' + P + ' .ssh-rb{flex:none;order:2;height:42px;background-repeat:no-repeat}' +
     P + ' .ssh-banner{grid-column:1/-1;height:85px;background-repeat:no-repeat}' +

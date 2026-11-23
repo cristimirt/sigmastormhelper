@@ -3,6 +3,7 @@ import { fetchText } from '../core/net.js';
 import { S } from '../core/state.js';
 import { alertBad, alertText, cssUrl, digits, https, parseHtml, sleep } from '../core/util.js';
 import { mel } from '../layout/dom.js';
+import { steelContainer } from '../layout/steel.js';
 import { gAlerts } from '../layout/modal.js';
 import { updateSidebars } from '../layout/sidebars.js';
 
@@ -13,9 +14,8 @@ import { updateSidebars } from '../layout/sidebars.js';
 // (the token and the one-time value are added by the fetch the helper wraps, see core/net.js), and shows how many are done. It stops at the first
 // answer that is a message of the game that is an error or a warning, or where the points did not go down.
 
-const CSS = '#ssh-ev{display:none;width:640px;margin:0 auto;background-position:0 0;color:#d8cfbf;font:13px tahoma,sans-serif}' +
+const CSS = '#ssh-ev{display:none;color:#d8cfbf;font:13px tahoma,sans-serif}' +
   'html.ssh-modern #ssh-ev{display:block}html.ssh-modern [data-ssh-ev]{display:none!important}' +
-  '#ssh-ev .ev-head,#ssh-ev .ev-foot{height:54px;background-repeat:no-repeat;background-position:center top}' +
   '#ssh-ev .ev-img{text-align:center;padding-top:10px;line-height:0}' +
   '#ssh-ev .ev-intro{width:570px;margin:0 auto;padding:12px 0 8px;font-size:11px;line-height:1.4}' +
   '#ssh-ev .ev-pts{width:30%;min-width:200px;margin:4px auto 0;padding:5px;box-sizing:border-box;border:1px solid #000;text-align:center}' +
@@ -71,12 +71,9 @@ function fieldsOf(form) {
 
 function build(t) {
   const d = read(t);
-  const root = mel('div');
-  root.id = 'ssh-ev';
-  root.style.backgroundImage = cssUrl(d.bg);
-  const hd = mel('div', 'ev-head');
-  hd.style.backgroundImage = cssUrl(d.head);
-  root.append(hd);
+  const box = steelContainer({ header: d.head }); // the steel container (layout/steel.js): the game's title bar, the page, the footer
+  box.id = 'ssh-ev';
+  const root = box.body;
   if (d.img) {
     const im = mel('div', 'ev-img');
     const i = d.img.cloneNode(false);
@@ -133,10 +130,7 @@ function build(t) {
   inp.addEventListener('change', () => { inp.value = String(n()); label(); });
   use.hidden = d.points < 1;
   root.append(stats, msg);
-  const ft = mel('div', 'ev-foot');
-  ft.style.backgroundImage = cssUrl(S.base ? S.base + 'media/large_content_footer.png' : d.foot);
-  root.append(ft);
-  return root;
+  return box;
 }
 
 const say = (root, html, kind, spin) => {

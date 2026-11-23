@@ -1,13 +1,11 @@
-import { S } from '../core/state.js';
-import { cssUrl, https } from '../core/util.js';
+import { https } from '../core/util.js';
 import { mel } from '../layout/dom.js';
+import { steelContainer } from '../layout/steel.js';
 
 // A quest in the Mission Book: the game draws it with tables inside tables (a header picture, the "Back to Mission Book" link, the
-// title, the steps with a thin line between them, a footer picture). Here it is the same page made of divs: .ssh-q > .q-head, .q-back,
-// .q-title, .q-steps (.q-step and .q-sep) and .q-foot. The texts keep their own markup (colours, bold, line breaks).
-const CSS = '.ssh-q{width:640px;margin:0 auto;background-position:0 0}' +
-  '.ssh-q .q-head,.ssh-q .q-foot{height:54px;background-repeat:no-repeat;background-position:center top}' +
-  '.ssh-q .q-back{text-align:center;padding:20px 20px 0}' +
+// title, the steps with a thin line between them, a footer picture). Here it is the same page in the steel container (layout/steel.js, with the
+// game's glass header): .q-back, .q-title and .q-steps (.q-step and .q-sep) in the body. The texts keep their own markup (colours, bold, line breaks).
+const CSS = '.ssh-q .q-back{text-align:center;padding:20px 20px 0}' +
   '.ssh-q .q-title{text-align:center;padding:20px}' +
   '.ssh-q .q-steps{width:500px;margin:0 auto;padding:0 20px 20px;box-sizing:content-box}' +
   '.ssh-q .q-step{padding:2px}' +
@@ -30,11 +28,9 @@ export function initQuest() {
   const st = mel('style');
   st.textContent = CSS;
   document.head.append(st);
-  const q = mel('div', 'ssh-q');
-  q.style.backgroundImage = cssUrl(src(table));
-  const hd = mel('div', 'q-head');
-  hd.style.backgroundImage = cssUrl(src(head));
-  q.append(hd);
+  const box = steelContainer({ header: src(head), glass: true });
+  box.classList.add('ssh-q');
+  const q = box.body;
   if (back) {
     const b = mel('div', 'q-back');
     b.append(back);
@@ -60,8 +56,5 @@ export function initQuest() {
     list.append(d);
   });
   q.append(list);
-  const ft = mel('div', 'q-foot');
-  ft.style.backgroundImage = cssUrl(S.base ? S.base + 'media/large_content_footer.png' : src(foot));
-  q.append(ft);
-  table.replaceWith(q);
+  table.replaceWith(box);
 }

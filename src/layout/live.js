@@ -4,6 +4,8 @@
 // The faction chat form is sent in the background (no page reload) and the chat is read again right after.
 import { refreshDur, updateHeader } from '../banner.js';
 import { fetchText } from '../core/net.js';
+import { bindBuffs } from '../game/buffs.js';
+import { bindQuickBuff } from '../game/quickbuff.js';
 import { pageParts } from '../core/page.js';
 import { S } from '../core/state.js';
 import { parseHtml } from '../core/util.js';
@@ -143,6 +145,8 @@ function bindSkills() {
 
 export function initLive() {
   bindSkills();
+  bindBuffs();
+  bindQuickBuff();
   if (!S.cfg.live || timer || !pageParts()) return;
   timer = setInterval(tick, EVERY);
   document.addEventListener('visibilitychange', () => {
