@@ -2,6 +2,7 @@ import { refreshLive } from '../layout/live.js';
 import { refreshDur } from '../banner.js';
 import { fetchDoc } from '../core/net.js';
 import { store } from '../core/storage.js';
+import { harvest, idFor } from '../core/players.js';
 import { esc } from '../core/util.js';
 import { mModal } from '../layout/modal.js';
 import { skillInfo } from '../tooltips/skills.js';
@@ -46,49 +47,8 @@ function since(text) {
   return parts.length ? parts.slice(0, 2).map((p) => p[1] + p[0]).join(' ') : 'now';
 }
 
-// ----- who is who: a name -> the number of the player's page -----
-let ids = null;
-let idsAt = 0;
-const miss = new Map(); // a name that was not found: not asked again for a minute
-function known() {
-  if (!ids) ids = new Map(Object.entries(store.get('qbIds', {})));
-  document.querySelectorAll('a[href*="player_id="]').forEach((a) => {
-    const m = (a.getAttribute('href') || '').match(/player_id=(\d+)/);
-    const n = a.textContent.trim();
-    if (m && n && !/\s/.test(n)) ids.set(n.toLowerCase(), m[1]);
-  });
-  return ids;
-}
-async function idOf(name) {
-  const k = name.toLowerCase();
-  if (known().has(k)) return known().get(k);
-  if (Date.now() - idsAt > 300000) { // the faction's member list: every member with a link to the page
-    idsAt = Date.now();
-    try {
-      const doc = await fetchDoc('index.php?cmd=guild&subcmd=manage');
-      doc.querySelectorAll('a[href*="player_id="]').forEach((a) => {
-        const m = (a.getAttribute('href') || '').match(/player_id=(\d+)/);
-        const n = a.textContent.trim();
-        if (m && n && !/\s/.test(n)) ids.set(n.toLowerCase(), m[1]);
-      });
-      store.set('qbIds', Object.fromEntries(ids));
-    } catch (e) { /* the next look tries again */ }
-  }
-  if (known().has(k)) return known().get(k);
-  if (miss.has(k) && Date.now() - miss.get(k) < 60000) return null;
-  // anyone else: Locate Player (a POST that the game answers with a redirect to the player's page; the address has the number)
-  try {
-    const res = await fetch('index.php', { method: 'POST', credentials: 'same-origin', body: new URLSearchParams({ cmd: 'findplayer', subcmd: 'dofindplayer', target_username: name }) });
-    const m = res.url.match(/[?&]player_id=(\d+)/);
-    if (m) {
-      known().set(k, m[1]);
-      store.set('qbIds', Object.fromEntries(ids));
-      return m[1];
-    }
-  } catch (e) { /* no answer */ }
-  miss.set(k, Date.now());
-  return null;
-}
+// ----- who is who: a name -> the number of the player's page (core/players.js remembers them) -----
+const idOf = (name) => { harvest(); return idFor(name); }; // the links on the page give the numbers too
 
 // ----- a player: last activity and the skills on now -----
 const cache = new Map(); // number -> { at, data }

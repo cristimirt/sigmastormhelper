@@ -1,6 +1,6 @@
 {
   "name": "sigmastormhelper",
-  "version": "1.55.1",
+  "version": "1.58.1",
   "private": true,
   "description": "Quality-of-life userscript for sigmastorm.com",
   "type": "module",

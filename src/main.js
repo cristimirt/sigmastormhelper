@@ -29,6 +29,7 @@ import { initGuide, isGuide } from './pages/guide.js';
 import { initInstances, isInstances } from './pages/instances.js';
 import { initTransmit, isTransmit } from './pages/transmit.js';
 import { initFactionChat, isFactionChat } from './pages/factionchat.js';
+import { initFactionLog, isFactionLog } from './pages/factionlog.js';
 import { initFindPlayer, isFindPlayer } from './pages/findplayer.js';
 import { initJournal, isJournal } from './pages/journal.js';
 import { initMailbox, isMailbox } from './pages/mailbox.js';
@@ -49,6 +50,7 @@ import { serverOffset } from './tooltips/energy.js';
 import { initTips } from './tooltips/tips.js';
 import { installCsrf } from './core/net.js';
 import { recoverToken } from './core/recover.js';
+import { harvest as rememberPlayers } from './core/players.js';
 import { install as installLocal } from 'ssh-local'; // extras that are not published (see tools/build.mjs); nothing when there are none
 
 // The game's top bar asks for Open Sans from a server that does not allow it (the browser blocks it): the copy that comes with the helper
@@ -76,6 +78,7 @@ async function init() {
   initTips();
   refreshDur(30000);
   initLive();
+  try { rememberPlayers(); } catch (e) { /* the cache is a help only */ }
   if (/[?&]cmd=settings/.test(location.search)) { initSettings(); return; }
   if (/[?&]cmd=guild/.test(location.search) && /[?&]subcmd=inventory/.test(location.search) && /[?&]subcmd2=report/.test(location.search) && S.cfg.factionInv) { initFactionInv(); return; }
   if (document.querySelector('table[background*="latestnews_bg"]')) { initHome(); return; } // the Home page
@@ -90,6 +93,7 @@ async function init() {
   if (isInstances()) { initInstances(); return; } // Slaughterfest
   if (isTransmit()) { initTransmit(); return; } // Transmit Message
   if (isFactionChat()) { initFactionChat(); return; } // the faction's chat
+  if (isFactionLog()) { initFactionLog(); return; } // the faction's log: player numbers become names
   if (isFindPlayer()) { initFindPlayer(); return; } // Locate Player
   if (isJournal()) { initJournal(); return; } // the Journal
   if (isMailbox()) { initMailbox(); return; } // the Item Mailbox
