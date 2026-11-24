@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sigmastorm Helper</title>
-<meta name="description" content="A userscript that adds quality-of-life features to Sigmastorm: a zoomable map you can walk on, a modern profile and backpack, better tooltips, gear comparison.">
+<meta name="description" content="Quality of life for Sigmastorm: a bigger world map you can walk on, a modern look for the game's pages, a Path Finder, better tooltips and many small conveniences.">
 <style>
   :root { --bg:#0b0e0e; --panel:#141919; --line:#2c3333; --text:#d8cfbf; --dim:#8b8b8b; --accent:#9fe0ff; --ok:#7fe08a; --warn:#e8c36a; }
   * { box-sizing: border-box; }
@@ -82,38 +82,56 @@
 
   <h2>What it does</h2>
 
-  <h3 class="grp">On every page</h3>
+  <h3 class="grp">Everywhere</h3>
   <ul class="feat">
-    <li><b>Modern layout toggle</b> (bottom left, remembered): <code>Modern</code> uses divs and modern CSS instead of tables. The header, sidebars and footer are updated on all pages, but only some pages got the modern treatment for their contents. <code>Original</code> keeps the game's own pages. The sidebar widgets can be dragged to another place, also to the other sidebar.</li>
-    <li><b>Better tooltips</b>: they follow the pointer, never get stuck, load without freezing the page, and work for carried items too. Buffs and skills explain what they do, and the energy tooltip counts down to the next gain and shows when it will be full.</li>
-    <li><b>Gear comparison</b>: the tooltip of an item you are not wearing is shown next to the worn one, with the differences coloured.</li>
-    <li><b>Top banner</b>: real HP, skill power and energy numbers, and a gear durability bar.</li>
-    <li><b>Config page tab</b>: settings for all of the above, with export / import of everything.</li>
-    <li><b>Follows the game's changes</b>: the game's new request rules (token, POST forms) and broken pages are handled, its messages show their links and line breaks, pop-ups stay readable, and the upgrade stars of item tooltips load again.</li>
+    <li><b>Modern layout</b>: a clean new look for the game's pages, with an Original | Modern switch in the bottom left corner. Sidebar widgets can be moved around.</li>
+    <li><b>Better tooltips</b>: they follow the pointer, load fast and show more. Skills and buffs explain what they do at your level, and the energy tooltip shows when it will be full.</li>
+    <li><b>Gear comparison</b>: an item you are not wearing is shown next to the worn one, with the differences coloured.</li>
+    <li><b>Top banner</b>: exact HP, skill power and energy, and a gear durability bar.</li>
+    <li><b>Settings</b> in a tab of the Config page, with export / import.</li>
   </ul>
 
   <h3 class="grp">World map</h3>
   <ul class="feat">
-    <li><b>A bigger map</b> you can zoom and drag, with moving, stairs and fights in place, without page reloads.</li>
-    <li><b>Click to walk</b> along a planned route, with fast walk, a direction pad and hotkeys; the zone bar links to the wiki and the Guide.</li>
-    <li><b>Path Finder</b> to find the way to any area, with the stairs marked on the map (and a "no entry" mark for areas above your level), and footprints of where you have been.</li>
-    <li><b>Transit portals</b>, <b>healing</b>, <b>quests</b> and the <b>mechanic</b> (repair all) work in dialogs or in place.</li>
-    <li><b>Faction Inventory</b>: every item of the faction in one list you can filter, sort, recall and take from.</li>
+    <li><b>A bigger map</b>: you can zoom and drag, with moving, stairs and fights without page reloads.</li>
+    <li><b>Click to walk</b>: along a planned route, with fast walk, direction pad and hotkeys.</li>
+    <li><b>Path Finder</b>: the shortest way to any area, on the map, on portal pages and on world maps.</li>
+    <li><b>Stairs marked</b>: on the map, with a "no entry" mark when the area is above your level.</li>
+    <li><b>Footprints, Wiki and Guide</b>: buttons for the current area.</li>
+    <li><b>Transit portals, healing, quests, mechanic and Teleport</b>: work in dialogs or in place.</li>
   </ul>
 
-  <h3 class="grp">Action list and combat</h3>
+  <h3 class="grp">Combat</h3>
   <ul class="feat">
-    <li><b>Floating action list</b> you can drag anywhere, with number-key attacks and quick fights whose results are written into the list, and a combat log.</li>
-    <li><b>Creature kinds</b> (Champion, Elite, HK, Behemoth) have their own colours, bold names and tinted rows; settings choose the colours and which kinds get attack hotkeys.</li>
-    <li><b>Creature pop-up</b> with its stats and a combat evaluation.</li>
-    <li><b>Quick links</b> for the backpack, assault, buffs, medipacks and repair kits, with counts of what you have left.</li>
+    <li><b>Floating action list</b>: you can drag anywhere, with number-key attacks, quick fights and a combat log.</li>
+    <li><b>Creature kinds</b>: (Champion, Elite, HK, Behemoth) in their own colours.</li>
+    <li><b>Creature pop-up</b>: with its stats and a combat evaluation.</li>
+    <li><b>Quick links</b>: for the backpack, assault, buffs, medipacks and repair kits, with counts.</li>
   </ul>
 
-  <h3 class="grp">Profile, backpack and blueprints</h3>
+  <h3 class="grp">Character</h3>
   <ul class="feat">
-    <li><b>Modern profile</b> with panels you can move and hide, and a backpack that works without reloads: folders, selecting, moving, combining, splitting, using, equipping and destroying items.</li>
-    <li><b>Combat sets</b> you can search, use, save and delete.</li>
-    <li><b>Blueprints</b>: hover to see what one makes, and manage folders and blueprints without reloads.</li>
+    <li><b>Modern profile</b>: with panels you can move and hide.</li>
+    <li><b>Backpack</b>: without reloads: folders, moving, combining, splitting, using, equipping, destroying.</li>
+    <li><b>Combat sets</b>: you can search, use, save and delete.</li>
+    <li><b>Buffs</b>: click an active skill to remove it, with live timers.</li>
+    <li><b>Quick Buff window</b>: see what is active on your targets, the cost, and cast Nano Blood from it.</li>
+    <li><b>Skills page and Skill Guide</b>: in the new look.</li>
+  </ul>
+
+  <h3 class="grp">Faction and community</h3>
+  <ul class="feat">
+    <li><b>Faction Inventory</b>: every item in one list you can filter, sort, recall and take from.</li>
+    <li><b>Faction Chat and Faction Log</b>: with player names and links to their pages.</li>
+    <li><b>Locate Player, Transmit Message, Slaughterfest and the Mailbox</b>: in the new look.</li>
+    <li><b>Official Guide</b>: in the new look, with pictures for shops and stairways on the area maps.</li>
+  </ul>
+
+  <h3 class="grp">Shops and crafting</h3>
+  <ul class="feat">
+    <li><b>Multi-buy</b>: in shops and multi-craft on blueprint pages.</li>
+    <li><b>Blueprints</b>: hover to see what one makes, and manage folders without reloads.</li>
+    <li><b>Bank, Blacksmith, Engineering, Evolve and Item Augmentation</b>: in the new look.</li>
   </ul>
 
   <h2>See it working</h2>

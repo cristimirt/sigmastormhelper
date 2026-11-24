@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Sigmastorm Helper
 // @namespace    https://cristimirt.github.io/sigmastormhelper/
-// @description  Quality of life for Sigmastorm: a bigger map you can walk on, a modern profile and backpack, better tooltips.
+// @description  Quality of life for Sigmastorm: a bigger world map you can walk on, a modern look for the game's pages, a Path Finder, better tooltips and many small conveniences.
 // @author       Aurik16
 // @version      1.0.3
 // @match        https://www.sigmastorm.com/*
