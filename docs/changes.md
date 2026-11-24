@@ -36,6 +36,13 @@ The helper only changes how pages look and how they are used in your own browser
 - **Mission pages** use the steel container too (with the glass header). All the converted pages (Bank, Blacksmith, Item Augmentation, Engineering, Evolve, Inventing, Item Mailbox, Shops, Skills, Skill Guide, Transit Portal, Faction pages, Doppler Array, Behemoth pages, Artifacts) have the same structure now: title bar (steel or glass), body, footer.
 - **Skills page** is made of a few plain divs (no more nested grids): the tabs, the tree with its tiers of skills, and the details panel.
 - **Journal**, its **Ignore List** and **Outbox** in the Modern layout (the steel container, one row per entry).
+- **Faction Log**: the players in "X changed the rank of Y to Rank" and "X deposit N credits" are links too, and the rank is in bold.
+- **Player cache**: the helper remembers player numbers and names (both ways) from the player links on the pages, player pages, the faction member list and Locate Player, so a name or number is not looked up twice; the Quick Buff window and the Faction Log use it. In the Faction Log, "Faction member Name" links to the player too.
+- **Faction Log in the Modern layout**: the steel frame with the title, the page box and the entries (icon, date, message) as rows.
+- **Faction Log**: where the game shows "Player #1234567" the player's name is shown, as a link to the player's page (names are remembered, so the next visit shows them at once).
+- **Skills page**: the tabs (Core, Mutant ...) are the size the game shows them, with a space between them; the game's message after Add Points (not enough points, over the limit) shows as a dialog instead of staying hidden.
+- **Path Finder on Transit Portal pages and world maps (Mastermap)**: the panel shows there too (on a portal page it starts from where you left the map; on a world map from that world map), with a Path Finder button above the page to open or close it.
+- **Quick Buff window**: every skill in the list shows its picture, and hovering it shows the skill's description with the values for the level shown in the list (the cost and duration too).
 - Quick Buff window: the result of a cast replaces the list inside the same window (with a Back button) instead of opening a second window.
 - Quick Buff window: the game's message at the top (not enough energy, ...) is a readable red notice.
 - Quick Buff window: "Select all" and "Sort alphabetically" (the choice is kept) at the bottom.
