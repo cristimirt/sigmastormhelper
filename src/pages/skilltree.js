@@ -2,7 +2,9 @@ import { mel } from '../layout/dom.js';
 import { steelContainer } from '../layout/steel.js';
 import { tableToDivs } from '../layout/tablediv.js';
 import { fetchText } from '../core/net.js';
+import { S } from '../core/state.js';
 import { cssUrl, esc, https, parseHtml } from '../core/util.js';
+import { alertModal, gAlerts } from '../layout/modal.js';
 import { loadSkill, scaleDesc, skillInfo } from '../tooltips/skills.js';
 
 // The Skills page (cmd=skills) for the Modern layout, in the steel container (layout/steel.js). The game draws it with tables inside tables and spacer
@@ -16,7 +18,7 @@ const CSS = 'html.ssh-modern [data-ssh-st]{display:none!important}#ssh-st{displa
   '#ssh-st .sk-guide{padding:20px 0 14px;text-align:center}' +
   '#ssh-st .sk-intro{width:570px;margin:0 auto 14px;text-align:left}#ssh-st .sk-intro p{margin:0}' +
   '#ssh-st .sk-points{margin-bottom:14px;text-align:center}' +
-  '#ssh-st .sk-tabs{display:flex;width:600px;margin:0 auto 12px}#ssh-st .sk-tabs a{flex:1 1 0;line-height:0}#ssh-st .sk-tabs img{width:100%;height:auto}' + // the frame of the page leaves 613 px inside: the tabs are as wide as the tree +
+  '#ssh-st .sk-tabs{display:flex;width:600px;margin:0 auto 12px}#ssh-st .sk-tabs a{flex:1 1 0;line-height:0;text-align:center}#ssh-st .sk-tabs img{width:108px;max-width:100%;height:auto}' + // the frame of the page leaves 613 px inside: five cells as wide as the tree, with the tab pictures (108 px, as the game shows them) in the middle of each: a space between them +
   '#ssh-st .sk-tree{width:600px;margin:0 auto}' +
   '#ssh-st .sk-top{height:30px;display:flex;align-items:center;justify-content:center;background-repeat:no-repeat;background-position:center}' +
   '#ssh-st .sk-main{display:flex}#ssh-st .sk-strip{flex:0 0 25px}' +
@@ -202,4 +204,8 @@ export function initSkillTree() {
   });
   window.addEventListener('popstate', () => { if (document.getElementById('ssh-st')) openTree(location.href, false); });
   table.after(root);
+  // the game's answer to Add Points ("You do not have enough unallocated skill points", "This allocation exceeds the skill point limit") is a box in
+  // its own table, which is hidden with it in the Modern layout: it is shown as a dialog
+  const msgs = gAlerts(document);
+  if (msgs.length && S.layout === 'modern') alertModal(msgs);
 }
