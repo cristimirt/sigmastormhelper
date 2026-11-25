@@ -120,7 +120,7 @@ export function frameCss(contentBg) {
     // it grows down to the bottom of the page, so the frame (its borders and its background) never ends above the sidebars' end
     P + ' .ssh-center{display:flex;flex-direction:column;margin-bottom:12px}' + // a small gap above the banner
     P + ' .ssh-cf{width:723px;flex:1;display:flex;flex-direction:column}' +
-    P + ' .ssh-center>section:has(>.ssh-cf){flex:1;display:flex;flex-direction:column}' + // the world page: the game wraps the frame in a section (with its small forms)
+    P + ' .ssh-center>section:has(>.ssh-cf),' + P + ' .ssh-center>form:has(>.ssh-cf){flex:1;display:flex;flex-direction:column;margin:0}' + // the game wraps the frame in a section (the world page, with its small forms) or in a form (Reserve Energy)
     P + ' .cf-top{height:14px;background-repeat:no-repeat;background-position:0 0}' +
     P + ' .cf-mid{display:grid;grid-template-columns:27px 669px 27px;flex:1}' +
     P + ' .cf-l{background-repeat:no-repeat,repeat-y;background-position:right top,0 0}' +

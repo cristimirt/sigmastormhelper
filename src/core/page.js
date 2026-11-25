@@ -8,8 +8,9 @@
 export const frameRow = (t) => [...t.rows].findIndex((r) => r.cells.length === 3 && /inner_bg/.test(r.cells[1].getAttribute('background') || ''));
 export const isContentFrame = (t) => !!t && t.tagName === 'TABLE' && t.rows.length >= 3 && frameRow(t) >= 1;
 
-// The content frame table in the middle cell: a child of it, or (the world page) a child of the <section> the game puts there.
-export const findFrame = (center) => [...center.querySelectorAll(':scope > table, :scope > section > table')].find(isContentFrame) || null;
+// The content frame table in the middle cell: a child of it, or a child of the <section> (the world page) or of the <form> (Reserve Energy:
+// the game opens its form around the whole frame) the game puts there.
+export const findFrame = (center) => [...center.querySelectorAll(':scope > table, :scope > section > table, :scope > form > table')].find(isContentFrame) || null;
 
 function bodyOf(center) {
   const f = center.querySelector('.ssh-cf > .cf-mid > .cf-body');

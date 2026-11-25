@@ -36,6 +36,23 @@ The helper only changes how pages look and how they are used in your own browser
 - **Mission pages** use the steel container too (with the glass header). All the converted pages (Bank, Blacksmith, Item Augmentation, Engineering, Evolve, Inventing, Item Mailbox, Shops, Skills, Skill Guide, Transit Portal, Faction pages, Doppler Array, Behemoth pages, Artifacts) have the same structure now: title bar (steel or glass), body, footer.
 - **Skills page** is made of a few plain divs (no more nested grids): the tabs, the tree with its tiers of skills, and the details panel.
 - **Journal**, its **Ignore List** and **Outbox** in the Modern layout (the steel container, one row per entry).
+- Personal log: when another player activates a skill on you, their name is a link, and the skill's name has a dotted underline with a tooltip showing what it does at that level.
+- **Journal**: in the messages about being invited to a faction and joining one, the faction's name links to its page.
+- **Two thin lines** under the title bar of the Modern pages (stripes of the game's background) are gone.
+- **Faction pages in the Modern layout**: logo, statistics, bank, structures, artifacts, history and members without tables.
+- **Faction Log**: player names are links in the entries about inviting a player and declining or accepting an invitation.
+- **Create a Faction in the Modern layout**: the name, the game's note and the button in a box.
+- **Journal**: in a faction invitation, "Join a Faction" is a link to that page.
+- **The game's confirm pop-ups** (such as declining an invitation) look like the helper's dialogs in the Modern layout.
+- **Join a Faction in the Modern layout**: one row per invitation with its Accept and Decline buttons. Each faction name links to the faction's page.
+- **Faction List (A - Z) in the Modern layout**: the search, the letters, the pages and the factions without tables.
+- **Join Faction Request in the Modern layout**: the steel frame, with the faction, your message and the button in a box.
+- **Sidebar widgets** sit closer under the picture at the top of each column.
+- **Class icon** beside the Skill Power bar is shown in the Modern banner again (a player without a class has the double helix).
+- **Skill Power tooltip**: the broken characters before each class's resource (sent that way by the game) are bullets.
+- **Create Squad button** is back in the Modern banner, between the Backpack and World Map buttons. Its tooltip shows the cost (20 energy); when it cannot be used it looks faded and the tooltip says why. The buttons of the banner and of the map use the helper's tooltip, which opens at once.
+- **Buy Crystals in the Modern layout**: the frame the game leaves out, with the steel header.
+- **Reserve Energy in the Modern layout**: the steel frame, with the numbers and the transfer form in a box.
 - **Faction Log**: the players in "X changed the rank of Y to Rank" and "X deposit N credits" are links too, and the rank is in bold.
 - **Player cache**: the helper remembers player numbers and names (both ways) from the player links on the pages, player pages, the faction member list and Locate Player, so a name or number is not looked up twice; the Quick Buff window and the Faction Log use it. In the Faction Log, "Faction member Name" links to the player too.
 - **Faction Log in the Modern layout**: the steel frame with the title, the page box and the entries (icon, date, message) as rows.

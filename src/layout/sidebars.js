@@ -557,7 +557,7 @@ function bindDrag() {
 
 export const sidebarCss = () =>
   '.ssh-col{display:flex;flex-direction:column;align-items:center;box-sizing:border-box;flex:1 0 auto;order:1;padding-bottom:12px}' +
-  '.ssh-cap{display:block;margin-bottom:6px}' +
+  '.ssh-cap{display:block;margin-bottom:-10px}' +
   '.ssh-w{width:133px;margin:0 0 12px;flex:none;font:8pt tahoma,sans-serif;color:#fff}' +
   '.ssh-w .wh{box-sizing:border-box;width:133px;background-repeat:no-repeat;background-position:0 0;cursor:grab}' +
   '.ssh-w .wh img{display:block;border:0}' +

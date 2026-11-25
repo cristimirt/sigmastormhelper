@@ -55,6 +55,9 @@ export function initTips() {
     const a = [...args];
     const first = a.shift();
     let html = first === undefined ? '' : String(first);
+    // the game's own text has a broken character before each class in the Skill Power tooltip (a bullet that was saved in the wrong
+    // encoding, once or twice over): it is a bullet again
+    html = html.replace(/\u00c3\u00af\u00c2\u00bf\u00c2\u00bd|\u00ef\u00bf\u00bd|\ufffd/g, '&bull;');
     let title = '';
     let width = pw || cfg.Width || 375;
     for (let i = 0; i + 1 < a.length; i += 2) {
@@ -121,6 +124,25 @@ export function initTips() {
     box.innerHTML = '<div class="cw"><div class="cm">' + main + '</div><div class="ce"><div class="eqh">Equipped</div>' + worn + '</div></div>';
     place();
   };
+  // The buttons of the banner and of the map: their title is shown as this tooltip, at once (the browser's own makes you wait).
+  // The text moves from title to data-tip, so the browser does not show it too; a title set again later replaces it.
+  const BUTTONS = '#ssh-hdr a, #ssh-hdr form, #ssh-map button, #ssh-map a.ssh-lk, #ssh-pfbtn, .wp-qb, .wp-qi, ' +
+    '#ssh-al .hd [title], #ssh-al .ssh-repair, #ssh-al [data-walkcancel], #ssh-al .clog, #ssh-pf button, #ssh-pf .x, #ssh-jf .jf-act input, #ssh-cr .cr-act input';
+  const buttonText = (el) => {
+    const titled = [el, ...el.querySelectorAll('[title]')].filter((x) => x.hasAttribute('title'));
+    if (titled.length) {
+      el.dataset.tip = titled[0].getAttribute('title');
+      titled.forEach((x) => x.removeAttribute('title'));
+    }
+    return el.dataset.tip || '';
+  };
+  const buttonTip = (el) => {
+    const text = buttonText(el);
+    if (!text) return;
+    const longest = Math.max(...text.split('\n').map((l) => l.length));
+    pw = Math.min(260, 16 + longest * 7);
+    show(['<center><b>' + esc(text).replace(/\n/g, '<br>') + '</b></center>']);
+  };
   document.addEventListener('mouseover', (e) => {
     if (!e.isTrusted) return;
     hov = e.target;
@@ -128,9 +150,13 @@ export function initTips() {
     my = e.clientY;
     inOver = true;
     setTimeout(() => { inOver = false; }, 0);
+    const b = e.target.closest && e.target.closest(BUTTONS);
+    if (b && !(trig && b.contains(trig)) && buttonText(b)) { hov = b; buttonTip(b); }
   }, true);
   document.addEventListener('mousemove', (e) => {
     if (!e.isTrusted) return;
+    const b = e.target.closest && e.target.closest(BUTTONS);
+    if (b) buttonText(b); // a button whose title was set again while the pointer is on it
     mx = e.clientX;
     my = e.clientY;
     if (!trig) return;
