@@ -44,6 +44,27 @@ function place(src, x, y, w, h, own) {
   return el;
 }
 
+// A quick icon that is a form (Create Squad: it posts, with hidden fields): the whole form comes along, so it works as the game's
+// does, with the button disabled when the game's is: then it looks faded and its tooltip says why (the game's title on the
+// button). Otherwise the tooltip is the picture's, with the energy it costs.
+function placeForm(button, x, y, size) {
+  const f = button.form.cloneNode(true);
+  const px = 'width:' + size + 'px;height:' + size + 'px';
+  f.style.cssText = 'position:absolute;left:' + x + 'px;top:' + y + 'px;display:block;margin:0;' + px;
+  const b = f.querySelector('button');
+  b.style.cssText = 'display:block;margin:0;padding:0;border:0;background:none;' + px + ';cursor:' + (b.disabled ? 'default' : 'pointer');
+  b.querySelectorAll('img').forEach((i) => {
+    i.removeAttribute('align');
+    i.style.cssText = 'display:block;' + px + (b.disabled ? ';opacity:.4;filter:grayscale(1)' : '');
+    if (b.disabled && b.title) i.removeAttribute('title');
+    else if (/squad/i.test(i.title)) i.title += ' (20 energy)';
+  });
+  if (b.disabled) {
+    b.style.pointerEvents = 'none'; // a disabled button gets no mouse events: the form under it does
+  }
+  return f;
+}
+
 // How full a bar's picture says it is: its style (which the game's skill buttons set) or its width attribute.
 const fillWidth = (img) => {
   const w = img.style.width || img.getAttribute('width') || '0';
@@ -107,9 +128,13 @@ export function modernHeader(t, n) {
   });
 
   // the five quick icons, centred in their slot
-  const links = [...t.querySelectorAll('table[align="center"] a')].slice(0, 5);
-  const ix = SLOT.icons[0] + Math.round((SLOT.icons[2] - (links.length * 20 + (links.length - 1) * 10)) / 2);
-  links.forEach((a, i) => add(place(a, ix + i * 30, SLOT.icons[1] + 3, 20, 20)));
+  const icons = [...t.querySelectorAll('table[align="center"] a, table[align="center"] form button')].slice(0, 5);
+  const ix = SLOT.icons[0] + Math.round((SLOT.icons[2] - (icons.length * 20 + (icons.length - 1) * 10)) / 2);
+  icons.forEach((a, i) => {
+    const x = ix + i * 30;
+    const y = SLOT.icons[1] + 3;
+    add(a.tagName === 'BUTTON' ? placeForm(a, x, y, 20) : place(a, x, y, 20, 20));
+  });
 
   // HP, with the gear durability bar and its wrench under it
   const hpImg = q('img[src*="hp_progress"]');
@@ -163,7 +188,9 @@ export function modernHeader(t, n) {
   const spn = spBar && spBar.querySelector('[data-n="sp"]');
   if (spn && n.spMax) spn.dataset.max = n.spMax;
   add(spBar);
-  const ico = [...t.querySelectorAll('img')].filter((i) => /\/4\.gif$/.test(i.getAttribute('src') || '') && !i.getAttribute('onmouseover')).pop(); // the icon row's 4.gif has a tooltip
+  // the icon beside the bar: the class's picture (skin/classes/<n>.gif; 0, the double helix, is a player without a class)
+  const ico = t.querySelector('img[src*="/classes/"]') ||
+    [...t.querySelectorAll('img')].filter((i) => /\/4\.gif$/.test(i.getAttribute('src') || '') && !i.getAttribute('onmouseover')).pop(); // the icon row's 4.gif has a tooltip
   if (ico) add(place(ico, SLOT.surgeIcon[0] + 1, SLOT.surgeIcon[1] + 1, 16, 16));
 
   return hdr;

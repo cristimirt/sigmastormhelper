@@ -62,6 +62,10 @@ function nameLink(name) {
 // Messages that name players in plain text: "Name changed the rank of Name to Rank." (the rank in bold), "Name deposit 50000 credits."
 const RANK = /^(\s*)(\S+) changed the rank of (\S+) to (.+?)(\.?\s*)$/;
 const MONEY = /^(\s*)(\S+) (deposit(?:ed)?|withdr\w+|withdrew) (.*)$/;
+// "Name invited Name to the faction." and "Name declined (or accepted) the faction invitation from Name."
+const INVITE = /^(\s*)(\S+)( invited )(\S+)( to the faction\.?\s*)$/;
+const ANSWER = /^(\s*)(\S+)( (?:declined|accepted) the faction invitation from )(\S+?)(\.?\s*)$/;
+const isPlain = (t) => [RANK, MONEY, INVITE, ANSWER].some((r) => r.test(t));
 
 function plain(node) {
   const t = node.nodeValue;
@@ -77,6 +81,11 @@ function plain(node) {
     node.replaceWith(m[1], nameLink(m[2]), ' ' + m[3] + ' ' + m[4]);
     return true;
   }
+  m = t.match(INVITE) || t.match(ANSWER);
+  if (m) {
+    node.replaceWith(m[1], nameLink(m[2]), m[3], nameLink(m[4]), m[5]);
+    return true;
+  }
   return false;
 }
 
@@ -88,7 +97,7 @@ export function initFactionLog() {
   for (let n; (n = w.nextNode());) {
     if (n.parentElement && n.parentElement.closest('script, style, a')) continue;
     if (/Player #\d+|Faction member \S/i.test(n.nodeValue)) hits.push(n);
-    else if (n.parentElement && n.parentElement.closest('.fl-msg, td[width="80%"]') && (RANK.test(n.nodeValue) || MONEY.test(n.nodeValue))) hits.push(n);
+    else if (n.parentElement && n.parentElement.closest('.fl-msg, td[width="80%"]') && isPlain(n.nodeValue)) hits.push(n);
   }
   const link = (id, name) => {
     const a = document.createElement('a');

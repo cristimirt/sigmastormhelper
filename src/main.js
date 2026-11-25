@@ -15,6 +15,7 @@ import { rememberScripts } from './layout/sidebars.js';
 import { initArtifactShop } from './pages/artifactshop.js';
 import { initBank } from './pages/bank.js';
 import { initBlacksmith } from './pages/blacksmith.js';
+import { initBuyCrystals, isBuyCrystals } from './pages/buycrystals.js';
 import { initCrafting } from './pages/crafting.js';
 import { behemothPage, initBehemoth } from './pages/behemoth.js';
 import { initDoppler, isDoppler } from './pages/dopplerarray.js';
@@ -42,6 +43,12 @@ import { initSkillGuide, isSkillGuide } from './pages/skillguide.js';
 import { initSkillTree, isSkillTree } from './pages/skilltree.js';
 import { initRelicList, isRelicList } from './pages/reliclist.js';
 import { initRelic } from './pages/relic.js';
+import { initReserveEnergy, isReserveEnergy } from './pages/reserveenergy.js';
+import { initJoinFaction, isJoinFaction } from './pages/joinfaction.js';
+import { initFactionList, isFactionList } from './pages/factionlist.js';
+import { initInvitations, isInvitations } from './pages/invitations.js';
+import { initCreateFaction, isCreateFaction } from './pages/createfaction.js';
+import { initFactionPage, isFactionPage } from './pages/factionpage.js';
 import { initQuest } from './pages/quest.js';
 import { initShop } from './pages/shop.js';
 import { initSettings, movePanels, trimTail } from './settings.js';
@@ -103,6 +110,13 @@ async function init() {
   if (isPortal()) { initPortal(); return; } // a Transit Portal
   if (isSkillGuide()) { initSkillGuide(); return; } // the Skill Guide
   if (isSkillTree()) { initSkillTree(); return; } // the Skills page (the skill trees)
+  if (isBuyCrystals()) { initBuyCrystals(); return; } // Buy Crystals
+  if (isReserveEnergy()) { initReserveEnergy(); return; } // Reserve Energy
+  if (isJoinFaction()) { initJoinFaction(); return; } // Join Faction Request
+  if (isFactionList()) { initFactionList(); return; } // Faction List (A - Z)
+  if (isInvitations()) { initInvitations(); return; } // Join a Faction (invitations)
+  if (isCreateFaction()) { initCreateFaction(); return; } // Create a Faction
+  if (isFactionPage()) { initFactionPage(); return; } // a faction's page
   if (isRecruit()) { initRecruit(); return; } // the faction's recruitment page
   if (isRelicList()) { initRelicList(); return; } // the list of all artifacts
   if (document.getElementById('relic-capture')) { initRelic(); return; } // an artifact's page

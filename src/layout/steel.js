@@ -19,7 +19,10 @@ import { tableToDivs } from './tablediv.js';
 
 const SKIN = 'https://cdn.sigmastorm.com/skin/';
 // The game's title bars that are glass (dark blue); the others are steel. The class `glass` on the header says it (see steelContainer).
-const GLASS = /(bank_header|header_(artifacts|clear|engineering|factionmanage|ignorelist|missiondetails|msgoutbox|recruitment|skillguide|transitportal))\.jpg/;
+const GLASS = /(bank_header|header_(artifacts|clear|engineering|factionmanage|ignorelist|joinguildrequest|missiondetails|msgoutbox|recruitment|reserveenergy|skillguide|transitportal))\.jpg/;
+
+// a strip 2 pixels wide, from top to bottom, at x pixels from the left
+const strip = (colour, x) => 'linear-gradient(' + colour + ',' + colour + ') ' + x + 'px 0/2px 100% no-repeat';
 
 export function steelCss() {
   if (document.getElementById('ssh-steel-css')) return;
@@ -28,7 +31,9 @@ export function steelCss() {
   const media = S.base ? S.base + 'media/' : '';
   s.textContent =
     (media ? "@font-face{font-family:'Marcellus';font-weight:400;font-style:normal;font-display:swap;src:url('" + media + "marcellus.ttf') format('truetype')}" : '') +
-    '.ssh-content{width:640px;max-width:100%;margin:0 auto;background:url("' + SKIN + 'large_content_bg.jpg") repeat-y center top}' + // behind all three parts: the pictures of the bar and the footer have see-through edges
+    // behind all three parts: the pictures of the bar and the footer have see-through edges. The background has a thin light stripe down each
+    // side (its columns 10-11 and 627-628), which shows as two loose lines under the title bar: a strip of the colour beside it covers each.
+    '.ssh-content{width:640px;max-width:100%;margin:0 auto;background:' + strip('#15130d', 10) + ',' + strip('#14130e', 627) + ',url("' + SKIN + 'large_content_bg.jpg") repeat-y center top}' +
     '.ssh-content-body{padding:0 20px}' +
     '.ssh-content-header,.ssh-content-footer{height:54px;background-repeat:no-repeat;background-position:center top}' +
     '.ssh-content-header{display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding-bottom:6px}' +
