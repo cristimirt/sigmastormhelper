@@ -57,6 +57,7 @@ export function addStyle() {
     '#ssh-pf .nx{padding:8px 10px;background:#0f1414;border:2px solid #e8872a}#ssh-pf .in{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#8b8b8b}#ssh-pf .ld{color:#b8b0a0}#ssh-pf .bg{font-size:18px;font-weight:bold;line-height:1.2;margin:2px 0;color:#fff}#ssh-pf .sb{color:#b8b0a0}' +
     '#ssh-pf .nt{margin-top:4px;font-style:italic;color:#ff8a7a}#ssh-pf .aw{margin-top:6px;font-weight:bold;color:#ffb36b}#ssh-pf .aw.hr{color:#7fe08a}' +
     '#ssh-pf .rs{margin:8px 0 0;padding-left:22px;max-height:230px;overflow:auto;font-size:11px;color:#b8b0a0;scrollbar-width:thin;scrollbar-color:#2c3232 transparent}#ssh-pf .rs li{padding:2px 0;border-top:1px dotted #3a3d3d}#ssh-pf .rs li:first-child{border-top:0}#ssh-pf .rs span{display:block;font-size:10px;text-transform:uppercase;color:#7a7a7a}' +
+    '#ssh-pf a.wk{display:inline-block;vertical-align:middle;margin-left:3px;padding:0 3px;border:1px solid #5a5f5f;font:bold 9px/12px Arial,sans-serif;text-transform:none;letter-spacing:0;text-decoration:none}#ssh-pf a.wk:hover{border-color:#9fe0ff;color:#fff}' +
     '#ssh-pf .ft{padding:4px 8px 6px;border-top:1px solid #3a3d3d;text-align:center;font-size:11px}' +
     '#ssh-al{position:absolute;z-index:1000;width:270px;max-height:340px;overflow:auto;background:rgba(8,10,10,.92);' +
     'border:1px solid #5a5f5f;color:#d8cfbf;font:11px Arial,sans-serif;box-shadow:0 3px 10px rgba(0,0,0,.6);}' +

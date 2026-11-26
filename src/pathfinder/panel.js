@@ -101,6 +101,13 @@ function drawSugg() {
     '<span>' + (a.kind === 'master' ? 'World map' : 'Lv ' + a.level) + '</span></li>').join('');
 }
 
+// A small "W" that opens a zone's wiki page. The data names the page when the wiki calls the zone differently.
+function wikiLink(name) {
+  const a = st.router && st.router.byName[name];
+  const page = encodeURIComponent(((a && a.wiki) || name).replace(/ /g, '_'));
+  return ' <a class="wk" href="https://sigmastorm2.fandom.com/wiki/' + page + '" target="_blank" rel="noopener" title="Open ' + esc(name) + ' on the wiki">W</a>';
+}
+
 function bodyHtml() {
   const { router, dest, here, route } = st;
   if (!dest) return '<div class="m">' + (st.mode === 'level' ? 'Type a level above, then pick one of its areas.' : 'Type an area name above to see the way there.') + '</div>';
@@ -108,7 +115,7 @@ function bodyHtml() {
   if (!router) return '<div class="m">Loading the map data…</div>';
   const to = router.byName[dest];
   if (!to) return '<div class="m er">“' + esc(dest) + '” is not in the map data.</div>';
-  let h = '<div class="ds">Going to <b>' + esc(to.name) + '</b> <span>Lv ' + to.level + '</span></div>';
+  let h = '<div class="ds">Going to <b>' + esc(to.name) + '</b> <span>Lv ' + to.level + '</span>' + wikiLink(to.name) + '</div>';
   if (!here) return h + '<div class="m">Your current area is not in the map data' + (S.loc ? ' (' + esc(S.loc.area) + ')' : '') + '.</div>';
   if (here.name === to.name) return h + '<div class="dn">You have arrived.</div>';
   if (!route || !route.length) return h + '<div class="m er">No known way from <b>' + esc(here.name) + '</b> in this data.</div>';
@@ -117,13 +124,13 @@ function bodyHtml() {
   const moves = Math.max(0, Math.round(route.total - first.walk + walk));
   const m = stepMain(router, first);
   h += '<div class="ct"><b>' + route.length + '</b> step' + (route.length === 1 ? '' : 's') + ' · about <b>' + moves + '</b> moves</div>';
-  h += '<div class="nx"><div class="in">Next, in ' + esc(first.from) + '</div>' + (m.lead ? '<div class="ld">' + esc(m.lead) + '</div>' : '') +
-    '<div class="bg">' + esc(m.main) + '</div>' + (m.sub ? '<div class="sb">' + esc(m.sub) + '</div>' : '') +
+  h += '<div class="nx"><div class="in">Next, in ' + esc(first.from) + wikiLink(first.from) + '</div>' + (m.lead ? '<div class="ld">' + esc(m.lead) + '</div>' : '') +
+    '<div class="bg">' + esc(m.main) + wikiLink(first.edge.to) + '</div>' + (m.sub ? '<div class="sb">' + esc(m.sub) + '</div>' : '') +
     (first.edge.note ? '<div class="nt">' + esc(first.edge.note) + '</div>' : '');
   if (startsOnTile(first)) h += walk === 0 ? '<div class="aw hr">You are on the tile</div>' : '<div class="aw">' + walk + ' move' + (walk === 1 ? '' : 's') + ' away</div>';
   h += '</div>';
   if (route.length > 1) {
-    h += '<ol class="rs" start="2">' + route.slice(1).map((s) => '<li><span>' + esc(s.from) + '</span>' + esc(stepShort(router, s)) + '</li>').join('') + '</ol>';
+    h += '<ol class="rs" start="2">' + route.slice(1).map((s) => '<li><span>' + esc(s.from) + '</span>' + esc(stepShort(router, s)) + wikiLink(s.edge.to) + '</li>').join('') + '</ol>';
   }
   return h;
 }
@@ -135,6 +142,8 @@ function draw() {
   const b = document.getElementById('ssh-pfbtn');
   if (b) b.classList.toggle('on', st.open);
   p.querySelector('.bd').innerHTML = bodyHtml();
+  const area = st.here ? st.here.name : S.loc && S.loc.area; // the website opens on the area you are in
+  p.querySelector('.ft a').href = siteUrl() + (area ? '#area=' + encodeURIComponent(area) : '');
 }
 
 function ensurePanel() {
@@ -149,7 +158,6 @@ function ensurePanel() {
     '<div class="bd"></div>' +
     '<div class="ft"><a target="_blank" rel="noopener">Sigmastorm Path Finder website ↗</a></div>';
   document.body.appendChild(p);
-  p.querySelector('.ft a').href = siteUrl();
   const input = p.querySelector('input');
   const setMode = (m) => {
     st.mode = m;

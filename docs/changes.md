@@ -40,6 +40,7 @@ The helper only changes how pages look and how they are used in your own browser
 - **Destroy several components at once** on the profile and in the world map's backpack pop-up: Ctrl+Click and Shift+Click select them (while something is selected, a plain click selects too), and the Destroy button asks before it destroys them.
 - **Fast walk** waits for the game to take each step before sending the next one. It is a bit slower, but steps are no longer refused when the game is slow, which made the walk look stuck.
 - **F5 and Ctrl+R** reload the page with the token already in the address, so "Request verification failed" no longer flashes up.
+- **Path Finder** panel: every zone on the way has a **W** link to its wiki page, and the website link opens the website on the area you are in.
 - Personal log: when another player activates a skill on you, their name is a link, and the skill's name has a dotted underline with a tooltip showing what it does at that level.
 - **Journal**: in the messages about being invited to a faction and joining one, the faction's name links to its page.
 - **Two thin lines** under the title bar of the Modern pages (stripes of the game's background) are gone.
