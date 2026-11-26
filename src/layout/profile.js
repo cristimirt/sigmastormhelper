@@ -4,7 +4,7 @@ import { fetchText, postHref } from '../core/net.js';
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
 import { parseHtml } from '../core/util.js';
-import { BP, bpUse, compDestroy, compLoad } from './backpack.js';
+import { BP, bpUse, compDestroy, compForm, compLoad, compPick } from './backpack.js';
 import { csOpen } from './combatsets.js';
 import { mel, proxify } from './dom.js';
 import { buildFrame, unbuildFrame } from './frame.js';
@@ -43,6 +43,7 @@ export async function refreshProfile() {
   const nt = parseHtml(html).querySelector('table[background*="large_content_bg"]');
   if (!nt) return false;
   const fresh = document.adoptNode(nt);
+  BP.compDoc = null; // the components' forms of the new content come with it
   old.replaceWith(fresh);
   fixForms(fresh);
   root.remove();
@@ -55,7 +56,9 @@ export async function refreshProfile() {
 
 function onProfClick(e) {
   const t = e.target;
-  if (!t || typeof t.closest !== 'function' || e.button || e.ctrlKey || e.metaKey || e.shiftKey) return;
+  if (!t || typeof t.closest !== 'function') return;
+  if (BP.box && compPick(e)) return; // selecting components to destroy
+  if (e.button || e.ctrlKey || e.metaKey || e.shiftKey) return;
   const ua = t.closest('.inv .slot a[href]'); // clicking an equipped item takes it off
   if (ua && BP.box && /subcmd=unequipitem/.test(ua.getAttribute('href') || '')) { e.preventDefault(); bpUse(ua); return; }
   // the same two things as buttons of the game's POST forms (an equipped item, a component)
@@ -69,7 +72,7 @@ function onProfClick(e) {
     return;
   }
   const cb = t.closest('.comp button[form^="component-action"]');
-  const fc = cb && document.getElementById(cb.getAttribute('form'));
+  const fc = cb && compForm(cb.getAttribute('form'));
   if (fc && BP.box) { e.preventDefault(); compDestroy(postHref(fc)); return; }
   const ca = t.closest('.comp a[href]');
   if (!ca) return;
@@ -115,6 +118,8 @@ function buildProfile(table) {
   pfResetLink(root);
   bindPfDrag();
   root.addEventListener('click', onProfClick);
+  // no text selection while Shift / Ctrl select components
+  root.addEventListener('mousedown', (e) => { if ((e.shiftKey || e.ctrlKey || e.metaKey) && e.target.closest && e.target.closest('.comp')) e.preventDefault(); });
   table.setAttribute('data-ssh-orig', '1');
   table.parentNode.insertBefore(root, table.nextSibling);
   return root;

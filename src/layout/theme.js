@@ -115,7 +115,8 @@ export function mCss() {
     '#ssh-mm .pf input{cursor:pointer}#ssh-mm input[disabled]{opacity:.4;cursor:default}' +
     // components, buffs
     PB + '.comp{height:52px;box-sizing:border-box;padding:6px 8px 0}' + P.trim() + '.loading>.pf-info,' + P.trim() + '.loading>.pf-cols{opacity:.45;pointer-events:none}' + PB + '.comp.busy{opacity:.45;pointer-events:none}' + PB + '.cg{display:grid;grid-template-columns:repeat(10,1fr);gap:2px}' +
-    PB + '.cs1{width:20px;height:22px;justify-self:center;display:flex;align-items:center;justify-content:center;background:' + u('slot') + '}' + PB + '.cs1 img{max-width:20px;max-height:20px}' +
+    PB + '.cs1{width:20px;height:22px;justify-self:center;display:flex;align-items:center;justify-content:center;background:' + u('slot') + '}' + PB + '.cs1 img{max-width:20px;max-height:20px}'+
+    PB + '.comp.picking{height:auto;padding-bottom:6px}' + PB + '.cs1.sel{outline:2px solid #9fe0ff}' + PB + '.comp-act{margin-top:6px;display:flex;justify-content:center;align-items:center;gap:10px}' + PB + '.comp-act[hidden]{display:none}#ssh-mm .comp{height:auto;padding-bottom:6px}#ssh-mm .comp-act{min-height:22px}#ssh-mm .comp-act[hidden]{display:flex;visibility:hidden}' + PB + '.comp-act .bp-del{color:#ff8a80;border-color:#8a2a22}' +
     P + '.buffs{display:grid;grid-template-columns:repeat(auto-fit,minmax(60px,1fr));min-height:56px;box-sizing:border-box;padding:5px 8px;text-align:center}' +
     P + '.gen{padding:5px 8px}' +
     // layout switch, always on screen
