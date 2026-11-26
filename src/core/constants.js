@@ -7,7 +7,7 @@ export const dropEarly = () => { const e = document.getElementById('ssh-early');
 
 export const SSH = (window.__ssh = {});
 
-export const VERSION = '1.69.3';
+export const VERSION = '1.70.0';
 
 export const TILE = 65; // size of one map tile in px (native)
 
