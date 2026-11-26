@@ -1,6 +1,6 @@
 import { TILE } from '../core/constants.js';
 import { DATA } from '../core/data.js';
-import { fetchText, navigate } from '../core/net.js';
+import { navigate } from '../core/net.js';
 import { S } from '../core/state.js';
 import { store } from '../core/storage.js';
 import { parseHtml, sleep } from '../core/util.js';
@@ -148,12 +148,13 @@ export function stopWalk(msg) {
   }
 }
 
-// Fast walk: the steps the energy pays for (1 for a straight step, 2 for a diagonal one) are sent one after another at the pace of Fallen Sword's walking,
-// without waiting for each page; the map shows each step as it is sent and the energy goes down with it. Only when the last
-// answer is in (or one is wrong) is the page updated, once.
-// Fallen Sword's character takes 250 ms for a straight step and 250 x 1.414 ms for a diagonal one; the steps are sent at that pace
-// (the map slides the same time), so the character can be seen walking.
+// Fast walk: the steps the energy pays for (1 for a straight step, 2 for a diagonal one) are sent one after another, without loading each
+// page; the map shows each step as it is sent and the energy goes down with it. The page is updated once, at the end.
+// The game takes one move at a time: one that comes while the one before is still being handled is refused ("Your location changed.
+// Reload the world."). So the next step is sent when the game has answered the one before, which takes as long as the server needs.
+// A step also takes at least as long as Fallen Sword's character does (250 ms straight, 250 x 1.414 ms diagonal), so it can be seen walking.
 const STEP_MS = 250;
+const MOVE_TIMEOUT = 15000; // a move with no answer: the walk does not wait for it any longer
 const stepMs = (a, b) => Math.round(a[0] !== b[0] && a[1] !== b[1] ? STEP_MS * 1.414 : STEP_MS);
 const stepCost = (a, b) => (a[0] !== b[0] && a[1] !== b[1] ? 2 : 1);
 const energyEl = () => document.getElementById('staminaCurrent');
@@ -167,24 +168,53 @@ const moveHref = (x, y) => {
   return tpl ? new URL(tpl.replace(/([?&;]x=)\d+/, '$1' + x).replace(/([?&;]y=)\d+/, '$1' + y), location.href).href : null;
 };
 
-// Sends the steps of seg (seg[0] is where we stand) and puts the final page in. Returns true when every step was answered by the
-// page of the tile it went to.
+// One move. The game answers it with a redirect to the world page, which is not followed (it would double the time of a step). An answer
+// that is a page of its own (a message of the game) counts only if it shows the character on the tile. `page` is that page.
+async function sendMove(href, area, x, y) {
+  const stop = new AbortController();
+  const t = setTimeout(() => stop.abort(), MOVE_TIMEOUT);
+  try {
+    const r = await fetch(href, { credentials: 'same-origin', redirect: 'manual', signal: stop.signal });
+    if (r.type === 'opaqueredirect') return { ok: true, page: '' };
+    const page = r.ok ? await r.text() : '';
+    const loc = page ? read(parseHtml(page)).loc : null;
+    return { ok: !!loc && loc.area === area && loc.x === x && loc.y === y, page };
+  } catch (e) {
+    return { ok: false, page: '' };
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+// The world page after the moves. The game may answer 409 for a moment while it is still handling one: that is not a page.
+async function worldPage() {
+  for (let n = 0; n < 10; n++) {
+    const r = await fetch('index.php?cmd=world', { credentials: 'same-origin' });
+    if (r.status !== 409) return r.text();
+    await sleep(200);
+  }
+  return '';
+}
+
+// Sends the steps of seg (seg[0] is where we stand) and puts the final page in. Returns true when every step was taken and the page
+// shows the character on the last tile.
 async function sendSteps(seg) {
   const v = S.viewer;
   v && v.classList.add('ssh-fast');
   S.results = [];
   renderActions('Moving...'); // not the list of the tile the walk started from, which is wrong now
-  const results = [];
-  const reqs = [];
   let bad = false;
+  let sent = 0;
+  let last = ''; // the page the last move answered with, if it did
+  let took = 0; // how long the game needed for the step before: the map slides about as long, so the character does not stop and go
   let energy = energyNow();
   const area = S.loc.area;
   for (let i = 1; i < seg.length && !bad && !S.cancel; i++) {
     const [x, y] = seg[i];
     const href = moveHref(x, y);
     if (!href) break;
-    const ms = stepMs(seg[i - 1], seg[i]);
-    v && v.style.setProperty('--ssh-step', ms + 'ms');
+    const min = stepMs(seg[i - 1], seg[i]);
+    v && v.style.setProperty('--ssh-step', Math.round(Math.max(min, Math.min(took, 1000))) + 'ms');
     S.loc = Object.assign({}, S.loc, { x, y });
     renderWorld();
     drawPath(seg.slice(i - 1));
@@ -193,44 +223,20 @@ async function sendSteps(seg) {
       const el = energyEl();
       if (el) el.textContent = String(Math.max(0, energy));
     }
-    const k = i - 1;
-    reqs.push(fetchText(href).then((html) => {
-      const loc = read(parseHtml(html)).loc;
-      const ok = !!loc && loc.area === area && loc.x === x && loc.y === y;
-      results[k] = { html, ok };
-      if (!ok) bad = true;
-    }).catch(() => { results[k] = { html: '', ok: false }; bad = true; }));
-    await sleep(ms);
+    const t0 = performance.now();
+    const [move] = await Promise.all([sendMove(href, area, x, y), sleep(min)]);
+    took = performance.now() - t0;
+    sent++;
+    last = move.page;
+    if (!move.ok) bad = true;
   }
-  // The game answers the moves one after the other and each answer comes only when its move is over, which can be seconds after the character
-  // stands on the last tile. So while the answers are awaited the world page is asked for (one request at a time, as travel() in loading.js does), and
-  // the first one that shows the character on the last tile is the page that is used: the creatures and buildings of the tile show at once.
-  const sent = reqs.length;
-  let early = '';
-  const all = Promise.all(reqs);
-  if (!bad && !S.cancel && sent === seg.length - 1 && sent) {
-    const [fx, fy] = seg[seg.length - 1];
-    let fin = false;
-    all.then(() => { fin = true; });
-    const probe = (async () => {
-      await sleep(150);
-      for (let n = 0; n < 40 && !fin && !early; n++) {
-        try {
-          const r = await fetch('index.php?cmd=world', { credentials: 'same-origin' });
-          const h = r.ok ? await r.text() : ''; // 409: the game is still handling a move
-          const loc = h ? read(parseHtml(h)).loc : null;
-          if (loc && loc.area === area && loc.x === fx && loc.y === fy) early = h;
-        } catch (e) { /* the next one */ }
-        if (!early && !fin) await sleep(100);
-      }
-    })();
-    await Promise.race([all, probe.then(() => (early ? 0 : all))]);
-  } else await all;
-  let html = early || (sent && results.length === sent && results.every((r) => r && r.ok) ? results[sent - 1].html : '');
   try {
-    if (!html) html = await fetchText('index.php?cmd=world'); // where are we really?
+    const html = !bad && last ? last : await worldPage(); // where are we really?
+    const loc = html ? read(parseHtml(html)).loc : null;
+    const [fx, fy] = seg[sent];
+    if (!loc || loc.area !== area || loc.x !== fx || loc.y !== fy) bad = true;
     if (!(await applyHtml(html))) navigate('index.php?cmd=world');
-  } catch (e) { navigate('index.php?cmd=world'); }
+  } catch (e) { bad = true; navigate('index.php?cmd=world'); }
   v && v.classList.remove('ssh-fast');
   return !bad && sent === seg.length - 1;
 }

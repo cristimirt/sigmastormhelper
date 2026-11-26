@@ -36,6 +36,10 @@ The helper only changes how pages look and how they are used in your own browser
 - **Mission pages** use the steel container too (with the glass header). All the converted pages (Bank, Blacksmith, Item Augmentation, Engineering, Evolve, Inventing, Item Mailbox, Shops, Skills, Skill Guide, Transit Portal, Faction pages, Doppler Array, Behemoth pages, Artifacts) have the same structure now: title bar (steel or glass), body, footer.
 - **Skills page** is made of a few plain divs (no more nested grids): the tabs, the tree with its tiers of skills, and the details panel.
 - **Journal**, its **Ignore List** and **Outbox** in the Modern layout (the steel container, one row per entry).
+- **Destroy confirmations** (components and backpack items): hovering a picture shows the item's tooltip.
+- **Destroy several components at once** on the profile and in the world map's backpack pop-up: Ctrl+Click and Shift+Click select them (while something is selected, a plain click selects too), and the Destroy button asks before it destroys them.
+- **Fast walk** waits for the game to take each step before sending the next one. It is a bit slower, but steps are no longer refused when the game is slow, which made the walk look stuck.
+- **F5 and Ctrl+R** reload the page with the token already in the address, so "Request verification failed" no longer flashes up.
 - Personal log: when another player activates a skill on you, their name is a link, and the skill's name has a dotted underline with a tooltip showing what it does at that level.
 - **Journal**: in the messages about being invited to a faction and joining one, the faction's name links to its page.
 - **Two thin lines** under the title bar of the Modern pages (stripes of the game's background) are gone.

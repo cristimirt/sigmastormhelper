@@ -45,7 +45,7 @@ export function initSettings() {
     ['h', 'Map and movement'],
     ['modernMap', 'check', 'Modern map', "The helper's map (zoom, click to walk, Path Finder, stairs marks, action list) on the world page. Turn it off to use the game's own map. Takes effect after reloading the page."],
     ['route', 'check', 'Route preview and click to walk', 'Hover a tile to see the route, click to walk it. Press any key or click the map to stop.'],
-    ['fastWalk', 'check', 'Fast walk', 'Sends every step your energy pays for one after another, without waiting for each page; the map shows the walk at once and the page updates when you arrive. A creature cannot stop a fast walk on the way.'],
+    ['fastWalk', 'check', 'Fast walk', 'Sends every step your energy pays for one after another, each as soon as the game has taken the one before, without loading each page; the page updates when you arrive. A creature cannot stop a fast walk on the way.'],
     ['stopOnCreatures', 'check', 'Stop walking when there are creatures on a tile', 'Only when Fast walk is off.'],
     ['creatureColors', 'check', 'Colour creature names by type', 'In the Action List, the name of a creature that ends with (Champion), (Elite), (HK) or (Behemoth) is coloured. Normal creatures stay as they are.', 'legend'],
     ['hotkeyChampion', 'check', 'Attack hotkeys for Champion creatures', 'The number keys also attack creatures whose name ends with (Champion). Without it they are attacked with a click only, and the keys go to the other creatures.'],

@@ -275,6 +275,7 @@ function compUpdate(rows) {
   if (!nb) return;
   nb.classList.add('bd');
   old.replaceWith(nb);
+  if (sec.closest('#ssh-mm')) compSync(nb);
   if (rows[0] && rows[0].ownerDocument !== document) BP.compDoc = rows[0].ownerDocument; // the new buttons' forms are in the page it was read from
 }
 
@@ -298,6 +299,112 @@ export async function compDestroy(href) {
     return;
   }
   await bpLoad(BP.url, bpNote(doc), bpBad(doc));
+}
+
+// A picture of a "destroy these?" question, with the item's own tooltip: without its line about what a click does ("[Click to Destroy]"),
+// which is the last text the game gives its tooltip call.
+function askPicture(src, tip) {
+  const im = document.createElement('img');
+  im.src = src;
+  if (tip) im.setAttribute('onmouseover', tip.replace(/'(?:[^'\\]|\\.)*\[Click(?:[^'\\]|\\.)*'(\s*\))/i, "''$1"));
+  return im;
+}
+
+// Destroying several components at once (on the profile and in the backpack dialog). Ctrl+Click selects one, Shift+Click everything from the last one clicked to
+// this one; while something is selected a plain click selects too, so no component is destroyed by a slip. The game has no command for
+// several: the Destroy button sends each one's own, all at once. The selection is the cells marked `sel`, so new cells start empty.
+const COMP_FORM = 'component-action-';
+let compLast = ''; // the component Shift+Click selects from
+
+// the form of a component: the one of the page the cells were last read from, which has the newest one-time values
+export const compForm = (id) => (BP.compDoc && BP.compDoc.getElementById(id)) || document.getElementById(id);
+
+function compId(cell) {
+  const b = cell.querySelector('button[form^="' + COMP_FORM + '"]');
+  if (b) return b.getAttribute('form').slice(COMP_FORM.length);
+  const a = cell.querySelector('a[href*="subcmd=destroycomponent"]');
+  return ((a && a.getAttribute('href').match(/component_id=(\d+)/)) || [])[1] || '';
+}
+
+function compSync(box) {
+  const picked = [...box.querySelectorAll('.cs1.sel')];
+  let bar = box.querySelector('.comp-act');
+  if (!bar) {
+    bar = mel('div', 'comp-act');
+    bar.innerHTML = '<b class="cnt"></b><a href="#" data-c="clear">clear</a><input type="button" class="custombutton bp-del" data-c="destroy" value="Destroy">';
+    box.append(bar);
+  }
+  bar.hidden = !picked.length;
+  bar.querySelector('.cnt').textContent = picked.length + ' selected';
+  box.classList.toggle('picking', !!picked.length);
+}
+
+// A click in the components. True when it was a click of the selection (nothing else is to be done with it).
+export function compPick(e) {
+  const t = e.target;
+  const box = t.closest('.comp');
+  if (!box || e.button) return false;
+  const act = t.closest('[data-c]');
+  if (act) {
+    e.preventDefault();
+    if (act.dataset.c === 'destroy') compDestroyAsk(box);
+    else { box.querySelectorAll('.cs1.sel').forEach((c) => c.classList.remove('sel')); compSync(box); }
+    return true;
+  }
+  const cell = t.closest('.cs1');
+  const id = cell && compId(cell);
+  const keys = e.ctrlKey || e.metaKey || e.shiftKey;
+  if (!id || (!keys && !box.querySelector('.cs1.sel'))) return false; // a plain click with nothing selected: as in the game
+  e.preventDefault();
+  const cells = [...box.querySelectorAll('.cs1')].filter(compId);
+  const from = e.shiftKey ? cells.findIndex((c) => compId(c) === compLast) : -1;
+  if (from >= 0) {
+    const to = cells.indexOf(cell);
+    cells.slice(Math.min(from, to), Math.max(from, to) + 1).forEach((c) => c.classList.add('sel'));
+  } else cell.classList.toggle('sel');
+  if (cell.classList.contains('sel')) compLast = id;
+  compSync(box);
+  return true;
+}
+
+function compDestroyAsk(box) {
+  // what is to be sent is read now: it is what the question shows
+  const list = [...box.querySelectorAll('.cs1.sel')].map((c) => {
+    const id = compId(c);
+    const form = compForm(COMP_FORM + id);
+    const a = c.querySelector('a[href*="subcmd=destroycomponent"]');
+    const img = c.querySelector('img');
+    return { id, href: form ? postHref(form) : a ? a.getAttribute('href') : '', src: img ? img.src : '', tip: img ? img.getAttribute('onmouseover') : '' };
+  }).filter((c) => c.href);
+  if (!list.length) return;
+  const body = mel('div');
+  body.append(mel('div', '', 'Destroy ' + list.length + ' selected component' + (list.length === 1 ? '' : 's') + '? This cannot be undone.'));
+  const row = mel('div', 'mm-th');
+  list.forEach((c) => row.append(askPicture(c.src, c.tip)));
+  body.append(row);
+  mModal('Destroy components', body, [{ text: 'Cancel' }, { text: 'Destroy', cls: 'bp-del', fn: () => compDestroyAll(list) }]);
+}
+
+async function compDestroyAll(list) {
+  if (!BP.box) return;
+  bpBusy(true);
+  const cnt = document.querySelector(':is(#ssh-prof,#ssh-mm) .comp-act .cnt');
+  if (cnt) cnt.textContent = 'Destroying ' + list.length + '...';
+  let failed = 0;
+  let why = '';
+  await Promise.all(list.map(async (c) => {
+    try {
+      const res = await fetch(c.href, { credentials: 'same-origin' });
+      const text = await res.text();
+      const answer = parseHtml(text);
+      // a refusal of the request itself (a 409, say) is a short plain text, not a message box of the game
+      if (!res.ok) { failed++; why = answer.body.textContent.trim().slice(0, 240); } else if (bpBad(answer)) { failed++; why = bpNote(answer); }
+    } catch (e) { failed++; why = 'The request failed.'; }
+  }));
+  if (!(await bpLoad(BP.url))) return;
+  // the ones the page still shows were not destroyed, whatever their answers said
+  failed = Math.max(failed, list.filter((c) => document.querySelector(':is(#ssh-prof,#ssh-mm) .comp [form="' + COMP_FORM + c.id + '"]')).length);
+  bpMsg(failed ? failed + ' component' + (failed === 1 ? '' : 's') + ' could not be destroyed.' + (why ? ' ' + why : '') : 'Destroyed ' + list.length + ' component' + (list.length === 1 ? '' : 's') + '.', !!failed);
 }
 
 // Send a form post; resolves to the game's message ('' if none) or null when the request failed.
@@ -358,7 +465,7 @@ function bpDestroyAsk() {
   const body = mel('div');
   body.append(mel('div', '', 'Destroy ' + ids.length + ' selected item' + (ids.length === 1 ? '' : 's') + '? This cannot be undone.'));
   const row = mel('div', 'mm-th');
-  BP.data.items.filter((i) => BP.sel.has(i.inv)).forEach((i) => { const im = document.createElement('img'); im.src = i.src; row.append(im); });
+  BP.data.items.filter((i) => BP.sel.has(i.inv)).forEach((i) => row.append(askPicture(i.src, i.tip)));
   body.append(row);
   mModal('Destroy items', body, [{ text: 'Cancel' }, { text: 'Destroy', cls: 'bp-del', fn: () => bpDestroy(ids) }]);
 }
@@ -409,11 +516,15 @@ export async function bpPopup(host, onChange) {
   BP.compDoc = doc; // the page the component buttons' forms are in
   if (comp) {
     comp.classList.add('bd');
+    compSync(comp); // the dialog keeps the room of the Destroy bar: it is centred, and growing would move the components under the pointer
     const sec = mel('div', 'sec s-components');
     sec.append(mel('div', 'qb-sh', 'Components'), comp);
     host.append(sec);
   }
+  // no text selection while Shift / Ctrl select components
+  host.addEventListener('mousedown', (e) => { if ((e.shiftKey || e.ctrlKey || e.metaKey) && e.target.closest && e.target.closest('.comp')) e.preventDefault(); });
   host.addEventListener('click', (e) => {
+    if (e.target && typeof e.target.closest === 'function' && compPick(e)) return; // selecting components to destroy
     // a component is a button of a POST form now: the form is in the fetched page (not in this one), so its fields are read from there
     const cb = e.target && typeof e.target.closest === 'function' ? e.target.closest('.comp button[form^="component-action"]') : null;
     const fc = cb && BP.compDoc && BP.compDoc.getElementById(cb.getAttribute('form'));
