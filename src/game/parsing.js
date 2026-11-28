@@ -7,7 +7,8 @@ const unJs = (s) => s.replace(/\\(u[0-9a-fA-F]{4}|x[0-9a-fA-F]{2}|[\s\S])/g, (m,
 
 export const fixImgHosts = (html) => fixHellforge(html).replace(/https?:\/\/(?:\d{1,3}(?:\.\d{1,3}){3}|fileserver\.huntedcow\.com)\/sigma2\//g, 'https://cdn.sigmastorm.com/');
 
-const LOC_RE =/([A-Za-z][\w' ]*(?:\([^)]*\))?)\s*-\s*\((\d+),\s*(\d+)\)/;
+// A name starts with a letter; a number in front of it belongs to it too ("101 Highridge HQ").
+const LOC_RE =/((?:\d+ )?[A-Za-z][\w' ]*(?:\([^)]*\))?)\s*-\s*\((\d+),\s*(\d+)\)/;
 
 export function parseLoc(doc) {
   const cb = doc.querySelector('td[background*="coord_bg"]');

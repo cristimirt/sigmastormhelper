@@ -41,6 +41,8 @@ The helper only changes how pages look and how they are used in your own browser
 - **Fast walk** waits for the game to take each step before sending the next one. It is a bit slower, but steps are no longer refused when the game is slow, which made the walk look stuck.
 - **F5 and Ctrl+R** reload the page with the token already in the address, so "Request verification failed" no longer flashes up.
 - **Path Finder** panel: every zone on the way has a **W** link to its wiki page, and the website link opens the website on the area you are in.
+- **101 Highridge HQ** keeps its full name on the map (it showed as "Highridge HQ"), so the Path Finder and the Guide and wiki buttons work there.
+- **World maps**: an area's tooltip shows its minimum level. The Path Finder there now starts from the world map itself, not from one of its areas.
 - Personal log: when another player activates a skill on you, their name is a link, and the skill's name has a dotted underline with a tooltip showing what it does at that level.
 - **Journal**: in the messages about being invited to a faction and joining one, the faction's name links to its page.
 - **Two thin lines** under the title bar of the Modern pages (stripes of the game's background) are gone.
